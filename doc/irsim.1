@@ -1,0 +1,1142 @@
+.TH IRSIM 1 "" "" "IRSIM Users's Manual"
+.UC
+.SH NAME
+irsim \- An event-driven logic-level simulator for MOS circuits
+.SH SYNOPSIS
+\fBirsim \fI[-s] prm_file sim_file ... [+hist_file] [-cmd_file ...]
+.SH DESCRIPTION
+IRSIM is an event-driven logic-level simulator for MOS (both N and P)
+transistor circuits.  Two simulation models are available:
+.TP
+.B switch
+Each transistor is modeled as a voltage-controlled switch.  Useful for
+initializing or determining the functionality of the network.
+.TP
+.B linear
+Each transistor is modeled as a resistor in series
+with a voltage-controlled switch; each node has
+a capacitance.  Node values and transition times
+are computed from the resulting RC network, using
+Chorng-Yeoung Chu's model.  Chris Terman's original model is not
+supported any more.
+.PP
+If the \fB-s\fP switch is specified, 2 or more transistors of the same
+type connected in series, with no other connections to their common
+source/drain will be
+.I stacked
+into a compound transistor with multiple gates.
+.PP
+The
+.B prm_file
+is the electrical parameters file that configure the devices to be simulated.
+It defines the capacitance of the various layers, transistor resistances,
+threshold voltages, etc... (see presim(1)).
+.sp 0
+If
+.I prm_file
+does not specify an absolute path then
+IRSIM will search for the
+.I prm_file
+as follows (in that order):
+
+.PD 0
+.HP
+	1) \fI./<prm_file>\fP (in the current directory).
+.HP
+	2) \fB${CAD_ROOT}/irsim/\fI<prm_file>\fP
+.HP
+	3) \fB${CAD_ROOT}/irsim/\fI<prm_file>\fB.prm\fP
+.PD 1
+.PP
+The default search directory (nominally /usr/local/lib) can be overriden
+by setting the environment variable CAD_ROOT to the appropriate
+directory prior to running IRSIM (i.e. setenv CAD_ROOT /cad/lib).
+.PP
+IRSIM first processes the files named on the command line, then (assuming
+the exit command has not been processed) accepts commands from the user,
+executing each command before reading the next.
+.PP
+File names NOT beginning with a '-' are assumed to be sim files (see sim(5)),
+note that this version does not require to run the sim files through
+presim.  These files are read and added to the network
+database.  There is only a single name space for nodes, so
+references to node "A" in different network files all refer to the same
+node.  While this feature allows one to modularize a large circuit into
+several network files, care must be taken to ensure that no unwanted
+node merges happen due to an unfortunate clash in names.
+.PP
+File names prefaced with a '-' are assumed to be command files:
+text files which contain command lines to be processed in the normal
+fashion.  These files are processed line by line; when an end-of-file
+is encountered, processing continues with the next file. After all the
+command files have been processed, and if an "exit" command has not
+terminated the simulation run, IRSIM will accept further commands from
+the user, prompting for each one like so:
+.TP
+.B irsim>
+.PP
+The
+.B hist_file
+is the name of a file created with the
+.I dumph
+command (see below).  If it is present, IRSIM will initilize the network
+to the state saved in that file.  This file is different from
+the ones created with the ">" command since it saves the state of every node
+for all times, including any pending events.
+.PP
+This version supports changes to the network through the
+.B update
+command.  Also, the capability to incrementally re-simulate the network
+up to the current time is provided by the
+.B isim
+command.
+
+
+.SH COMMAND SUMMARY
+
+.PD 0
+.RS +3em
+.IP "\fB@ \fIfilename\fP" 22
+take commands from command file
+.IP "\fB? \fIwnode...\fP" 22
+print info about node's source/drain connections
+.IP "\fB! \fIwnode...\fP" 22
+print info about node's gate connections
+.IP "\fB< \fIfilename\fP" 22
+restore network state from file
+.IP "\fB> \fIfilename\fP" 22
+write current network state to file
+.IP "\fB<< \fIfilename\fP" 22
+same as "<" but restores inputs too
+.IP "\fB| \fIcomment...\fP" 22
+comment line
+.IP "\fBactivity \fIfrom [to]\fP" 22
+graph circuit activity in time interval
+.IP "\fBana \fIwnode...\fP" 22
+display nodes in analyzer window
+.IP "\fBanalyzer \fIwnode...\fP" 22
+display nodes in analyzer window
+.IP "\fBassert \fIwnode [m] val\fP" 22
+assert that \fIwnode\fP equals \fIvalue\fP
+.IP "\fBassertWhen nodeT valT node val\fP" 22
+assert when a condition is met
+.IP "\fBback \fI[time]\fP" 22
+move back to \fItime\fP
+.IP "\fBc \fI[n]\fP" 22
+simulate for \fIn\fP clock cycles (default:1)
+.IP "\fBchanges \fIfrom [to]\fP" 22
+print nodes that changed in time interval
+.IP "\fBclock \fI[node [val]]\fP" 22
+define value sequence for clock node
+.IP "\fBclear\fP" 22
+clear analyzer window (remove signals)
+.IP "\fBd \fI[wnode]...\fP" 22
+print display list or specified node(s)
+.IP "\fBdebug \fI[debug_level...]\fP" 22
+set debug level (default: off)
+.IP "\fBdecay \fI[n]\fP" 22
+set charge decay time (0 => no decay)
+.IP "\fBdisplay \fI[arg]...\fP" 22
+control what gets displayed when
+.IP "\fBdumph \fIfilename...\fP" 22
+write net history to file
+.IP "\fBhist [on|off]\fP" 22
+turn history on or off
+.IP "\fBexit \fI[status]\fP" 22
+return to system
+.IP "\fBflush\fP \fI[time]\fP" 22
+flush out history up to \fItime\fP (default: now)
+.IP "\fBh \fIwnode...\fP" 22
+make node logic high (1) input
+.IP "\fBhas_coords\fP" 22
+print YES if transistor coordinates are available
+.IP "\fBinputs\fP" 22
+print current list of input nodes
+.IP "\fBires \fI[n]\fP" 22
+set incremental resolution to \fIn\fP ns
+.IP "\fBisim \fI[filename]\fP" 22
+incrementally resimulate changes form \fIfilename\fP
+.IP "\fBl \fIwnode...\fP" 22
+make node logic low (0) input
+.IP "\fBlogfile \fI[filename]\fP" 22
+start/stop log file
+.IP "\fBmodel \fI[name]\fP" 22
+set simulation model to \fIname\fP
+.IP "\fBp\fP" 22
+step clock one simulation step (phase)
+.IP "\fBpath \fIwnode...\fP" 22
+display critical path for last transition of a node
+.IP "\fBpowlogfile \fI[filename]\fP" 22
+start/stop power logfile
+.IP "\fBpowtrace \fI-[node]...\fP" 22
+start/stop power tracing  of specified node(s)/vector(s)
+.IP "\fBpowstep\fP"  22
+toggle the display of power estimate for each timestep
+.IP "\fBprint \fIcomment...\fP" 22
+print specified text
+.IP "\fBprintp\fP" 22
+print a list of all pending events
+.IP "\fBprintx\fP" 22
+print all undefined (X) nodes
+.IP "\fBq\fP" 22
+terminate input from current stream
+.IP "\fBR \fI[n]\fP" 22
+simulate for \fIn\fP cycles (default:longest sequence)
+.IP "\fBreadh \fIfilename\fP" 22
+read history from \fIfilename\fP
+.IP "\fBreport\fI[level]\fP" 22
+set/reset reporting of decay events
+.IP "\fBs \fI[n]\fP" 22
+simulate for \fIn\fP ns. (default: stepsize)
+.IP "\fBstepsize \fI[n]\fP" 22
+set simulation step size to \fIn\fP ns.
+.IP "\fBset \fIvector value\fP" 22
+assign \fIvalue\fP to \fIvector\fP
+.IP "\fBsetlog\fI[file|off]\fP" 22
+log net changes to file (\fIoff\fP -> no log)
+.IP \fBsetpath \fI[path...]\fP
+set search path for cmd files
+.IP "\fBstats\fP" 22
+print event statistics
+.IP "\fBsumcap\fP"  22
+print out the sum of the capacitance of all nodes
+.IP "\fBt \fI[-]wnode...\fP" 22
+start/stop tracing of specified nodes
+.IP "\fBtcap\fP" 22
+print list of shorted transistors 
+.IP "\fBtime \fI[command]\fP
+print resource utilization summary
+.IP "\fBuntil wnode [mask] value count\fP" 22
+delayed assert based on the clock count.
+.IP "\fBu \fIwnode...\fP" 22
+make node undefined (X) input
+.IP "\fBunitdelay \fI[n]\fP" 22
+force transitions to take \fIn\fP ns. (0 disables)
+.IP "\fBupdate \fIfilename\fP" 22
+read net changes from file
+.IP "\fBV \fI[node [value...]]\fP" 22
+define sequence of inputs for a node
+.IP "\fBvector \fIlabel node...\fP" 22
+define bit vector
+.IP "\fBvsupply \fIvoltage\fP" 22
+set supply voltage for calculating power (default 5V)
+.IP "\fBw \fI[-]wnode...\fP" 22
+add/delete nodes from display list
+.IP "\fBwnet \fI[filename]\fP" 22
+write network to file
+.IP "\fBx \fIwnode...\fP" 22
+remove node from input lists
+.IP "\fBXdisplay \fI[host:n]\fP" 22
+set/show X display (for analyzer)
+
+
+.RE
+.PD 1
+.TP
+COMMAND DESCRIPTIONS
+.PP
+Commands have the following simple syntax:
+.TP
+\fBcmd \fIarg1 arg2 ... argn\fB <newline>\fP
+.PP
+where
+.B cmd
+specifies the command to be performed and the \fIargi\fP are arguments
+to that command.  The arguments are separated by spaces (or tabs) and the
+command is terminated by a
+.B <newline>.
+.PP
+If
+.B cmd
+is not one of the built-in commands documented below, IRSIM appends
+".cmd" to the command name and tries to open that file as a command file
+(see "\fB@\fP" command).  Thus the command
+"foo" has the same effect as "\fB@\fP foo.cmd".
+.PP
+Notation:
+
+.TP
+.B ...
+indicates zero or more repetitions
+.TP
+.B [ ]
+enclosed arguments are optional
+.TP
+.B node
+name of node or vector in network
+.TP
+.B wnode
+name of node or vector in network, can include \fB'*'\fP wildcard
+which matches any sequence of zero or more characters.  The pair of
+characters \fB'{'\fP and \fB'}'\fP denote iteration over the limits
+enclosed by it, for example:
+.B "name{1:10}"
+will expand into
+.I name1, name2 ... name10.
+A 3rd optional argument sets the stride, for example:
+.B "name{1:10:2}"
+will expand into
+.I name1, name3, ... name7, name9.
+.TP
+.B | comment...
+Lines beginning with vertical bar are treated as comments and
+ignored -- useful for comments or temporarily disabling certain
+commands in a command file.
+.PP
+Most commands take one or more node names as arguments.  Whenever a node
+name is acceptible in a command line, one can also use the name of a bit
+vector.  In this case, the command will be applied to each node of the
+vector (the "\fBt\fP" and "\fBd\fP" treat vectors specially, see below).
+.TP
+\fBvector \fIlabel node...\fP
+Define a bit vector named "label" which includes the specified
+nodes.  If you redefine a bit vector, any special attributes of
+the old vector (e.g., being on the display or trace list) are
+lost.  Wild cards are not accepted in the list of
+node names since you would have no control over the order in
+which matching nodes would appear in the vector.
+.PP
+The simulator performs most commands silently.  To find out what's
+happened you can use one of the following commands to examine the state
+of the network and/or the simulator.
+.TP
+\fBset \fIvector value\fP
+Assign \fIvalue\fP to
+.I vector.
+For example, the following sequence of commands:
+.RS
+.sp 1
+	\fBvector \fPBUS bit.1 bit.2 bit.3
+.sp 0
+	\fBset \fPBUS 01x
+.RE
+.IP
+The first command will define
+.I BUS
+to be a vector composed of nodes
+.I bit.1, bit.2,
+and
+.I bit.3.
+The second command will assign the following values: 
+.PP
+.PD 0
+.HP
+		bit.1 = 0
+.HP
+		bit.2 = 1
+.HP
+		bit.3 = X
+.PD 1
+.IP
+Value can be any sequence of [0,1,h,H,l,L,x,X], and must be of the same
+length as the bit vector itself.
+.TP
+\fBd \fI[wnode]...\fP
+Display.  Without arguments displays the values all nodes and bit
+vectors
+currently on the display list (see
+.B w
+command).  With
+arguments, only displays the nodes or bit vectors specified.  See also
+the "display" command if you wish to have the display list printed out
+automatically at the end of certain simulation commands.
+.TP
+\fBw \fI[-]wnode...\fP
+Watch/unwatch one or more nodes.  Whenever a "\fBd\fP"
+command is given, each watched node will displayed like so:
+.IP
+.B node1=0 node2=X ...
+.LP
+.RS
+To remove a node from the watched list, preface its name with a '-'.
+If \fIwnode\fP is the name of a bit vector, the values of the nodes which
+make up the vector will be displayed as follows:
+.RE
+.IP
+.B label=010100
+.LP
+.RS
+where the first 0 is the value of first node in the list, the first 1
+the value of the second node, etc.
+.RE
+.TP
+\fBassert \fIwnode [mask] value\fP
+Assert that the boolean value of the node or vector
+.I wnode
+is \fIvalue\fR.  If the comparison fails, an error message is printed.
+If
+.I mask
+is given then only those bits corresponding to zero bits in
+.I mask
+take part in the comparison, any character other than 0 will skip
+that bit.
+The format of the error message is the following:
+.PP
+.PD 0
+.HP
+		(tty, 3): assertion failed on 'name' 10X10 (1010X)
+.PD 1
+.IP
+Where
+.I name
+is the name of the vector, followed by the actual value and the
+expected value enclosed in parenthesis.  If a
+.I mask
+is specified, then bits that were not compared are printed as '-'.
+.TP
+\fBuntil wnode [mask] value count\fP
+Acts just like the assert command except it requires an
+additional argument <count> which is the max number of clock cycles 
+to run. Instead of just testing the current state, like assert, until
+tests for true and if false it runs clock cycles until condition becomes 
+true or count runs out.
+.TP
+\fBana \fIwnode...\fP
+This is a shorthand for the \fBanalyzer\fP command (described below).
+.TP
+\fBanalyzer \fIwnode...\fP
+Add the specified node(s)/vector(s) to the analyzer display list (see
+irsim-analyzer(3) for a detailed explanation).  If the analyzer window does
+not exist, it will be created.  If no arguments are given and the 
+analyzer window already exists, nothing happens.
+.TP
+\fBXdisplay \fI[host:display]\fP
+You must be able to connect to an X-server to start the analyzer.  If
+you haven't set up the
+.B DISPLAY
+environment variable properly, the analyzer command may fail. If
+this is the case you can use the
+.B Xdisplay
+command to set it from within the simulator.
+With no arguments, the name of the current X-server will be printed.
+.TP
+\fBclear\fP
+Removes all nodes and vectors from the analyzer window.  This command is
+most useful in command scripts for switching between different signals 
+being displayed on the analyzer.
+.PP
+"\fB?\fP" and "\fB!\fP" allow the user to go both backwards and forwards
+through the network.  This is a useful debugging aid.
+.TP 
+\fB? \fIwnode...\fP
+Prints a synopsis of the named nodes including their current values
+and the state of all transistors that affect the value of these nodes.
+This is the most common way of wandering through the network in
+search of what went wrong.
+.sp 0
+The output from the command
+.I "? out"
+looks like
+.RS
+.PP
+.PD 0
+.HP
+out=0 (vl=0.3 vh=0.8) (0.100 pf) is computed from:
+.HP
+n-channel phi2=0 out=0 in=0 [1.0e+04, 1.3e+04, 8.7e+03]
+.HP
+pulled down by (a=1 b=1)  [1.0e+04, 1.3e+04, 8.8e+03]
+.HP
+pulled up [4.0e+04, 7.4e+04, 4.0e+04]
+.PD 1
+.PP
+The first line gives the node's name and current value, its low and
+high logic thresholds, user-specifed low-to-high and high-to-low
+propagation delays if present, and its capacitance if nonzero.
+Succeeding lines list the transistor whose sources or drains connect to
+this node: the transistor type ("pulled down" is an n-channel transistor
+connected to
+gnd, "pulled up" is a depletion pullup or p-channel transistor connected
+to vdd), the values of the gate,
+source,
+and drain nodes, and the modeling resistances.  Simple chains
+of transistors with the same implant type are collapsed by the
+.I \-s
+option into a single transistor with a "compound" gate; compound gates appear
+as a parenthesized list of nodes (e.g., the pulldown shown above).  The
+three resistance values
+-- static, dynamic high, dynamic low -- are
+given in Kilo-ohms.
+.PP
+Finally, any pending events for a node are
+listed after the electrical information.
+.RE
+.TP
+\fB! \fIwnode...\fP
+For each node in the argument list, print a list of transistors
+controlled by that node.
+.TP
+.B tcap
+.sp 0
+Prints a list of all transistors with their source/drain shorted together or
+whose source/drain are connected to the power supplies.  These transistors
+will have no effect on the simulation other than their gate capacitance load.
+Although transistors connected across the power supplies are real
+design errors, the simulator does not complain about them.
+.PP
+Any node can be made an input -- the simulator will not change an input node's
+value until it is released.  Usually on specific nodes -- inputs to the 
+circuit -- are manipulated using the commands below, but you can fool with
+a subcircuit by forcing values on internal nodes just as easily.
+.TP
+\fBh \fIwnode...\fP
+Force each node on the argument list to be a high (1) input.  Overrides
+previous input commands if necessary.
+.TP
+\fBl \fIwnode...\fP
+Like "\fBh\fP" except forces nodes to be a low (0) input.
+.TP
+\fBu \fIwnode...\fP
+Like "\fBh\fP" except forces nodes to be a undefined (X) input.
+.TP
+\fBx \fIwnode...\fP
+Removes nodes from whatever input list they happen to be on.  The
+next simulation step will determine the correct node value
+from the surrounding circuit.  This is the default state of most nodes.
+Note that this does not force nodes to have an "X" value -- it simply
+removes them from the input lists.
+.TP
+.B inputs
+prints the high, low, and undefined input lists.
+
+
+.PP
+It is possible to define a sequence of values for a node, and then
+cycle the circuit as many times as necessary to input each value and simulate
+the network.  A similar mechanism is used to define the sequence of values
+each clock node goes through during a single cycle.
+.PP
+Each value is a list of characters (with no intervening blanks) chosen from
+the following:
+.PP
+.PD 0
+.RS
+.IP "1, h, H" 12
+logic high (1)
+.IP "0, l, L" 12
+logic low (0)
+.IP "u, U" 12
+undefined (X)
+.IP "x, X" 12
+remove node from input lists
+.RE
+.PD 1
+.PP
+Presumably the length of the character list is the same as the size of
+the node/vector to which it will be assigned.  Blanks (spaces and tabs)
+are used to separate values in a sequence.  The sequence is used one
+value at a time, left to right.  If more values are needed than supplied
+by the sequence, IRSIM just restarts the sequence again.
+.TP
+\fBV \fI[node [value...]]\fP
+Define a vector of inputs for a node.  After each cycle of an "R"
+command, the node is set to the next value specified in the
+sequence.
+.PP
+.RS
+With no arguments, clears all input sequences (does not affect
+clock sequences however).  With one argument, "node", clears any
+input sequences for that node/vector.
+.RE
+.TP
+\fBclock \fI[node [value...]]\fP
+Define a phase of the clock.  Each cycle, each node specified by a
+clock command must run through its respective values.  For example,
+.PP
+.PD 0
+.HP
+		clock phi1 1 0 0 0
+.HP
+		clock phi2 0 0 1 0
+.PD 1
+.RS
+.PP
+defines a simple 4-phase clock using nodes
+.I phi1
+and
+.I phi2.
+Alternatively one could have issued the following commands:
+.PP
+.PD 0
+.HP
+		vector clk phi1 phi2
+.HP
+		clock clk 10 00 01 00
+.PD 1
+.PP
+With no arguments, clears all clock sequences.  With one argument,
+"node", clears any clock sequences for that node/vector.
+.RE
+.PP
+After input values have been established, their effect can be propagated
+through the network with the following commands.  The basic simulated time
+unit is 0.1ns; all event times are quantized into basic time units.  A
+simulation step continues until
+.I stepsize
+ns. have elapsed, and any
+events scheduled for that interval are processed.  It is possible to build
+circuits which oscillate -- if the period of oscillation is zero,
+the simulation command will not return.  If this seems to be the case, you
+can hit
+.B <ctrl-C>
+to return to the command interpreter.  Note that if you do this while input
+is being taken from a file, the simulator will bring you to the top level
+interpreter, aborting all pending input from any command files.
+.PP
+When using the linear model (see the "\fBmodel\fP" command) transition times
+are estimated using an RC time constant calculated from the surrounding
+circuit.  When using the switch model, transitions are scheduled with
+unit delay.  These calculations can be overridden for a node by setting
+its tplh and tphl parameters which will then be used to determine the time
+for a transition.
+.TP
+\fBs \fI[n]\fP
+Simulation step.  Propogates new values for the inputs through the
+network, returns when \fIn\fP (default: \fIstepsize\fR) ns. have passed.
+If
+.I n
+is specified, it will temporarily override the
+.I stepsize
+value.  Unlike
+previous versions, this value is NOT remembered as the default value for the
+.I stepsize
+parameter.  If the display mode is "automatic", the current
+display list is printed out on the completion of this command (see
+"display" command).
+.TP
+\fBc \fI[n]\fP
+Cycle
+.I n
+times (default: 1) through the clock, as defined by the
+"\fBclock\fP" command.  Each phase of the clock lasts
+.I stepsize
+ns.
+If the display mode is "\fIautomatic\fP", the current display list is
+printed out on the completion of this command (see "\fBdisplay\fP" command).
+.TP
+.B p
+Step the clock through one phase (or simulation step).  For example,
+if the clock is defined as above
+.PP
+.PD 0
+.HP
+		clock phi1   1 0 0 0
+.HP
+		clock phi2   0 0 1 0
+.PD 1
+.RS
+.PP
+then "\fBp\fP" will set phi1 to 1 and phi2 to 0, and then propagate the
+effects for one simulation step.  The next time "\fBp\fP" is issued, phi1
+and phi2 will both be set to 0, and the effects propagated, and so on.
+If the "\fBc\fP" command is issued after "\fBp\fP" has been used, the effect
+will be to step through the next 4 phases from where the "\fBp\fP" command
+left off.
+.RE
+.TP
+\fBR \fI[n]\fP
+Run the simulator through 
+.I n
+cycles (see the "\fBc\fP" command).  If 
+.I n
+is not present make the run as long as the longest sequence.  If display
+mode is automatic (see "\fBdisplay\fP" command) the display is printed
+at the end of each cycle.  Each "\fBR\fP" command starts over at the
+beginning of the sequence defined for each node.
+.TP
+\fBback \fItime\fP
+Move back to the specified time.  This command restores circuit state
+as of \fItime\fP, effectively
+undoing any changes in between.  Note that you can not move
+past any previously flushed out history (see \fBflush\fP command below)
+as the history mechanism is used to restore the network state.  This command
+can be useful to undo a mistake in the input vectors or to re-simulate the
+circuit with a different debug level.
+.TP
+\fBpath \fIwnode...\fP
+display critical path(s) for last transition of the specified node(s).
+The critical path transistions are reported using the following format:
+.HP
+		\fInode\fB -> \fIvalue\fB @ \fItime\fB (\fIdelta\fB)\fP
+.IP
+where \fInode\fP is the name of the node, \fIvalue\fP is the value to which
+the node transitioned, \fItime\fP is the time at which the transistion
+occurred, and \fIdelta\fP is the delay through the node since the last
+transition.  For example:
+.PP
+.PD 0
+.HP
+		critical path for last transition of Hit_v1:
+.HP
+			phi1-> 1 @ 2900.0ns , node was an input
+.HP
+			PC_driver-> 0 @ 2900.4ns    (0.4ns)
+.HP
+			PC_b_q1-> 1 @ 2904.0ns    (3.6ns)
+.HP
+			tagDone_b_v1-> 0 @ 2912.8ns    (8.8ns)
+.HP
+			tagDone1_v1-> 1 @ 2915.3ns    (2.5ns)
+.HP
+			tagDone1_b_v1-> 0 @ 2916.0ns    (0.7ns)
+.HP
+			tagDone_v1-> 1 @ 2918.4ns    (2.4ns)
+.HP
+			tagCmp_b_v1-> 0 @ 2922.1ns    (3.7ns)
+.HP
+			tagCmp_v1-> 1 @ 2923.0ns    (0.9ns)
+.HP
+			Vbit_b_v1-> 0 @ 2923.2ns    (0.2ns)
+.HP
+			Hit_v1-> 1 @ 2923.5ns    (0.3ns)
+.PD 1
+.TP
+\fBactivity \fIfrom_time [to_time]\fP
+print histogram showing amount of circuit activity in the specified
+time inteval.  Actually only shows number of nodes which had their
+most recent transition in the interval.
+.TP
+\fBchanges \fIfrom_time [to_time]\fP
+print list of nodes which last changed value in the specified
+time interval.
+.TP
+.B printp
+print list of all pending events sorted in time.  The node associated
+with each event and the scheduled time is printed.
+.TP
+.B printx
+print a list of all nodes with undefined (X) values.
+.PP
+Using the trace command, it is possible to get more detail about what's
+happening to a particular node.  Much of what is said below is described
+in much more detail in "Logic-level Simulation for VLSI Circuits" by
+Chris Terman, available from Kluwer Academic Press.  When a node is traced,
+the simulator reports each change in the node's value:
+.IP
+	[event #100] node out.1: 0 -> 1 @ 407.6ns
+.LP
+.PP
+The event index is incremented for each event that is processed.  The
+transition is reported as
+.HP
+	\fIold value\fB -> \fInew value\fB @ \fIreport time\fP
+.PP
+Note that since the time the event is processed may differ from the
+event's report time, the report time for successive events may not be
+strictly increasing.
+.PP
+Depending on the debug level (see the "\fBdebug\fP" command) each
+calculation of a traced node's value is reported:
+.PP
+.PD 0
+.HP
+	[event #99] node clk: 0 -> 1 @ 400.2ns
+.HP
+	final_value( Load )  V=[0.00, 0.04]  => 0
+.HP
+	..compute_tau( Load )
+.HP
+	{Rmin=2.2K  Rdom=2.2K  Rmax=2.2K}  {Ca=0.06  Cd=0.17}
+.HP
+	tauA=0.1  tauD=0.4 ns
+.HP
+	[event #99: clk->1] transition for Load: 1 -> 0 (tau=0.5ns, delay=0.6ns)
+.PD 1
+.PP
+In this example, a calculation for node
+.I Load
+is reported.  The calculation
+was caused by event 99 in which node clk went to 1.  When using the
+linear model (as in this example) the report shows
+.HP
+	\fIcurrent value\fB -> \fIfinal value\fP
+.PP
+The second line displays information regarding the final value
+(or dc) analysis for node "Load"; the minimun and maximum voltages
+as well as the final logical value (0 in this case).
+.PP
+The next three lines display timing analysis information used to estimate
+the delays.  The meaning of the variables displayed can be found Chu's
+thesis: "Improved Models for Switch-Level Simulation".
+.PP
+When the \fIfinal value\fP is reported as "D", the node is not connected to an
+input and may be scheduled to decay from its current value to X at some later
+time (see the "\fBdecay\fI" command).
+.PP
+"tau" is the calculated transition time constant, "delta"
+is when any consequences of the event will be
+computed; the difference in the two times is how IRSIM accounts for the shape
+of the transition waveform on subsequent stages (see reference given above for
+more details).  The middle lines of the report indicate the Thevenin and
+capacitance parameters of the surrounding networks, i.e., the parameters on
+which the transition calculations are based.
+.TP
+\fBdebug \fI[ev dc tau taup tw spk][off][all]\fP
+Set debugging level.  Useful for debugging simulator and/or circuit
+at various levels of the computation.  The meaning of the various
+debug levels is as follows:
+.RS
+.IP \fBev\fP 8
+display event enqueueing and dequeueing.
+.IP \fBdc\fP 8
+display dc calculation information.
+.IP \fBtau\fP 8
+display time constant (timing) calculation.
+.IP \fBtaup\fP 8
+display second time constant (timing) calculation.
+.IP \fBtw\fP 8
+display network parameters for each stage of the tree walk, this
+applies to \fBdc, tau\fP, and \fBtaup\fP.  This level of debugging
+detail is usually needed only when debugging the simulator.
+.IP \fBspk\fP 8
+displays spike analysis information.
+.IP \fBall\fP 8
+This is a shorthand for specifying all of the above.
+.IP \fBoff\fP 8
+This turns off all debugging information.
+.RE
+.IP
+If a debug switch is on then during a simulation step, each time a watched
+node is encounted in some event, that fact is indicated to the user
+along with some event info.  If a node keeps appearing in this prinout,
+chances are that its value is oscillating.  Vice versa, if your circuit
+never settles (ie., it oscillates) , you can use the "\fBdebug\fP" and
+"\fBt\fP" commands to find the node(s) that are causing the problem.
+.sp 1
+Without any arguments, the debug command prints the current debug level.
+.TP
+\fBt \fI[-]wnode...\fP
+set trace flag for node.  Enables the various printouts described
+above.
+Prefacing the node name with '-' clear its trace flag.
+If "wnode" is the name of a vector, whenever any node of that vector
+changes value, the current time and the values of all traced vectors
+is printed.  This feature is useful for watching the relative
+arrival times of values at nodes in an output vector.
+.PP
+System interface commands:
+.TP
+\fB> \fIfilename\fP
+Write current state of each node into specified file.  Useful for
+making a breakpoint in your simulation run.  Only stores values so
+isn't really useful to "dump" a run for later use, i.e., the current
+input lists, pending events, etc. are NOT saved in the state file.
+.TP
+\fB< \fIfilename\fP
+Read from specified file, reinitializing the value of each node as
+directed.  Note that network must already exist and be identical to the
+network used to create the dump file with the ">" command.  These
+state saving commands are really provided so that complicated
+initializing sequences need only be simulated once.
+.TP
+\fB<< \fIfilename\fP
+Same as "\fB<\fP" command, except that this command will restore the
+.I input
+status of the nodes as well.  It does not, however, restore pending
+events.
+.TP
+\fBdumph \fI[filename]\fP
+Write the history of the simulation to the specified file, that is; all
+transistions since time = 0.  The resulting file is a machine-independent
+binary file, and contains all the required information to continue
+simulation at the time the dump takes place.  If the filename isn't
+specified, it
+will be constructed by taking the name of the sim_file (from the command
+line) and appending ".hist" to it.
+.TP
+\fBreadh \fIfilename\fP
+Read the specified history-dump file into the current network.  This
+command will restore the state of the circuit to that of the dump file,
+overwriting the current state.
+.TP
+\fBflush \fI[time]\fP
+If memory consumption due to history maintanance becomes prohibitive, this
+command can be used to free the memory consumed by the history up to the
+time specified.  With no arguments, all history up to the current
+point in the simulation is freed.  Flushing out the history may invalidate
+an incremental simulation and the portions flushed will no longer appear
+in the analyzer window.
+.TP
+\fBsetpath \fI[path...]\fP
+Set the search-path for command files.  \fIPath\fP should be a sequence
+of directories to be searched for ".cmd" files, "." meaning the current
+directory.  For eaxmple:
+.HP
+	\fBsetpath \fP. /usr/me/rsim/cmds /cad/lib/cmds
+.IP
+With no arguments, it will print the current search-path.  Initially this
+is just ".".
+.TP
+\fBprint \fItext...\fP
+Simply prints the text on the user's console.  Useful for keeping
+user posted of progress through a long command file.
+.TP
+\fBlogfile \fI[filename]\fP
+Create a logfile with the specified name, closing current log file if
+any; if no argument, just close current logfile.  All output which
+appears on user's console will also be placed in the logfile.  Output
+to the logfile is cleverly formatted so that logfiles themselves can
+serve as command files.
+.TP
+\fBsetlog \fI[filename | off]\fP
+Record all net changes, as well as resulting error messages, to the
+specified file (see "\fBupdate\fP" command).  Net changes are always
+appended to the log-file, preceding each sequence of changes by the
+current date.  If the argument is
+.I "off"
+then net-changes will not be logged.  With no arguments, the name of the
+current log-file is printed.
+.sp 1
+The default is to always record net changes; if no filename is specified
+(using the "\fBsetlog\fP" command) the default filename
+.I irsim_changes.log
+will be used.  The log-files are formatted so that log-files may
+themselves be used as net-change files.
+.TP
+\fBwnet \fI[filename]\fP
+Write the current network to the specified file.  If the filename isn't
+specified, it will be constructed by taking the name of the sim_file
+(from the command line) and appending ".inet" to it.  The resulting file 
+can be used in a future simulation run, as if it were a sim file.  The file
+produced is a machine independent binary file, which is typically about 1/3
+the size of the sim file and about 8 times faster to load.
+.TP
+\fBtime \fI[command]\fP
+With no argument, a summary of time used by the simulator is printed.
+If arguments are given the specified command is timed and a time summary
+is printed when the command completes.
+The format of the time summary is \fIU\fBu \fIS\fBs \fIE P\fB%\fI M\fP, where:
+.PP
+.PD 0
+.HP
+	\fIU\fP => User time in seconds
+.HP
+	\fIS\fP => System time in seconds
+.HP
+	\fIE\fP => Elapsed time, minutes:seconds
+.HP
+	\fIP\fP => Percentage of CPU time (((U + S)/E) * 100)
+.HP
+	\fIM\fP => Median text, data, and stack size use
+.PD 1
+.TP
+.B q
+.sp 0
+Terminate current input stream.  If this is typed at top level, the
+simulator will exit back to the system; otherwise, input reverts to
+the previous input stream.
+.TP
+\fBexit \fI[n]\fP
+Exit to system, 
+.I n
+is the reported status (default: 0).
+.PP
+Simulator parameters are set with the following commands.  With no arguments,
+each of the commands simply prints the current value of the parameter.
+.TP
+\fBdecay \fI[n]\fP
+Set decay parameter to
+.I n
+ns. (default: 0).  If non-zero, it tells the number of ns. it
+takes for charge on a node to decay to X.  A value of 0 implies
+no decay at all.  You cannot specify this parameters separately
+for each node, but this turns out not to be a problem.  See "\fBreport\fP"
+command.
+.TP
+\fBdisplay \fI[-][cmdfile][automatic]\fP
+set/reset the display modes, which are
+.RS
+.IP \fBcmdfile\fP 12
+commands executed from command files are displayed to user before 
+executing.  The default is 
+.I cmdfile = OFF.
+.IP \fBautomatic\fP 12
+print out current display list (see "\fBd\fP" command) after
+completion of "\fBs\fP" or "\fBc\fP" command.  The default is 
+.I automatic = ON.
+.RE
+.IP
+Prefacing the previous commands with a "-" turns off that display option.
+.TP
+\fBmodel \fI[name]\fP
+Set simulation model to one of the following:
+.RS
+.IP \fBswitch\fP
+Model transistors as voltage controlled switches.  This model uses interval
+logic levels, without accounting for transistor resistances, so circuits
+with fighting
+transistors may not be accuratelly modelled.  Delays may not reflect the
+.I "true"
+speed of the circuit as well.
+.IP \fBlinear\fP
+Model transistors as a resistor in series with a voltage controlled switch.
+This model uses a single-time-constant computed from the resulting RC
+network and uses a two-time-constant model to analyze charge sharing
+and spikes.
+.RE
+.IP
+The default is the
+.B linear
+model.
+You can change the simulation model at any time -- even with events
+pending -- as only new calculations are affected.
+Without arguments, this command prints the current model name.
+.TP
+\fBreport \fI[level]\fP
+When level is nonzero, report all nodes which are set to X because of charge
+decay, regardless on whether they are being traced.  Setting
+level to zero disables reporting, but not
+the decay itself (see "\fBdecay\fP" command).
+.TP
+\fBstepsize \fI[n]\fP
+Specify duration of simulation step or clock phase.  
+.I n is specified
+in ns. (nanoseconds).  Floating point numbers with up to 1 digit past
+the decimal point are
+allowed.  Further decimals are trucated (i.e. 10.299 == 10.2).
+.TP
+\fBunitdelay \fI[n]\fP
+When nonzero, force all transitions to take
+.I n
+ns.  Setting
+the parameter to zero disables this feature.  The resolution is the same
+as for the "\fBstepsize\fP" command.
+.TP
+.B stats
+Print event statitistics, as follows:
+.PP
+.PD 0
+.HP
+		changes = 26077
+.HP
+		punts (cns) = 208 (34)
+.HP
+		punts = 0.79%, cons_punted = 16.35%
+.HP
+		nevents = 28012; evaluations = 27972
+.PD 1
+.IP
+Where \fIchanges\fP is the total number of transistions recorded, \fIpunts\fP
+is the number of punted events, \fI(cns)\fP is the number of consecutive
+punted events (a punted event that punted another event).  The penultimate
+line shows the percentage of punted events with respect to the total number
+of events, and the percentage of consecutive punted events with respect
+to the number of punted events.  The last line shows the total number of
+events (nevents) and the number of net evaluations.
+.PP
+Incremental simulation commands:
+.PP
+.B Irsim
+supports incremental changes to the network and resimulation of the resulting
+network.  This is done incrementally so that only the nodes affected by the
+changes, either directly or indirectly, are re-evaluated.
+
+.TP
+\fBupdate \fIfilename\fP
+Read net-change tokens from the specified file.  The following net-change
+commands are available:
+.sp 1
+.RS
+.PD 0
+.IP \fBa\fPdd 8
+type gate source drain length width [area]
+.IP \fBd\fPelete 8
+type gate source drain length width [area]
+.IP \fBm\fPove 8
+type gate source drain length width [area] g s d
+.IP \fBc\fPap 8
+node value
+.IP \fBN\fP 8
+node metal-area poly-area diff-area diff-perim
+.IP \fBM\fP 8
+node M2A M2P MA MP PA PP DA DP PDA PDP
+.IP \fBt\fPhresh 8
+node low high
+.IP \fBD\fPelay 8
+node tplh tphl
+.RE
+.PD 1
+.IP
+For a detailed dscription of this file see netchange(5).  Note that this
+is an experimental interface and is likely to change in the future.
+.IP
+Note that this command doesn't resimulate the circuit so that it may leave the
+network in an inconsistent state.  Usually this command will be followed by an
+.B isim
+command (see below), if that is not the case then it's up to the user to
+initilize the state of the circuit.  This command exists only for historical
+reasons and will probably disappear in the future.  It's use is discouraged.
+.TP
+\fBisim \fI[filename]\fP
+Read net-change tokens from the specified file (see netchange(5)) and 
+incrementally resimulate the circuit up to the current simulation
+time (not supported yet).
+.TP
+\fBires \fIn\fP
+The incremental algorithm keeps track of nodes deviating from their past
+behavior as recorded in the network history.  During resimulation, a node
+is considered to deviate from its history if it's new state is found to be
+different within
+.I n
+ns of its previous state.  This command allows for changing the incremental
+resolution.  With no arguments, it will print the current resolution.  The
+default resolution is 0 ns.
+.TP 
+\fBpowlogfile \fI[filename]\fP
+Opens \fIfilename\fP for writting nodal transition reports. The format of
+the report is the same you get when you trace a node normaly.
+With no arguments powlogfile just closes the opened logfile and prints
+out a power dissipation summary. Nodal transitions in inputs are
+.B not 
+included in the transition count.
+.TP 
+\fBpowtrace \fI[[-]node...]\fP
+The syntax of this command is the same as the normal 
+.B t 
+(trace) command.
+If you want to trace and report power dissipation for all the nodes
+just use powtrace *. Use powtrace 
+.B -node 
+if you want to exclude some nodes.
+.TP 
+\fBpowstep\fP
+Toggles whether dynamic power estimation is displayed after each
+timestep. The ynamic power displayed will only be for the nodes that
+have been selected using the 
+.B powtrace 
+command.
+.TP 
+\fBvsupply \fIvoltage\fP
+Sets the 
+.B V 
+variable for use in the 
+.B P=CV^2/(2t) 
+expression where 
+.B C 
+is capacitance switched, and 
+.B t 
+is the timestep.  The default value for vsupply is 5.0 Volts.
+.TP
+\fBsumcap\fP
+Gives a sum of 
+.B all 
+nodal capcitances, 
+.B not 
+just those selected with
+the 
+.B powtrace
+command.
+
+
+
+
+.SH SEE ALSO
+presim(1) (now obsolete)
+.sp 0
+rsim(1)
+.sp 0
+irsim-analyzer(3)
+.sp 0
+sim(5)
+.sp 0
+netchange(5)

@@ -1,0 +1,37 @@
+coords.o: coords.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+graphics.o: graphics.c \
+  ana_glob.h Bitmaps/gray Bitmaps/xpat Bitmaps/left_arrows \
+  Bitmaps/right_arrows Bitmaps/left_curs Bitmaps/left_mask \
+  Bitmaps/right_curs Bitmaps/right_mask Bitmaps/chk Bitmaps/iconbox \
+  Bitmaps/sizebox Bitmaps/select
+movetrace.o: movetrace.c ../base/globals.h ../base/net.h ana.h \
+ 
+setsteps.o: setsteps.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+analyzer.o: analyzer.c ../base/globals.h ../base/net.h ana.h \
+ 
+defaults.o: defaults.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+namelen.o: namelen.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+textwind.o: textwind.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h graphics.h
+zoom.o: zoom.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+base.o: base.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h graphics.h
+deltaT.o: deltaT.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h graphics.h
+postscript.o: postscript.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+update.o: update.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+convert.o: convert.c ana.h \
+  ../base/net.h ../base/defs.h
+movetot.o: movetot.c ana.h \
+  ../base/net.h ../base/defs.h ana_glob.h
+tkana.o: tkana.c ana.h \
+  ../base/net.h ../base/defs.h graphics.h ana_glob.h ana_tk.h
+window.o: window.c ana.h \
+  ../base/net.h ../base/defs.h graphics.h ana_glob.h ana_tk.h

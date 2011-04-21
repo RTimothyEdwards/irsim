@@ -1,0 +1,8 @@
+| units: 100 tech: scmos
+x outClk inClk upDn flop
+x upDn inClk outClk outClk1 dll
+
+p outClk1 outClk_b	Vdd	2 20
+n outClk1 outClk_b	Gnd	2 10
+p outClk_b outClk	Vdd	2 80
+n outClk_b outClk	Gnd	2 40

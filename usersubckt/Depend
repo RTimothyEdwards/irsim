@@ -1,0 +1,3 @@
+user.o: user.c subckt.h
+subckt.o: subckt.c ../base/defs.h ../base/net.h ../base/globals.h \
+  subckt.h

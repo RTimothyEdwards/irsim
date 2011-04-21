@@ -1,0 +1,9 @@
+tclirsim.o: tclirsim.c ../base/defs.h ../base/net.h ../base/globals.h \
+  ../base/rsim.h
+tclanalyzer.o: tclanalyzer.c ../base/globals.h ../base/net.h \
+  ../analyzer/ana.h ../base/defs.h ../analyzer/ana_glob.h \
+  ../analyzer/graphics.h
+lookup.o: lookup.c ../base/globals.h ../base/net.h
+tkAnalyzer.o: tkAnalyzer.c ../analyzer/ana.h ../base/net.h ../base/defs.h \
+  ../analyzer/ana_glob.h ../base/rsim.h
+tkTag.o: tkTag.c ../base/net.h

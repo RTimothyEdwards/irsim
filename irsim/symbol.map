@@ -1,0 +1,12 @@
+IRSIM_9.7 {
+   global: Tclirsim_Init;
+	   Tclirsim_SafeInit;
+	   Random_Init;
+	   Random_SafeInit;
+	   Diglib_Init;
+	   Diglib_SafeInit;
+	   init_subs;
+	   cur_delta;
+	   lprintf;
+   local: *;
+};

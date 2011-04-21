@@ -1,0 +1,6 @@
+resistance n-channel dynamic-low   1.5   0.3   1623.10
+resistance p-channel dynamic-high   5.55   0.3   1276.00
+resistance n-channel static   1.5   0.3   2020.45
+resistance p-channel static   5.55   0.3   1654.71
+resistance n-channel dynamic-high   1.5   0.3   3561.30
+resistance p-channel dynamic-low   5.55   0.3   3875.80

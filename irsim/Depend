@@ -1,0 +1,2 @@
+irsim.o: irsim.c ../base/defs.h ../base/net.h ../base/globals.h \
+  ../base/rsim.h

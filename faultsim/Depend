@@ -1,0 +1,3 @@
+faultsim.o: faultsim.c ../base/defs.h ../base/net.h ../base/net_macros.h \
+  ../base/globals.h
+incsim.o: incsim.c ../base/defs.h ../base/net.h ../base/globals.h

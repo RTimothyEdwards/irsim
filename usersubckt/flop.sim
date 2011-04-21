@@ -1,0 +1,5 @@
+| units: 100 tech: scmos
+x in clk  out flop
+x out clk out2 flop
+p clkb clk Vdd 2 18
+n clkb clk Gnd 2 9

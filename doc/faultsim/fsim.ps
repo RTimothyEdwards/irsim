@@ -1,0 +1,2438 @@
+%!PS-Adobe-1.0
+%%Title: fsim.dvi
+%%Creator: dvi2ps
+%%EndComments
+%! 
+% The following defines procedures assumed and used by program "dvi2ps"
+%
+% $Header: /usr/cvsroot/irsim-9.7/doc/faultsim/fsim.ps,v 1.1.1.1 2006/04/10 22:04:12 tim Exp $
+%
+% Original By:  Neal Holtz, Carleton University, Ottawa, Canada
+%		<holtz@cascade.carleton.cdn>
+%		<holtz%cascade.carleton.cdn@ubc.csnet>
+%		June, 1985
+% Seriously hacked by Van Jacobson, LBL
+%		<van@lbl-csam.arpa>
+% Modifications by Glenn Trewitt, Stanford
+%		<trewitt@miasma.stanford.edu>
+% (incorporated by Joe Pallas, Stanford <pallas@pescadero.stanford.edu>)
+
+% To convert this file into a downloaded file instead of a header
+% file, uncomment all of the lines beginning with %-%
+
+%-%0000000 			% Server loop exit password
+%-%serverdict begin exitserver
+%-%  systemdict /statusdict known
+%-%  {statusdict begin 9 0 3 setsccinteractive /waittimeout 300 def end}
+%-% if
+
+/TeXDict 200 dict def   % define a working dictionary
+TeXDict begin           % start using it.
+                        % units are in "dots" (Resolution/inch)
+
+%%%%%%%%%%%%%%%%%%%%% Page setup (user) options %%%%%%%%%%%%%%%%%%%%%%%%
+
+% dvi2ps will output coordinates in the TeX coordinate system:
+%	(0,0) is 1" down and in from top left, with y +ive downward
+%	1 unit/device-pixel
+% The default PostScript coordinate system is:
+%	(0,0) at bottom left, y +ive up, 72 units/inch
+
+%  The following code was extensively hacked over to make it more or less
+%  device independent, and to NOT use initgraphics and setmatrix, which make it
+%  difficult or impossible to include a PS file in another.  The general idea
+%  is that, for each page size, we create a transformation matrix "Mtrx" that
+%  can be concat-ed with the CTM (in @bop1).
+
+%  Dvi2ps is now responsible for emitting the following, but we also do it here
+%  for compatibility with older versions
+/Resolution 300 def		% units are in pixels
+
+%  We keep the current "normal" matrix here BEFORE we do the DVI transform
+%  for each page.  Updated at the beginning of each page; used by @special.
+/DefaultMatrix matrix def
+%  Transformations that should be applied to DefaultMatrix for specials are
+%  kept in SpecialMatrix (but translations are not required)
+/SpecialMatrix matrix def
+
+/Inch  {Resolution mul} def	% converts inches to number of pixels
+
+%  The page selection operators used to be called here.  Very wrong:
+%  On some printers (such as LaserWriter) these operators clear the
+%  framebuffer and initialize the graphics state.  If dvi2ps output is
+%  included in another PostScript document, or if a prolog/trailer is
+%  wrapped around it, things would be totally screwed -- the pre-existing
+%  image would be lost and the preset graphics state would be lost.
+%
+%  These operators (note, letter, legal) do different things on different
+%  printers -- the LaserWriter clears the frambuffer and does an
+%  initgraphics, while other printers merely choose a paper tray.
+%  
+%  Paper selection is properly done by a print manager (the spooler, in the
+%  case of UN*X), and should come at the start of the whole document.
+%
+%  Unfortunately, very few spoolers allow such control, and paper selection
+%  is intimately tied into document composition, so we do paper selection
+%  here, although it is rigged so that the operators are only invoked once,
+%  at the beginning of the document (in the @start procedure).
+
+/@letter { /PaperType /$letter def } def
+/@note { /PaperType /$note def } def
+/@landscape { /PaperType /$landscape def } def
+/@legal { /PaperType /$legal def } def
+/@11x17 { /PaperType /$11x17 def } def
+/@ledger { /PaperType /$ledger def } def
+
+/@manualfeed
+   { statusdict /manualfeed true put
+   } def
+
+
+/$letter {
+	72 Resolution div dup neg matrix scale	% set scaling to 1/pixel
+	/Mtrx exch def
+	Mtrx 4 72 put    Mtrx 5 720 put		%  origin to top-left
+	statusdict /letter known
+	{ statusdict /letter get exec }
+	{ statusdict /lettertray known
+		{ statusdict /lettertray get exec }
+		if
+	}
+	ifelse
+} def
+/$note {		% note is like letter, except it uses less VM
+	$letter					%  Use letter settings
+	statusdict /note known			%  then select note, if there
+	{ statusdict /note get exec }
+	if
+} def
+/$landscape {
+	$letter					%  use letter settings
+	72 Resolution div dup neg matrix scale	% set scaling to 1/pixel
+	90 rotate
+	/Mtrx exch def				%
+	Mtrx 4 72 put    Mtrx 5 -72 put		%  origin to top-left
+	%  Record the rotation for specials
+	[ 0 1 -1 0 0 0 ] SpecialMatrix SpecialMatrix concatmatrix pop
+} def
+/$legal {
+	72 Resolution div dup neg matrix scale	% set scaling to 1/pixel
+	/Mtrx exch def
+	Mtrx 4 72 put    Mtrx 5 936 put		%  origin to top-left
+	statusdict /legal known
+	{ statusdict /legal get exec }
+	{ statusdict /legaltray known
+		{ statusdict /legaltray get exec }
+		{ $letter }			%  fall back to letter
+		ifelse
+	}
+	ifelse
+} def
+/$ledger {
+	72 Resolution div dup neg matrix scale	% set scaling to 1/pixel
+	/Mtrx exch def
+	Mtrx 4 72 put    Mtrx 5 720 put		%  origin to top-left
+	statusdict /ledger known
+	{ statusdict /ledger get exec }
+	{ statusdict /ledgertray known
+		{ statusdict /ledgertray get exec }
+		if
+	}
+	ifelse
+} def
+/$11x17 {
+	72 Resolution div dup neg matrix scale	% set scaling to 1/pixel
+	/Mtrx exch def
+	Mtrx 4 72 put    Mtrx 5 1152 put	%  origin to top-left
+	statusdict /11x17 known
+	{ statusdict /11x17 get exec }
+	{ statusdict /11x17tray known
+		{ statusdict /11x17tray get exec }
+		if
+	}
+	ifelse
+} def
+
+
+% n @copies -   set number of copies
+/@copies
+   { /#copies exch def
+   } def
+
+%%%% Letter is the default type, but may be overridden by executing any
+%%%% other papertype request before @start.
+@letter
+
+%%%%%%%%%%%%%%%%%%%% Procedure Defintions %%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% id @newfont -		initialize a new font dictionary
+/@newfont
+  { /newname exch def
+    newname 7 dict def          % allocate new font dictionary
+    newname load begin
+        /FontType 3 def
+        /FontMatrix [1 0 0 -1 0 0] def
+        /FontBBox [0 0 1 1] def
+        /BitMaps 128 array def
+        /BuildChar {CharBuilder} def
+        /Encoding 128 array def
+        0 1 127 {Encoding exch /.undef put} for
+        end
+    newname newname load definefont pop
+  } def
+
+
+% the following is the only character builder we need.  it looks up the
+% char data in the BitMaps array, and paints the character if possible.
+% char data  -- a bitmap descriptor -- is an array of length 6, of 
+%          which the various slots are:
+
+/ch-image {ch-data 0 get} def   % the hex string image
+/ch-width {ch-data 1 get} def   % the number of pixels across
+/ch-height {ch-data 2 get} def  % the number of pixels tall
+/ch-xoff  {ch-data 3 get .1 sub} def   % number of pixels below origin
+/ch-yoff  {ch-data 4 get .1 sub} def   % number of pixels to left of origin
+/ch-tfmw  {ch-data 5 get} def   % spacing to next character
+
+% fontdict ch Charbuilder -     -- image one character
+/CharBuilder
+  { /ch-code exch def           % save the char code
+    /font-dict exch def         % and the font dict.
+    /ch-data font-dict /BitMaps get ch-code get def   % get the bitmap
+    ch-data null eq not {
+	ch-tfmw 0 ch-xoff neg ch-yoff neg
+	ch-width ch-xoff sub ch-height ch-yoff sub
+	setcachedevice
+        ch-width ch-height true [1 0  0 1  ch-xoff ch-yoff]
+	{ch-image} imagemask
+    } if
+} def
+
+
+% fontdict @sf -        -- make that the current font
+/@sf { setfont } def
+
+% in the following, the font-cacheing mechanism requires that
+% a name unique in the particular font be generated
+
+% char-data ch @dc -    -- define a new character bitmap in current font
+/@dc
+  { /ch-code exch def
+    dup 0 get
+    length 2 lt
+      { pop [ <00> 1 1 0 0 8.00 ] } % replace <> with null
+    if
+    /ch-data exch def
+    currentfont /BitMaps get ch-code ch-data put
+    % generate a unique name simply from the character code
+    currentfont /Encoding get ch-code dup (   ) cvs cvn put
+  } def
+
+/@DRAFTF { gsave newpath
+       /Helvetica-Bold findfont setfont
+       (Draft) dup stringwidth pop 8.875 exch div dup 72 mul dup scale
+       52.3 rotate 2.5 exch div -.35 translate
+       0.95 setgray
+       0 0 moveto show
+       grestore } def
+/@DRAFTM { gsave newpath
+       /Helvetica-Bold findfont 72 scalefont setfont
+       0.95 setgray
+       576 702 moveto
+       (Draft) stringwidth exch neg exch neg rmoveto
+       (Draft) show
+       grestore } def
+
+% n @bop0 -              -- begin the char def section of a new page
+/@bop0 { pop } def
+
+% n @bop1 -              -- begin a brand new page
+/@bop1 { pop
+	DefaultMatrix currentmatrix pop	% save it away
+	/SaveImage save def
+	Mtrx concat } def
+
+/@draft {
+    /@bop1
+	  { DefaultMatrix currentmatrix pop
+	    1 le {@DRAFTF} {@DRAFTM} ifelse
+	    /SaveImage save def
+	    Mtrx concat
+	  } def
+} def
+
+% - @eop -              -- end a page
+/@eop { SaveImage restore showpage } def
+
+% - @start -            -- start everything
+/@start { PaperType load exec /@TeXSave save def } def
+
+% - @end -              -- done the whole shebang
+/@end { end } def
+
+% x y p -               -- move to position
+/p { moveto } bind def
+
+% x r -                 -- move right
+/r { 0 rmoveto } bind def
+
+% string s -            -- show the string
+/s { show } bind def
+
+% x string m -            -- move right then show string
+/m { exch 0 rmoveto show } bind def
+
+% ch c -                -- show the character (code given)
+/c { c-string dup 0 4 -1 roll put show } bind def
+
+/c-string ( ) def
+
+% dx dy ru -   -- set a rule (rectangle)
+/ru
+  { /dy exch neg def    % because dy is height up from bottom
+    /dx exch def
+    /x currentpoint /y exch def def   % remember current point
+    newpath x y moveto
+    dx 0 rlineto
+    0 dy rlineto
+    dx neg 0 rlineto
+    closepath fill
+    x y moveto
+  } bind def
+
+/@MacSetUp
+  { userdict /md known  % if md is defined
+      { userdict /md get type /dicttype eq      % and if it is a dictionary
+	{
+	/MacDrwgs true def
+	md begin                             % then redefine some stuff
+	/letter {} def
+	/note {} def
+	/legal {} def
+	/od{txpose
+	    1 0 mtx defaultmatrix dtransform exch atan/pa exch def
+	    newpath clippath mark
+	    {transform{itransform moveto}}
+	    {transform{itransform lineto}}
+	    { 6 -2 roll transform
+	      6 -2 roll transform
+	      6 -2 roll transform
+	      { itransform 6 2 roll
+		itransform 6 2 roll
+		itransform 6 2 roll
+		curveto
+	      }
+	    }
+	    {{closepath}}
+	    pathforall newpath counttomark array astore /gc xdf
+	    pop ct 39 0 put
+	    10 fz 0 fs 2 F/|______Courier fnt invertflag{PaintBlack}if
+	}def
+	/txpose{
+	    pxs pys scale ppr aload pop
+	    por {
+		noflips {
+		    pop exch neg exch translate pop 1 -1 scale
+		}if
+		xflip yflip and {
+		    pop exch neg exch translate 180 rotate 1 -1 scale
+		    ppr 3 get ppr 1 get neg sub neg ppr 2 get
+		    ppr 0 get neg sub neg translate
+		}if 
+		xflip yflip not and {
+		    pop exch neg exch translate pop 180 rotate
+		    ppr 3 get ppr 1 get neg sub neg 0 translate
+		}if
+		yflip xflip not and {
+		    ppr 1 get neg ppr 0 get neg translate
+		}if
+	    }
+	    {
+		noflips {
+		    translate pop pop 270 rotate 1 -1 scale
+		}if
+		xflip yflip and {
+		    translate pop pop 90 rotate 1 -1 scale
+		    ppr 3 get ppr 1 get neg sub neg ppr 2 get
+		    ppr 0 get neg sub neg translate
+		}if
+		xflip yflip not and {
+		    translate pop pop 90 rotate ppr 3 get
+		    ppr 1 get neg sub neg 0 translate
+		}if
+		yflip xflip not and {
+		    translate pop pop 270 rotate ppr 2 get
+		    ppr 0 get neg sub neg 0 exch translate
+		}if
+	    }ifelse
+	    scaleby96 {
+		ppr aload pop 4 -1 roll add 2 div 3 1 roll add 2 div 2 copy
+		translate .96 dup scale neg exch neg exch translate
+	    }if
+	}def
+	/cp {pop pop showpage pm restore}def
+        end
+      }if
+    } if    
+  } def
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%     the \special command junk
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%   The structure of the PostScript produced by dvi2ps for \special is:
+%         @beginspecial
+%           - any number of @hsize, @hoffset, @hscale, etc., commands
+%         @setspecial
+%           - the users file of PostScript commands
+%         @endspecial
+
+% The @beginspecial command recognizes whether the Macintosh Laserprep
+% has been loaded or not, and redfines some Mac commands if so.
+% The @setspecial handles the users shifting, scaling, clipping commands
+
+
+% The following are user settable options from the \special command.
+
+/@SpecialDefaults
+  { /hs 8.5 Inch def
+    /vs 11 Inch def
+    /ho 0 def
+    /vo 0 def
+    /hsc 1 def
+    /vsc 1 def
+    /CLIP false def
+  } def
+
+%       d @hsize -      specify a horizontal clipping dimension
+%                       these 2 are executed before the MacDraw initializations
+/@hsize {/hs exch def /CLIP true def} def
+/@vsize {/vs exch def /CLIP true def} def
+%       d @hoffset -    specify a shift for the drwgs
+/@hoffset {/ho exch def} def
+/@voffset {/vo exch def} def
+%       s @hscale -     set scale factor
+/@hscale {/hsc exch def} def
+/@vscale {/vsc exch def} def
+
+/@setclipper
+  { hsc vsc scale
+    CLIP
+      { newpath 0 0 moveto hs 0 rlineto 0 vs rlineto hs neg 0 rlineto closepath clip }
+    if
+  } def
+
+% this will be invoked as the result of a \special command (for the
+% inclusion of PostScript graphics).  The basic idea is to change all
+% scaling and graphics back to defaults that were restored by the most
+% recent showpage, but to shift the origin to the current position on the
+% page.  
+%
+% We draw the figure at the current location.
+
+/@beginspecial          % - @beginspecial -     -- enter special mode
+  {
+    /SpecialSave save def
+    /showpage {} def		% prevent showpage from working
+          % the following magic incantation establishes the current point as
+          % the users origin, and reverts back to default scalings, rotations
+    currentpoint transform	% device coords of CP
+    DefaultMatrix setmatrix	% back to "normal" CTM
+    SpecialMatrix concat	% plus any special transformations
+    itransform translate	% move to CP
+    @SpecialDefaults    % setup default offsets, scales, sizes
+    @MacSetUp           % fix up Mac stuff 
+  } def
+
+/@setspecial    % to setup user specified offsets, scales, sizes (for clipping)
+  {
+    MacDrwgs
+      {md begin /pxt ho def /pyt vo neg def end}
+      {ho vo translate @setclipper}
+    ifelse
+  } def
+
+/@endspecial            % - @endspecial -       -- leave special mode
+  {
+    SpecialSave restore
+  } def
+
+/MacDrwgs false def     % will get set if we think the Mac LaserPrep file has been loaded
+
+%!
+% All software, documentation, and related files in this distribution of
+% psfig/tex are Copyright (c) 1987 Trevor J. Darrell
+%
+% Permission is granted for use and non-profit distribution of psfig/tex 
+% providing that this notice be clearly maintained, but the right to
+% distribute any portion of psfig/tex for profit or as part of any commercial
+% product is specifically reserved for the author.
+%
+%
+% psfigTeX PostScript Prolog
+% $Header: /usr/cvsroot/irsim-9.7/doc/faultsim/fsim.ps,v 1.1.1.1 2006/04/10 22:04:12 tim Exp $
+%
+/psf$TeXscale { 65536 div } def
+
+% Changed to use DefaultMatrix and SpecialMatrix instead of currentmatrix
+/DocumentInitState [
+	%  SpecialMatrix x DefaultMatrix
+	/SpecialMatrix cvx /DefaultMatrix cvx /matrix cvx /concatmatrix cvx
+	currentlinewidth currentlinecap currentlinejoin currentdash
+	currentgray currentmiterlimit
+] cvx def
+
+%  x y bb-llx bb-lly bb-urx bb-ury startFig -
+/startTexFig {
+	/psf$SavedState save def
+	userdict maxlength dict begin
+	currentpoint transform
+
+	DocumentInitState setmiterlimit setgray setdash setlinejoin setlinecap
+		setlinewidth setmatrix
+
+	itransform moveto
+
+	/psf$ury exch psf$TeXscale def
+	/psf$urx exch psf$TeXscale def
+	/psf$lly exch psf$TeXscale def
+	/psf$llx exch psf$TeXscale def
+	/psf$y exch psf$TeXscale def
+	/psf$x exch psf$TeXscale def
+	
+	currentpoint /psf$cy exch def /psf$cx exch def
+
+	/psf$sx psf$x psf$urx psf$llx sub div def 	% scaling for x
+	/psf$sy psf$y psf$ury psf$lly sub div def	% scaling for y
+
+	psf$sx psf$sy scale			% scale by (sx,sy)
+
+	psf$cx psf$sx div psf$llx sub
+	psf$cy psf$sy div psf$ury sub translate
+	
+	/DefFigCTM matrix currentmatrix def
+
+	/initmatrix {
+		DefFigCTM setmatrix
+	} def
+	/defaultmatrix {
+		DefFigCTM exch copy
+	} def
+
+	/initgraphics {
+		DocumentInitState setmiterlimit setgray setdash 
+			setlinejoin setlinecap setlinewidth setmatrix
+		DefFigCTM setmatrix
+	} def
+
+	/showpage {
+		initgraphics
+	} def
+	@MacSetUp
+} def
+
+% llx lly urx ury doclip -	(args in figure coordinates)
+/doclip {
+	currentpoint 6 2 roll
+	newpath 4 copy
+	4 2 roll moveto
+	6 -1 roll exch lineto
+	exch lineto
+	exch lineto
+	closepath clip
+	newpath
+	moveto
+} def
+
+% - endTexFig -
+/endTexFig { end psf$SavedState restore } def
+
+
+%%%% Additions by LA Carr to reencode Adobe fonts as TeX fonts (almost)
+%%%% Based on routine in LaserWriter Cookbook
+/ReEncodeForTeX
+  { /newfontname exch def
+    /basefontname exch def
+    /TeXstr 30 string def
+
+    /basefontdict basefontname findfont def
+    /newfont basefontdict maxlength dict def
+    basefontdict
+      { exch dup /FID ne
+	  { dup /Encoding eq
+	    { exch dup length array copy
+	        newfont 3 1 roll put }
+	    { exch newfont 3 1 roll put }
+	    ifelse
+	  }
+	{ pop pop }
+	ifelse
+      } forall
+
+      basefontdict /MathFontName known not
+        { 
+	  /TeXvec basefontname TeXstr cvs (Courier) search
+	    { pop pop pop TeXcourvec }
+	    { pop TeXnormalvec }
+	  ifelse def
+          TeXvec aload pop
+
+          TeXvec length 2 idiv
+	    { newfont /Encoding get 3 1 roll put }
+	  repeat
+	}
+      if
+
+      newfontname newfont definefont pop
+  } def
+
+/TeXnormalvec
+	[ 8#014 /fi 8#015 /fl 8#020 /dotlessi 8#022 /grave 8#023 /acute
+	  8#024 /caron 8#025 /breve 8#026 /macron 8#027 /ring 8#030 /cedilla
+	  8#031 /germandbls 8#032 /ae 8#033 /oe 8#034 /oslash 8#035 /AE
+	  8#036 /OE 8#037 /Oslash 8#042 /quotedblright 8#074 /exclamdown
+	  8#076 /questiondown 8#134 /quotedblleft 8#136 /circumflex
+	  8#137 /dotaccent 8#173 /endash 8#174 /emdash 8#175 /hungarumlat
+	  8#176 /tilde 8#177 /dieresis ] def
+/TeXcourvec
+	[ 8#016 /exclamdown 8#017 /questiondown 8#020 /dotlessi 8#022 /grave
+	  8#023 /acute 8#024 /caron 8#025 /breve 8#026 /macron 8#027 /ring
+	  8#030 /cedilla 8#031 /germandbls 8#032 /ae 8#033 /oe 8#034 /oslash
+	  8#035 /AE 8#036 /OE 8#037 /Oslash 8#074 /less 8#076 /greater
+	  8#134 /backslash 8#136 /circumflex 8#137 /underscore 8#173 /braceleft
+	  8#174 /bar 8#175 /braceright 8#177 /dieresis ] def
+
+/TeXPSmakefont {	% defines a routine for generating PS fonts, fudged!
+	/TeXsize exch def findfont 
+	[ TeXsize 0 0 TeXsize neg 0 0 ] makefont
+} def
+
+% fontname basefontname angle ObliqueFont -
+% Create a General Oblique font
+/ObliqueFont {
+    /ObliqueAngle exch def
+    /ObliqueBaseName exch def
+    /ObliqueFontName exch def
+    /ObliqueTransform [1 0 ObliqueAngle sin ObliqueAngle cos div 1 0 0] def
+    /basefontdict ObliqueBaseName findfont ObliqueTransform makefont def
+    /newfont basefontdict maxlength dict def
+    basefontdict
+      { exch dup /FID ne
+	  { dup /Encoding eq
+	    { exch dup length array copy
+	        newfont 3 1 roll put }
+	    { exch newfont 3 1 roll put }
+	    ifelse
+	  }
+	{ pop pop }
+	ifelse
+      } forall
+
+     newfont /FontName ObliqueFontName put
+     ObliqueFontName newfont definefont
+     pop
+} def
+
+% Palatino-ItalicUnslanted? You must be joking!
+
+% fontname basename SmallCapsFont -	Create a General SmallCaps font
+/SmallCapsFont {
+    /SmallCapsBaseName exch def
+    /SmallCapsFontName exch def
+    /basefontdict SmallCapsBaseName findfont def
+    /newfont basefontdict maxlength 10 add dict def
+
+    newfont begin
+	/FontName SmallCapsFontName def
+	/FontBaseDict basefontdict 1000 scalefont def
+	/FontSCDict FontBaseDict .8 scalefont def
+	/FontType 3 def
+	/BuildChar {SmallCapChar} def
+	/FontMatrix dup basefontdict exch get def
+	/FontBBox dup basefontdict exch get def
+	/Encoding dup basefontdict exch get def
+    end
+    SmallCapsFontName newfont definefont pop
+} def
+
+% fontdict ch SmallCapChar -
+% It shouldn't be so damn hard to do this (make one font out
+% of two others) but I tried several dozen variations on this
+% theme until I found something that worked. -- vj
+/SmallCapChar {
+    /achar (A) def
+    achar exch 0 exch put
+    begin
+    achar 0 get dup 97 ge exch 122 le and {
+	% handle 'a' through 'z' specially
+	achar 0 achar 0 get 32 sub put
+	FontSCDict
+    } {
+	FontBaseDict
+    } ifelse
+    setfont achar stringwidth FontBBox setcachedevice
+    newpath 0 0 moveto achar show
+    end
+} def
+
+/MathEncodingVec [
+/Gamma /Delta /Theta /Lambda /Xi /Pi /Sigma /Upsilon1
+/Phi /Psi /Omega /alpha /beta /gamma /delta /epsilon
+/zeta /nu /theta /iota /kappa /lambda /mu /nu
+/xi /pi /rho /sigma /tau /upsilon /phi /chi
+/psi /omega /epsilon /theta1 /omega1 /rho /sigma /phi1
+/arrowleft /arrowleft /arrowright /arrowright
+/suchthat /congruent /proportional /angle
+/zero /one /two /three /four /five /six /seven
+/eight /nine /period /comma /less /slash /greater /asteriskmath
+/partialdiff /A /B /C /D /E /F /G
+/H /I /J /K /L /M /N /O
+/P /Q /R /S /T /U /V /W
+/X /Y /Z /registerserif /copyrightserif /trademarkserif /logicalor /logicaland
+/section /a /b /c /d /e /f /g
+/h /i /j /k /l /m /n /o
+/p /q /r /s /t /u /v /w
+/x /y /z /dotlessi /j /weierstrass /macron /breve
+] def
+
+% the following gives the character codes of the above characters
+% in their font.  I.e., this is the character we have to hand "show"
+% to image the characters above.
+/MathCharVec [
+	71	68	81	76	88	80	83	161
+	70	89	87	97	98	103	100	101
+	122	110	113	105	107	108	109	110
+	120	112	114	115	116	117	102	99
+	121	119	101	74	118	114	115	106
+	172	172	174	174	39	64	181	208
+	48	49	50	51	52	53	54	55
+	56	57	46	44	60	47	62	42
+	182	65	66	67	68	69	70	71
+	72	73	74	75	76	77	78	79
+	80	81	82	83	84	85	86	87
+	88	89	90	210	211	212	218	217
+	167	97	98	99	100	101	102	103
+	104	105	106	107	108	109	110	111
+	112	113	114	115	116	117	118	119
+	120	121	122	245	106	195	197	198
+] def
+
+% this array tells which font dictionary holds each character above
+% (0 = basefont, 1 = symbol (maybe slanted), 2 = symbol (unslanted)).
+/MathDictVec [
+	1 1 1 1 1 1 1 1
+	1 1 1 1 1 1 1 1
+	1 1 1 1 1 1 1 1
+	1 1 1 1 1 1 1 1
+	1 1 1 1 1 1 1 1
+	2 2 2 2 2 2 2 2
+	0 0 0 0 0 0 0 0
+	0 0 0 0 2 2 2 2
+	2 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+	0 0 0 2 2 2 2 2
+	2 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+	0 0 0 0 0 0 0 0
+	0 0 0 0 0 2 0 0
+] def
+
+
+% fontname basename symbolname symbolbase angle MathOblique -
+% Create a "math" font with the symbol font characters slanted
+% by "angle"
+/MathOblique {
+    3 copy ObliqueFont
+    pop pop MathFont
+} def
+    
+
+% fontname basename symbolname MathFont -	Create a math italic font
+%
+% We build this font out of the base font & the symbol font
+% using an encoding vec as close as we can get to cmmi10 with
+% standard postscript characters.  An array parallel to the
+% encoding vector tells which font dictionary to use for a
+% particular character.
+/MathFont {
+    /MathSymName exch def
+    /MathBaseName exch def
+    /MathFontName exch def
+    /basefontdict MathBaseName findfont def
+    /newfont basefontdict maxlength 10 add dict def
+
+    newfont begin
+	/FontName MathFontName def
+	/FontDictArray [
+	    basefontdict 1000 scalefont
+	    MathSymName findfont 950 scalefont
+	    /Symbol findfont 950 scalefont
+	   ] def
+	/FontType 3 def
+	/BuildChar {MathFontChar} def
+	/FontMatrix dup basefontdict exch get def
+	/FontBBox dup basefontdict exch get def
+	% the encoding vector is a copy of the original font's
+	% encoding, modified "appropriately".
+	/Encoding dup basefontdict exch get dup length array copy def
+	/WhichFont MathDictVec def
+	/WhichChar MathCharVec def
+	MathEncodingVec Encoding copy pop
+	/achar (A) def
+    end
+    MathFontName newfont definefont pop
+} def
+
+% fontdict ch MathFontChar -
+% (there's some serious magic going on here:  see note on 
+% SmallCapChar above -- vj).
+/MathFontChar {
+    exch begin
+    achar exch 0 exch put
+    FontDictArray WhichFont achar 0 get get get setfont
+    achar dup 0 get WhichChar exch get 0 exch put
+    achar stringwidth FontBBox setcachedevice
+    newpath 0 0 moveto achar show
+    end
+} bind def
+
+/@flushfonts { @TeXSave restore /@TeXSave save def} def
+
+end                     % revert to previous dictionary
+
+TeXDict begin
+%%EndProlog
+/Resolution 300.000000 def
+
+
+@start
+%%Page: ? 1
+1 @bop0
+/Times-Roman /t-rom.510 ReEncodeForTeX /t-rom.510 /t-rom.510 70.568701 TeXPSmakefont def
+/Times-Roman /t-rom.330 ReEncodeForTeX /t-rom.330 /t-rom.330 45.662100 TeXPSmakefont def
+/Times-Bold /t-bol.510 ReEncodeForTeX /t-bol.510 /t-bol.510 70.568701 TeXPSmakefont def
+/Times-Roman /t-rom.360 ReEncodeForTeX /t-rom.360 /t-rom.360 49.813200 TeXPSmakefont def
+/Times-Italic /t-ita.360 ReEncodeForTeX /t-ita.360 /t-ita.360 49.813200 TeXPSmakefont def
+/cmmi10.360 @newfont
+cmmi10.360 @sf
+[<3FFFF0003FFFF00000FC0000007C0000007C0000007E0000003E000000FF800007FFF0001FBF7C
+  003E1F0F007C1F0780781F03E0F81F81E0F80F81F0F80F80F8F80F80F8F80FC0F87C07C0787C07
+  C0783E07C0781E07E0F80F03E0F007C3E1E001F3E7C0007FFF800007FC000001F0000001F00000
+  01F8000000F8000001FC00003FFFF0003FFFF0> 32 34 -1 0 33.208] 8 @dc
+/Times-Bold /t-bol.360 ReEncodeForTeX /t-bol.360 /t-bol.360 49.813200 TeXPSmakefont def
+1 @bop1
+t-rom.510 @sf 658 72 p (Fault)s
+23(Simulation)m
+24(Using)m
+24(Irsim)m
+t-rom.330 @sf 972 154 p (Arturo)s
+14(Salz)m
+795 210 p (Computer)s
+15(Systems)m
+15(Laboratory)m
+897 267 p (Stanford)s
+15(University)m
+953 344 p (April)s
+15(3,)m
+15(1993)m
+t-bol.510 @sf 105 567 p 49 c
+71(Intr)m
+(oduction)s
+t-rom.360 @sf 105 679 p (Digital)s
+19(VLSI)m
+20(circuits)m
+20(are)m
+20(tested)m
+20(by)m
+20(applying)m
+20(to)m
+19(their)m
+20(input)m
+19(pins)m
+21 r 97 c
+20(set)m
+20(of)m
+20(patterns)m
+20(that)m
+19(exercise)m
+105 739 p (some)s
+17(or)m
+17(all)m
+16(of)m
+17(the)m
+17(circuit')m
+-2 r 115 c
+15(functions.)m
+23(During)m
+16(fabrication,)m
+17(some)m
+17(of)m
+16(these)m
+18(functions)m
+16(may)m
+17(develop)m
+105 799 p (faults)s
+23(that)m
+23(are)m
+24(sensitive)m
+24(to)m
+23(the)m
+24(test)m
+23(patterns.)m
+43(In)m
+24(most)m
+23(cases,)m
+27(however)m
+-1 r 44 c
+24 r 97 c
+24(test)m
+24(pattern)m
+22(cannot,)m
+105 859 p (for)s
+21(practical)m
+22(reasons,)m
+24(test)m
+22(all)m
+22(faults)m
+22(since)m
+23(that)m
+21(would)m
+22(require)m
+21(use)m
+23(of)m
+21(exhaustive)m
+22(data)m
+23(patterns.)m
+105 919 p (Therefore,)s
+15(although)m
+13 r 97 c
+15(circuit)m
+14(may)m
+14(pass)m
+15(the)m
+14(test,)m
+16(there)m
+14(is)m
+15(no)m
+14(guarantee)m
+14(that)m
+14(the)m
+15(circuit)m
+13(is)m
+15(fault-free.)m
+105 980 p (Thus,)s
+18(it)m
+16(is)m
+17(important)m
+15(to)m
+16(determine)m
+16(how)m
+17(well)m
+16 r 97 c
+17(test)m
+16(can)m
+17(identify)m
+16 r 97 c
+17(faulty)m
+15(circuit.)m
+180 1040 p (The)s
+19(most)m
+18(common)m
+18(criterion)m
+17(for)m
+18(judging)m
+17(the)m
+19(quality)m
+18(of)m
+18 r 97 c
+18(test)m
+19(is)m
+19(the)m
+18(fault)m
+18(coverage)m
+18(obtained)m
+105 1100 p (from)s
+13 r 97 c
+14(fault)m
+14(simulator)m
+-2 r 46 c
+20 r 84 c
+-2(ypically)m
+-3 r 44 c
+14(fault)m
+13(coverage)m
+14(refers)m
+14(to)m
+14(the)m
+14(percentage)m
+14(of)m
+t-ita.360 @sf 13(single)m
+15(faults)m
+t-rom.360 @sf 14(detected)m
+105 1160 p (by)s
+22(the)m
+22(test.)m
+39(As)m
+23 r 97 c
+22(rule,)m
+23(test)m
+22(engineers)m
+22(attempt)m
+22(to)m
+22(provide)m
+21(as)m
+23(close)m
+22(as)m
+23(possible)m
+22(to)m
+22(100%)m
+22(fault)m
+105 1220 p (coverage.)s
+25(Due)m
+18(to)m
+18(the)m
+17(dif)m
+(\014culty)s
+15(in)m
+18(developing)m
+17(such)m
+18(tests,)m
+19(however)m
+-1 r 44 c
+17(in)m
+17(practice,)m
+18 r 97 c
+18(fault)m
+17(coverage)m
+105 1281 p (that)s
+16(is)m
+17(too)m
+16(high)m
+16(is)m
+17(dif)m
+(\014cult)s
+15(to)m
+16(achieve.)m
+t-bol.510 @sf 105 1450 p 50 c
+71(Fault)m
+28(Simulation:)m
+37(Basic)m
+27(Concept)m
+t-rom.360 @sf 105 1562 p (In)s
+21(order)m
+22(to)m
+21(fault-simulate)m
+21 r 97 c
+22(design,)m
+24(the)m
+22(designer)m
+22(must)m
+22(provide)m
+21(the)m
+22(circuit)m
+21(netlist)m
+22(and)m
+22(the)m
+21(test)m
+105 1622 p (pattern)s
+19(to)m
+20(be)m
+20(applied)m
+20(to)m
+20(circuit')m
+-2 r 115 c
+18(inputs.)m
+33(The)m
+20(test)m
+20(pattern)m
+20(is)m
+20(used)m
+20(to)m
+20(simulate)m
+20(the)m
+20(circuit)m
+19(once,)m
+105 1682 p (yielding)s
+18(the)m
+18(expected)m
+19(values)m
+19(at)m
+18(the)m
+19(outputs)m
+18(of)m
+18(the)m
+19(circuit)m
+18(\(i.e.)m
+28(the)m
+19(\\good")m
+18(machine\).)m
+28(This)m
+19(step)m
+105 1742 p (is)s
+21(the)m
+20(same)m
+22(as)m
+21 r 97 c
+21(conventional)m
+20(simulation.)m
+34(After)m
+20(the)m
+21(fault-less)m
+20(circuit)m
+20(has)m
+21(been)m
+21(simulated,)m
+22(the)m
+105 1802 p (simulator)s
+16(proceeds)m
+18(to)m
+17(inject)m
+17(into)m
+17(the)m
+17(circuit)m
+17(one)m
+17(fault)m
+17(at)m
+17 r 97 c
+18(time.)m
+24(For)m
+17(each)m
+17(such)m
+18(fault,)m
+17(the)m
+17(circuit)m
+105 1863 p (is)s
+18(resimulated)m
+17(in)m
+17(order)m
+17(to)m
+17(determine)m
+17(whether)m
+17(the)m
+17(fault)m
+17(is)m
+18(observable)m
+17(at)m
+18(the)m
+17(circuit')m
+-2 r 115 c
+17(outputs.)m
+25 r 84 c
+-2 r 111 c
+105 1923 p (do)s
+18(this,)m
+19(the)m
+19(designers)m
+18(must)m
+18(also)m
+19(tell)m
+18(the)m
+18(fault)m
+18(simulator)m
+17(which)m
+19(nodes)m
+18(correspond)m
+18(to)m
+18(output)m
+18(pins)m
+105 1983 p (and)s
+18(when)m
+18(they)m
+17(are)m
+18(to)m
+18(be)m
+18(sampled.)m
+26(For)m
+17(example,)m
+19(output)m
+17(pins)m
+18(whose)m
+18(data)m
+18(is)m
+18(valid)m
+18(on)m
+cmmi10.360 @sf 18 r 8 c
+t-rom.360 @sf 49 c
+18(should)m
+105 2043 p (be)s
+17(sampled)m
+16(only)m
+16(on)m
+17(the)m
+16(falling)m
+16(edge)m
+17(of)m
+cmmi10.360 @sf 16 r 8 c
+t-rom.360 @sf (1.)s
+180 2103 p (Faults)s
+20(that)m
+21(cause)m
+22(an)m
+21(output)m
+20(pin)m
+21(\(or)m
+20(pins\))m
+20(to)m
+21(deviate)m
+21(from)m
+20(the)m
+20(value)m
+21(provided)m
+20(by)m
+21(the)m
+21(good)m
+105 2163 p (machine)s
+18(at)m
+18(the)m
+18(time)m
+18(of)m
+18(sampling)m
+18(are)m
+18(said)m
+18(to)m
+18(be)m
+19(observable:)m
+25(their)m
+17(ef)m
+(fect)s
+17(can)m
+18(be)m
+19(detected)m
+18(by)m
+18(the)m
+105 2224 p (test)s
+21(pattern)m
+21(in)m
+21(question.)m
+36(Note,)m
+22(however)m
+-1 r 44 c
+22(that)m
+21(since)m
+t-bol.360 @sf 21 r 88 c
+t-rom.360 @sf 21(represents)m
+21(an)m
+21(intermediate)m
+21(or)m
+20(unknown)m
+105 2284 p (logical)s
+15(value,)m
+17 r 97 c
+16(fault)m
+15(that)m
+16(causes)m
+17(an)m
+16(output)m
+15(to)m
+16(become)m
+t-bol.360 @sf 15 r 88 c
+t-rom.360 @sf 16(\(or)m
+15(viceversa\))m
+16(may)m
+16(not)m
+15(be)m
+16(detectable)m
+16(in)m
+105 2344 p (practice.)s
+22(Such)m
+16(faults)m
+17(are)m
+16(said)m
+17(to)m
+16(be)m
+17(non-deterministically)m
+15(observable.)m
+180 2404 p (Although)s
+21(faults)m
+22(on)m
+22(actual)m
+22(chips)m
+22(are)m
+22(caused)m
+23(by)m
+22(physical)m
+22(defects,)m
+25(such)m
+22(as)m
+23(breaks)m
+22(or)m
+22(shorts)m
+105 2464 p (between)s
+15(the)m
+15(fabrication)m
+14(layers,)m
+16(the)m
+14(most)m
+15(common)m
+15(type)m
+15(of)m
+14(fault)m
+15(model)m
+14(used)m
+16(by)m
+14(fault)m
+15(simulators)m
+14(is)m
+105 2525 p (the)s
+15(\\stuck-at")m
+15(fault.)m
+21(This)m
+16(type)m
+15(of)m
+15(fault)m
+14(models)m
+15(each)m
+15(faulty)m
+15(circuit)m
+14(by)m
+15(sticking)m
+15(\(or)m
+14(forcing\))m
+14 r 97 c
+15(\014xed)m
+1067 2667 p 49 c
+@eop
+%%Page: ? 2
+2 @bop0
+/cmex10.300 @newfont
+cmex10.300 @sf
+[<FEFEC0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0C0
+  C0C0C0C0C0C0C0C0FEFE> 8 49 -8 47 17.296] 2 @dc
+[<FEFE06060606060606060606060606060606060606060606060606060606060606060606060606
+  0606060606060606FEFE> 8 49 -1 47 17.296] 3 @dc
+/Times-Bold /t-bol.420 ReEncodeForTeX /t-bol.420 /t-bol.420 58.115401 TeXPSmakefont def
+/cmsy10.360 @newfont
+cmsy10.360 @sf
+[<00C000C001C0018001800380030003000700060006000E000C000C001C00180018003800300030
+  00700060006000E000C000C000E000600060007000300030003800180018001C000C000C000E00
+  0600060007000300030003800180018001C000C000C0> 16 50 -5 13 19.371] 104 @dc
+[<C000C000E000600060007000300030003800180018001C000C000C000E00060006000700030003
+  0003800180018001C000C000C001C0018001800380030003000700060006000E000C000C001C00
+  18001800380030003000700060006000E000C000C000> 16 50 -3 13 19.371] 105 @dc
+2 @bop1
+t-rom.360 @sf 105 -72 p (value)s
+18(onto)m
+17(one)m
+18(of)m
+17(the)m
+17(internal)m
+17(nodes)m
+18(in)m
+18(the)m
+17(circuit.)m
+26(Thus,)m
+19(to)m
+17(test)m
+18(whether)m
+17 r 97 c
+18(fault)m
+17(at)m
+18 r 97 c
+18(particular)m
+105 -12 p (node)s
+13(is)m
+14(observable,)m
+14(the)m
+14(stuck-at)m
+13(model)m
+13(simulates)m
+14(the)m
+13(circuit)m
+13(twice:)m
+21(once)m
+13(with)m
+13(the)m
+14(node)m
+13(stuck-at-0,)m
+105 47 p (and)s
+18(once)m
+19(with)m
+18(the)m
+19(node)m
+18(stuck-at-1.)m
+28(Since)m
+18(testing)m
+18(all)m
+19(nodes)m
+18(in)m
+19(the)m
+18(circuit)m
+18(in)m
+18(this)m
+19(fashion)m
+18(would)m
+105 108 p (be)s
+19(extremely)m
+18(time-consuming,)m
+19(most)m
+19(fault)m
+18(simulators)m
+19(restrict)m
+18(their)m
+18(analysis)m
+20(to)m
+19(some)m
+19(statistically)m
+105 168 p (representative)s
+14(number)m
+14(of)m
+14(nodes.)m
+23(The)m
+15(process)m
+15(of)m
+15(selecting)m
+14(which)m
+15(nodes)m
+15(are)m
+15(to)m
+14(be)m
+15(tested)m
+15(is)m
+15(termed)m
+t-ita.360 @sf 105 228 p (fault)s
+16(seeding)m
+t-rom.360 @sf 46 c
+t-bol.510 @sf 105 394 p 51 c
+71(Fault)m
+28(Simulation)m
+27(Using)m
+28(Irsim)m
+t-rom.360 @sf 105 506 p (In)s
+14(order)m
+14(to)m
+14(run)m
+14 r 97 c
+15(fault)m
+14(simulation,)m
+15(you)m
+14(must)m
+14(use)m
+15 r 97 c
+15(special)m
+15(version)m
+14(of)m
+t-ita.360 @sf 14(Irsim)m
+t-rom.360 @sf 44 c
+16(called)m
+15(\\ifsim".)m
+21(If)m
+14(you)m
+105 566 p (previously)s
+14(used)m
+t-ita.360 @sf 15(Irsim)m
+t-rom.360 @sf 15(to)m
+15(simulate)m
+15(your)m
+14(design,)m
+16(you)m
+14(only)m
+15(need)m
+15(to)m
+14(create)m
+15(one)m
+15(additional)m
+14(\014le)m
+14(before)m
+105 626 p (starting)s
+18 r 97 c
+19(fault)m
+18(simulation.)m
+t-ita.360 @sf 29(Ifsim)m
+t-rom.360 @sf 19(accepts)m
+19(all)m
+19(the)m
+18(same)m
+20(commands)m
+18(as)m
+t-ita.360 @sf 20(Irsim)m
+t-rom.360 @sf 44 c
+20(plus)m
+19(one)m
+18(additional)m
+105 687 p (command)s
+16(to)m
+16(initiate)m
+16 r 97 c
+17(fault)m
+16(simulation:)m
+t-bol.360 @sf 21(faultsim)m
+t-rom.360 @sf 46 c
+180 747 p (The)s
+18(easiest)m
+19(way)m
+18(to)m
+18(run)m
+17 r 97 c
+18(fault)m
+18(simulation)m
+17(on)m
+18(your)m
+17(design)m
+18(is)m
+19(to)m
+17(\014rst)m
+18(run)m
+t-ita.360 @sf 17(Ifsim)m
+t-rom.360 @sf 18(as)m
+18(you)m
+18(would)m
+105 807 p (using)s
+t-ita.360 @sf 18(Irsim)m
+t-rom.360 @sf 44 c
+20(and)m
+18(at)m
+18(the)m
+19(end)m
+18(of)m
+18(the)m
+18(simulation)m
+18(run)m
+18(issue)m
+19(the)m
+18(faultsim)m
+18(command.)m
+27(This)m
+19(command)m
+105 867 p (has)s
+17(the)m
+16(following)m
+16(form:)m
+t-bol.360 @sf 326 960 p (faultsim)s
+t-ita.360 @sf 16(setup-\014le)m
+cmex10.300 @sf 716 924 p 2 c
+t-ita.360 @sf 750 960 p (output-\014le)s
+cmex10.300 @sf 972 924 p 3 c
+t-rom.360 @sf 105 1053 p (where)s
+t-ita.360 @sf 16(setup-\014le)m
+t-rom.360 @sf 16(is)m
+16(the)m
+16(name)m
+17(of)m
+15 r 97 c
+17(\014le)m
+16(containing)m
+15(the)m
+17(information)m
+14(regarding)m
+15(output)m
+16(pins)m
+16(and)m
+16(their)m
+105 1113 p (sampling)s
+15(timing,)m
+15(and)m
+t-ita.360 @sf 15(output-\014le)m
+t-rom.360 @sf 13(is)m
+16(the)m
+15(name)m
+15(of)m
+14(the)m
+15(\014le)m
+15(where)m
+14(the)m
+15(fault-simulation)m
+14(output)m
+14(will)m
+15(be)m
+105 1173 p (recorded.)s
+22(If)m
+16(no)m
+t-ita.360 @sf 16(output-\014le)m
+t-rom.360 @sf 15(is)m
+17(speci\014ed,)m
+t-ita.360 @sf 17(Ifsim)m
+t-rom.360 @sf 17(will)m
+16(use)m
+17(the)m
+16(\014le)m
+t-bol.360 @sf 16(fsim.out)m
+t-rom.360 @sf 46 c
+180 1233 p (After)s
+21(reading)m
+22(the)m
+22(setup)m
+23(\014le,)m
+t-ita.360 @sf 24(Ifsim)m
+t-rom.360 @sf 22(will)m
+22(select)m
+22(the)m
+23(maximum)m
+21(number)m
+22(of)m
+21(nodes)m
+23(into)m
+22(which)m
+105 1293 p (stuck-at)s
+20(faults)m
+20(will)m
+20(be)m
+20(injected.)m
+33(By)m
+21(default,)m
+t-ita.360 @sf 20(Ifsim)m
+t-rom.360 @sf 20(uses)m
+21(20%)m
+21(of)m
+20(all)m
+20(nodes)m
+20(in)m
+20(the)m
+20(circuit.)m
+33(Fault)m
+105 1354 p (seeding)s
+19(then)m
+18(proceeds)m
+19(by)m
+18(randomly)m
+18(selecting)m
+18(the)m
+19(required)m
+17(number)m
+18(of)m
+18(nodes)m
+19(from)m
+17(all)m
+19(candidate)m
+105 1414 p (nodes.)s
+27 r 65 c
+18(node)m
+18(is)m
+19 r 97 c
+18(fault)m
+18(candidate)m
+18(if)m
+17(at)m
+18(least)m
+19(one)m
+18(transistor)m
+17(gate)m
+19(is)m
+18(connected)m
+18(to)m
+18(the)m
+18(node,)m
+19(and)m
+105 1474 p (the)s
+16(node)m
+15(is)m
+16(not)m
+16 r 97 c
+16(primary)m
+15(input)m
+15(\(it)m
+15(is)m
+16(never)m
+16(driven\).)m
+21(At)m
+16(the)m
+15(end)m
+16(of)m
+15(the)m
+16(simulation,)m
+16(the)m
+16(output)m
+15(\014le)m
+105 1534 p (will)s
+13(contain)m
+14(detailed)m
+13(information)m
+12(regarding)m
+13(each)m
+14(fault)m
+13(tested;)m
+15(this)m
+14(is)m
+14(followed)m
+13(by)m
+13 r 97 c
+14(brief)m
+13(summary)m
+105 1594 p (that)s
+16(includes)m
+17(the)m
+16(fault)m
+16(coverage.)m
+t-bol.420 @sf 105 1739 p (3.1)s
+58(Setup)m
+23(\014le)m
+t-rom.360 @sf 105 1832 p (This)s
+15(\014le)m
+15(speci\014es)m
+16(all)m
+15(output)m
+14(nodes,)m
+16(the)m
+15(timing)m
+14(for)m
+14(their)m
+14(sampling,)m
+16(and,)m
+15(optionally)m
+-2 r 44 c
+14(the)m
+15(percentage)m
+105 1892 p (of)s
+18(nodes)m
+19(to)m
+18(be)m
+19(seeded.)m
+29(There)m
+18(are)m
+19(basically)m
+18(three)m
+19(commands)m
+18(that)m
+18(can)m
+19(be)m
+19(used)m
+18(in)m
+19(this)m
+18(\014le;)m
+19(their)m
+105 1953 p (syntax)s
+17(is)m
+16(as)m
+17(follows:)m
+t-bol.360 @sf 282 2045 p (seed)s
+cmsy10.360 @sf 17 r 104 c
+t-ita.360 @sf (per)s
+-1(centage)m
+cmsy10.360 @sf 105 c
+t-bol.360 @sf 282 2155 p (trigger)s
+cmsy10.360 @sf 16 r 104 c
+t-ita.360 @sf 1(on-node)m
+cmsy10.360 @sf -1 r 105 c
+17 r 104 c
+t-ita.360 @sf (transition-value)s
+cmsy10.360 @sf -1 r 105 c
+cmex10.300 @sf 1037 2120 p 2 c
+t-ita.360 @sf 1071 2155 p (delay)s
+cmex10.300 @sf 1196 2120 p 3 c
+cmsy10.360 @sf 459 2216 p 104 c
+t-ita.360 @sf 1(output-list)m
+cmsy10.360 @sf -2 r 105 c
+t-bol.360 @sf 282 2276 p (***)s
+282 2361 p (sample)s
+cmsy10.360 @sf 17 r 104 c
+t-ita.360 @sf (period)s
+cmsy10.360 @sf 1 r 105 c
+cmex10.300 @sf 633 2325 p 2 c
+t-ita.360 @sf 667 2361 p (offset)s
+cmex10.300 @sf 792 2325 p 3 c
+cmsy10.360 @sf 459 2421 p 104 c
+t-ita.360 @sf 1(output-list)m
+cmsy10.360 @sf -2 r 105 c
+t-bol.360 @sf 282 2481 p (***)s
+t-rom.360 @sf 1067 2667 p 50 c
+@eop
+%%Page: ? 3
+3 @bop0
+cmsy10.360 @sf
+[<000FC0003FC000FE0000F80001F00001E00001E00001E00001E00001E00001E00001E00001E000
+  01E00001E00001E00001E00001E00001E00001E00003E00007C0000F8000FF0000FC0000FF0000
+  0F800007C00003E00001E00001E00001E00001E00001E00001E00001E00001E00001E00001E000
+  01E00001E00001E00001E00001E00001F00000F80000FE00003FC0000FC0> 24 49 -3 12 24.906] 102 @dc
+[<FC0000FF00001FC00007C00003E00001E00001E00001E00001E00001E00001E00001E00001E000
+  01E00001E00001E00001E00001E00001E00001E00001F00000F800007C00003FC0000FC0003FC0
+  007C0000F80001F00001E00001E00001E00001E00001E00001E00001E00001E00001E00001E000
+  01E00001E00001E00001E00001E00003E00007C0001FC000FF0000FC0000> 24 49 -3 12 24.906] 103 @dc
+3 @bop1
+t-rom.360 @sf 180 -72 p (The)s
+t-bol.360 @sf 16(seed)m
+t-rom.360 @sf 15(command,)m
+16(if)m
+15(present,)m
+16(must)m
+15(be)m
+16(the)m
+15(\014rst)m
+15(non-empty)m
+15(line)m
+15(in)m
+15(the)m
+15(\014le.)m
+22(It')m
+-2 r 115 c
+cmsy10.360 @sf 14 r 104 c
+t-ita.360 @sf 1(per)m
+-1(centage)m
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 105 -12 p (ar)s
+(gument)s
+16(must)m
+18(be)m
+19(an)m
+18(integer)m
+17(number)m
+18(\(in)m
+17(the)m
+18(range)m
+18 r 91 c
+(1{100)s
+-1 r 93 c
+(\),)s
+19(which)m
+17(speci\014es)m
+19(the)m
+18(percentage)m
+18(of)m
+105 47 p (the)s
+14(circuit')m
+-2 r 115 c
+13(nodes)m
+15(that)m
+14(should)m
+15(be)m
+14(considered)m
+14(for)m
+14(fault)m
+14(seeding.)m
+22(If)m
+14(this)m
+14(command)m
+14(is)m
+15(missing,)m
+t-ita.360 @sf 15(Ifsim)m
+t-rom.360 @sf 105 108 p (will)s
+16(seed)m
+17(up)m
+17(to)m
+16(20%)m
+17(of)m
+16(the)m
+16(circuit')m
+-2 r 115 c
+15(nodes.)m
+180 168 p (Outputs)s
+15(can)m
+16(be)m
+16(sampled)m
+16(using)m
+16(either)m
+15 r 97 c
+16(\014xed)m
+15(time)m
+16(interval,)m
+15(or)m
+15(the)m
+16(rising/falling)m
+14(edge)m
+16(of)m
+16(some)m
+105 228 p (other)s
+18(signal)m
+18(in)m
+18(the)m
+19(circuit.)m
+27(The)m
+19(\014rst)m
+18(type)m
+18(of)m
+18(sampling)m
+18(is)m
+19(speci\014ed)m
+18(using)m
+19(the)m
+t-bol.360 @sf 18(sample)m
+t-rom.360 @sf 19(command,)m
+105 288 p (the)s
+16(second)m
+17(is)m
+17(speci\014ed)m
+17(through)m
+15(the)m
+t-bol.360 @sf 17(trigger)m
+t-rom.360 @sf 16(command.)m
+180 348 p (The)s
+t-bol.360 @sf 19(trigger)m
+t-rom.360 @sf 19(command)m
+19(indicates)m
+19(that)m
+19(all)m
+19(nodes)m
+19(speci\014ed)m
+20(in)m
+cmsy10.360 @sf 19 r 104 c
+t-ita.360 @sf (output-list)s
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 19(should)m
+19(be)m
+20(sampled)m
+105 409 p (when)s
+cmsy10.360 @sf 12 r 104 c
+t-ita.360 @sf (on-node)s
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 13(makes)m
+12 r 97 c
+12(transition)m
+11(to)m
+cmsy10.360 @sf 12 r 104 c
+t-ita.360 @sf (transition-value)s
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 1 r 46 c
+21(Note)m
+11(that)m
+cmsy10.360 @sf 12 r 104 c
+t-ita.360 @sf (output-list)s
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 12(can)m
+12(span)m
+13(multiple)m
+105 469 p (lines,)s
+24(each)m
+22(of)m
+21(which)m
+22(can)m
+22(contain)m
+22 r 97 c
+22(list)m
+22(of)m
+21(nodes)m
+22(separated)m
+23(by)m
+21(blanks.)m
+39(The)m
+22(list)m
+22(of)m
+22(outputs)m
+21(is)m
+105 529 p (terminated)s
+18(by)m
+20 r 97 c
+19(line)m
+19(containing)m
+19(the)m
+19(single)m
+20(entry)m
+t-bol.360 @sf 18(***)m
+t-rom.360 @sf 46 c
+31(Also,)m
+21(just)m
+19(like)m
+19(in)m
+t-ita.360 @sf 19(Irsim)m
+t-rom.360 @sf 44 c
+21(any)m
+20(node)m
+19(name)m
+105 589 p (can)s
+16(include)m
+15(the)m
+16(wildcard)m
+15(character)m
+15(`*',)m
+15(it)m
+16(can)m
+16(denote)m
+15(iteration)m
+15(by)m
+15(using)m
+16(the)m
+16(pair)m
+15(of)m
+15(characters)m
+16 r 96 c
+cmsy10.360 @sf 102 c
+t-rom.360 @sf 39 c
+105 649 p (and)s
+16 r 39 c
+cmsy10.360 @sf 103 c
+t-rom.360 @sf (',)s
+16(or)m
+15(it)m
+16(can)m
+16(be)m
+16(the)m
+16(name)m
+16(of)m
+16 r 97 c
+16(user)m
+(-de\014ned)s
+14(vector)m
+-2 r 46 c
+21(The)m
+17(optional)m
+15(ar)m
+(gument)s
+cmsy10.360 @sf 14 r 104 c
+t-ita.360 @sf 1(delay)m
+cmsy10.360 @sf 105 c
+t-rom.360 @sf 16(speci\014es)m
+105 709 p (that)s
+20(the)m
+20(signals)m
+21(should)m
+20(be)m
+20(sampled)m
+cmsy10.360 @sf 20 r 104 c
+t-ita.360 @sf 1(delay)m
+cmsy10.360 @sf -1 r 105 c
+t-rom.360 @sf 21(ns)m
+21(after)m
+19(the)m
+20(speci\014ed)m
+20(transition.)m
+33(For)m
+19(example,)m
+22(the)m
+105 770 p (following)s
+14(\014le)m
+15(indicates)m
+15(that)m
+15(primary)m
+14(outputs)m
+15(ADR0,)m
+16(ADR1,)m
+16(ADR2,)m
+16(ADR3,)m
+15(RD,)m
+16(and)m
+15(WR)m
+16(should)m
+105 830 p (be)s
+15(sampled)m
+16(on)m
+15(the)m
+15(falling)m
+15(edge)m
+16(of)m
+14(signal)m
+16(phi1,)m
+16(while)m
+15(outputs)m
+15(DA)m
+-5 r 84 c
+-3(A0,)m
+15(DA)m
+-5 r 84 c
+-3(A1,)m
+15(DA)m
+-5 r 84 c
+-3(A2,)m
+15(DA)m
+-5 r 84 c
+-3(A3,)m
+105 890 p (and)s
+16(DA)m
+-5 r 84 c
+-3(A4)m
+16(should)m
+16(be)m
+17(sampled)m
+16(10ns)m
+17(after)m
+16(the)m
+17(rising)m
+16(edge)m
+16(of)m
+16(signal)m
+17(phi2:)m
+282 1004 p (trigger)s
+15(phi1)m
+17 r 48 c
+459 1064 p (ADR)s
+cmsy10.360 @sf 102 c
+t-rom.360 @sf (0:3)s
+cmsy10.360 @sf 103 c
+t-rom.360 @sf 459 1125 p (RD)s
+17(WR)m
+282 1185 p (***)s
+282 1270 p (trigger)s
+15(phi2)m
+17 r 49 c
+16(10)m
+459 1330 p (DA)s
+-5 r 84 c
+-3(A0)m
+15(DA)m
+-5 r 84 c
+-3(A1)m
+16(DA)m
+-5 r 84 c
+-3(A2)m
+459 1390 p (DA)s
+-5 r 84 c
+-3(A3)m
+459 1450 p (DA)s
+-5 r 84 c
+-3(A4)m
+282 1511 p (***)s
+180 1685 p (The)s
+16(format)m
+15(of)m
+15(the)m
+t-bol.360 @sf 16(sample)m
+t-rom.360 @sf 17(command)m
+15(is)m
+16(similar)m
+16(to)m
+15(the)m
+t-bol.360 @sf 16(trigger)m
+t-rom.360 @sf 16(command,)m
+16(however)m
+-1 r 44 c
+15(instead)m
+16(of)m
+105 1745 p (using)s
+16(another)m
+16(signal)m
+17(to)m
+16(trigger)m
+15(the)m
+16(sampling)m
+17(of)m
+16(the)m
+16(outputs,)m
+17(they)m
+16(are)m
+16(sampled)m
+17(every)m
+cmsy10.360 @sf 16 r 104 c
+t-ita.360 @sf (period)s
+cmsy10.360 @sf 105 c
+t-rom.360 @sf 17(ns.)m
+105 1805 p (The)s
+15(optional)m
+cmsy10.360 @sf 13 r 104 c
+t-ita.360 @sf 1(offset)m
+cmsy10.360 @sf 105 c
+t-rom.360 @sf 14(ar)m
+(gument)s
+13(indicates)m
+14(that)m
+14(the)m
+15(sampling)m
+14(should)m
+14(begin)m
+cmsy10.360 @sf 14 r 104 c
+t-ita.360 @sf (offset)s
+cmsy10.360 @sf 105 c
+t-rom.360 @sf 15(ns)m
+15(from)m
+13(the)m
+14(start)m
+105 1866 p (of)s
+20(the)m
+20(simulation.)m
+34(For)m
+19(example,)m
+22(the)m
+20(following)m
+20(entry)m
+19(indicates)m
+21(that)m
+20(outputs)m
+20(clock1)m
+20(and)m
+21(clock2)m
+105 1926 p (should)s
+16(be)m
+17(sampled)m
+17(every)m
+16(50ns)m
+17(starting)m
+16(from)m
+15(time)m
+16(100ns)m
+17(\(150,)m
+16(200,)m
+17(etc\):)m
+282 2040 p (sample)s
+17(50.0)m
+17(100.0)m
+459 2100 p (clock1)s
+17(clock2)m
+282 2160 p (***)s
+1067 2667 p 51 c
+@eop
+%%Page: ? 4
+4 @bop0
+cmsy10.360 @sf
+[<03F0000FFC001FFE003FFF007FFF807FFF80FFFFC0FFFFC0FFFFC0FFFFC0FFFFC0FFFFC0FFFFC0
+  FFFFC07FFF807FFF803FFF001FFE000FFC0003F000> 24 20 -3 -2 24.906] 15 @dc
+4 @bop1
+t-bol.420 @sf 105 -72 p (3.2)s
+58(Output)m
+24(File)m
+t-rom.360 @sf 105 21 p (The)s
+16(output)m
+14(\014le)m
+15(produced)m
+15(by)m
+t-ita.360 @sf 15(Ifsim)m
+t-rom.360 @sf 15(consists)m
+16(of)m
+14 r 97 c
+16(series)m
+15(of)m
+15(lines,)m
+16(each)m
+16(of)m
+15(which)m
+15(indicates)m
+15(the)m
+15(result)m
+105 81 p (of)s
+16(injecting)m
+16 r 97 c
+17(single)m
+16(fault.)m
+22(Each)m
+17(line)m
+17(indicates)m
+16(the)m
+17(following)m
+15(information:)m
+t-bol.360 @sf 193 191 p (Detected)s
+19(Fault:)m
+cmsy10.360 @sf 326 251 p 15 c
+t-rom.360 @sf 17(node)m
+16(at)m
+17(which)m
+16(the)m
+17(fault)m
+16(was)m
+17(injected.)m
+cmsy10.360 @sf 326 311 p 15 c
+t-rom.360 @sf 17(type)m
+16(of)m
+16(fault)m
+16(\(1)m
+16(for)m
+16(stuck-at-1,)m
+16 r 48 c
+17(for)m
+15(stuck-at-0\).)m
+cmsy10.360 @sf 326 371 p 15 c
+t-rom.360 @sf 17(simulation)m
+16(time)m
+16(at)m
+17(which)m
+16(the)m
+16(fault)m
+16(was)m
+17(detected.)m
+cmsy10.360 @sf 326 431 p 15 c
+t-rom.360 @sf 17(the)m
+16(output)m
+16(at)m
+17(which)m
+16(the)m
+17(fault)m
+16(was)m
+17(detected.)m
+t-bol.360 @sf 193 531 p (Undetected)s
+18(Fault:)m
+cmsy10.360 @sf 326 592 p 15 c
+t-rom.360 @sf 17(the)m
+16(node)m
+17(at)m
+16(which)m
+17(the)m
+16(fault)m
+16(was)m
+17(injected.)m
+cmsy10.360 @sf 326 652 p 15 c
+t-rom.360 @sf 17(type)m
+16(of)m
+16(fault)m
+16(\(1)m
+16(for)m
+16(stuck-at-1,)m
+16 r 48 c
+17(for)m
+15(stuck-at-0\).)m
+105 822 p (The)s
+17(list)m
+16(of)m
+17(faults)m
+16(is)m
+17(followed)m
+15(by)m
+17 r 97 c
+17(summary)m
+16(that)m
+16(includes)m
+16(the)m
+17(following:)m
+cmsy10.360 @sf 193 932 p 15 c
+t-rom.360 @sf 17(The)m
+17(total)m
+16(number)m
+16(of)m
+16(faults)m
+16(seeded.)m
+cmsy10.360 @sf 193 992 p 15 c
+t-rom.360 @sf 17(The)m
+17(number)m
+16(of)m
+16(detected)m
+17(faults.)m
+cmsy10.360 @sf 193 1052 p 15 c
+t-rom.360 @sf 17(The)m
+17(number)m
+16(of)m
+16(undetected)m
+16(faults.)m
+cmsy10.360 @sf 193 1112 p 15 c
+t-rom.360 @sf 17(The)m
+17(fault)m
+16(coverage)m
+16(as)m
+17(the)m
+17(percentage)m
+16(of)m
+16(detected)m
+17(faults.)m
+cmsy10.360 @sf 193 1172 p 15 c
+t-rom.360 @sf 17(The)m
+17(number)m
+16(of)m
+16(probably)m
+16(detected)m
+16(faults.)m
+180 1342 p (The)s
+23(last)m
+23(item)m
+22(corresponds)m
+23(to)m
+22(outputs)m
+22(that)m
+23(deviate)m
+22(from)m
+22(the)m
+23(good)m
+22(machine)m
+23(at)m
+22(the)m
+23(time)m
+22(of)m
+105 1402 p (sampling,)s
+17(but)m
+16(they)m
+16(do)m
+17(so)m
+17(by)m
+16(deviating)m
+16(to)m
+16(or)m
+16(from)m
+16(an)m
+t-bol.360 @sf 17 r 88 c
+t-rom.360 @sf 16(logic)m
+16(state.)m
+180 1463 p (For)s
+17(example,)m
+19(the)m
+18(following)m
+18(output)m
+17(\014le)m
+18(indicates)m
+19(that)m
+18(if)m
+18(NODE1)m
+18(is)m
+19(stuck-at-0,)m
+18(the)m
+19(fault)m
+17(was)m
+105 1523 p (detected)s
+14(on)m
+13(output)m
+13(ADR0)m
+14(at)m
+14(time)m
+13(250.0ns.)m
+22(Conversely)m
+-2 r 44 c
+13(if)m
+13(NODE1)m
+14(is)m
+14(stuck-at-1,)m
+14(the)m
+14(fault)m
+13(was)m
+14(not)m
+105 1583 p (detected.)s
+23(The)m
+18(rest)m
+17(of)m
+16(the)m
+17(entries)m
+17(are)m
+16(similar)m
+-1 r 44 c
+16(except)m
+17(the)m
+17(last)m
+17(one)m
+17(which)m
+16(indicates)m
+17(that)m
+17(if)m
+16(NODE3)m
+105 1643 p (is)s
+19(stuck-at-1,)m
+20(the)m
+19(fault)m
+18(was)m
+20(detected)m
+19(as)m
+20 r 97 c
+19(change)m
+20(from)m
+18(\(or)m
+18(to\))m
+18(an)m
+t-bol.360 @sf 20 r 88 c
+t-rom.360 @sf 19(value)m
+19(on)m
+19(output)m
+18(ADR3,)m
+21(at)m
+105 1703 p (time)s
+16(600.0ns.)m
+282 1813 p (Detect)s
+89 r 48 c
+63(NODE1)m
+17([250.0])m
+16(ADR0)m
+282 1873 p (Fail)s
+141 r 49 c
+63(NODE1)m
+282 1934 p (Detect)s
+89 r 48 c
+63(NODE2)m
+17([450.0])m
+16(ADR1)m
+282 1994 p (Detect)s
+89 r 49 c
+63(NODE2)m
+17([350.0])m
+16(ADR2)m
+282 2054 p (Fail)s
+141 r 48 c
+63(NODE3)m
+282 2114 p (Maybe)s
+81 r 49 c
+63(NODE3)m
+17([600.0])m
+16(ADR3)m
+282 2174 p 124 c
+16 r 124 c
+282 2234 p 54 c
+17(faults)m
+282 2295 p 52 c
+17(detected)m
+16(\(1)m
+16(probably\))m
+282 2355 p 50 c
+17(undetected)m
+282 2415 p (fault)s
+16(coverage:)m
+22(66.66%)m
+17(\(83.33%\))m
+1067 2667 p 52 c
+@eop
+%%Trailer
+@end

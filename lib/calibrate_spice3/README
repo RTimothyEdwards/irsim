@@ -1,0 +1,248 @@
+Irsim prm file
+--------------
+
+    A prm file consists of a series of lines, each of which begins with a
+keyword that determines how the rest of the line is interpreted.  Each line
+is of the form:
+	<PARAMETER_NAME> <VALUE1> ... <VALUEn>
+  A ';' indicates that the rest of the line is to be ignored (a comment).
+
+The following parameters are understood by irsim:
+
+lambda <real_number>
+	Multiplicative constant to convert from .sim file linear dimensions
+	(lambdas) to micrometers.
+
+capm2a <real_number>
+	2nd metal capacitance per unit of area (in f/sq-micron).
+
+capm2p <real_number>
+	2nd metal capacitance per unit of perimeter (in pf/micron).
+
+capma <real_number>
+	1st metal capacitance per unit of area (in pf/sq-micron).
+
+capmp <real_number>
+	1st metal capacitance per unit of perimeter (in pf/micron).
+
+cappa <real_number>
+	poly capacitance per unit of area (in pf/sq-micron).
+
+cappp <real_number>
+	poly capacitance per unit of perimeter (in pf/micron).
+
+capda <real_number>
+	n-diffusion capacitance per unit of area (in pf/sq-micron).
+
+capdp <real_number>
+	n-diffusion capacitance per unit of perimeter (in pf/micron).
+
+cappda <real_number>
+	p-diffusion capacitance per unit of area  (in pf/sq-micron).
+
+cappdp <real_number>
+	p-diffusion capacitance per unit of perimeter (in pf/micron).
+
+capga <real_number>
+	mosfet gate capacitance per unit of area (in pf/sq-micron).
+
+cntpullup <boolean>
+	If 0 then the gate capacitance of depletion transistors used as
+	pullup devices is NOT included in the output node.  This parameter
+	is only significant for nMOS designs which have depletion devices.
+	Any number other than 0 will set this flag, this is true for all
+	other 'boolean' parameters below.
+
+diffperim <boolean>
+	If not 0 then the sidewall diffusion capacitance is subtracted
+	from the source and drain nodes.  The capacitance is calculated
+	as (cpdp * width).  This applies to both n and p transistors.
+
+subparea <boolean>
+	If not 0 then the poly over transistor capacitance is subtracted
+	from the gate node.  The capacitance is calculated as (cappa * area).
+
+diffext <real_number>
+	Each transistor is assumed to have a rectangular source and drain
+	diffusion extending <real_number> units wide and transistor-width
+	units high.  The effect of the diffusion extension is to add some
+	capacitance to the source and drain nodes of each transistor.
+	This is useful when processing the output of NET to improve the
+	the capacitive loading approximations without adding explicit load
+	capacitors and is not very useful for other types of networks and
+	will only be applied if <real_number> is different from 0.
+	Diffext is specified in microns (contrary to what some .prm files
+	may say).
+
+lowthresh <real_number>
+	Normalized logic low voltage threshold.  Any voltage <= lowthresh
+	is assigned a low logic value (0).
+
+highthresh <real_number>
+	Normalized logic high voltage threshold.  Any voltage >= highthresh
+	is assigned a high logic value (1).  Setting highthresh = lowthresh
+	will disallow the unknown(X) node value.  Note that setting highthresh
+	lower than lowthresh will not result in nodes having hystereses and
+	will probably result in disaster.  Numbers commonly used are for the
+	thersholds are 0.4 and 0.6.
+
+resistance <type> <context> <width> <length> <resistance>
+	Defines the resistance (in ohms) for a transistor of type <type>
+	having <width>-<length> dimensions when connected as in <context>.
+	Note that the dimensions are in microns (not lambdas).  All of
+	<width>, <length>, and <resistance> are real numbers.
+
+	Possible types are:
+	    n-channel
+	    p-channel
+	    depletion
+	    pullup
+	    resistor
+
+	Possible contexts are:
+	    dynamic-low
+	    dynamic-high
+	    static
+	    power	(parsed but not used)
+
+	In addition, the context can be qualified with "-with-drop" but
+	irsim does not use this context at all.  It is only parsed for
+	backward compatibility with old prm files.
+
+	Also for the sake of backward compatibility, the static context is
+	not a resistance altogether, but it is used to approximate the
+	transistor's transconductance (gm) at the switching point.
+
+	For a cmos process, it is sufficient to specify the following:
+	    n-channel dynamic-low
+	    n-channel dynamic-high
+	    n-channel static
+
+	    p-channel dynamic-low
+	    p-channel dynamic-high
+	    p-channel static
+
+	You can specify a series of resistance values as irsim will use
+	linear interpolation for any non-listed value.  This may be
+	particularly important for technologies with channel lengths less
+	than ~2um, since short channel effects become important and
+	transistor resistance does no longer scale with channel length.
+
+
+Notes on .prm files for .sim files created by ext2sim (magic).
+--------------------------------------------------------------
+
+lambda:
+    The first line of a .sim file created by ext2sim contains the following:
+    | units: <scale> tech: <tech_name>
+    where <tech_name> identifies the technology and <scale> is the 
+    multiplicative constant that converts .sim dimensions to centimicrons.
+    The correct lambda value for these files should be <scale>/100.0.
+    NOTE that irsim ignores this line in the .sim file so it is important
+    that it be specified in the .prm file.
+
+cap*:
+    Magic generates the appropriate layer capacitances when extracting a
+    circuit and irsim will not make use of any the following:  capm2a, 
+    capm2p, capma, capmp, cappa, cappp, capda, capdp, cappda, cappdp.
+    These parameters can be safely set to 0.  Since their value will not
+    be used, you can include the appropriate values for documentation.
+
+capga:
+  Capga should always be specified (unless you want to ignore gate capacitive
+  loading - probably a bad idea).  Capga can be calculated directly from the
+  process parameters (or corresponding spice deck model) as follows:
+
+	capga = Cox / Tox
+	where:
+	    Cox = (Eo)(Eox)
+	       ~= (8.85)(3.9) pf/m = 34.5 x 10^-6 pf/um
+	so that:
+	    capga = (34.5 x 10^-6) / Tox	(note: Tox in um).
+
+	note -	there should really be a capnga & cappga for n and p fets,
+		but this is not a severe problem yet.
+
+resistance:
+    Magic never generates the pullup context and, if a depletion device is
+    connected as a pullup, irsim will recognize it as such.  There is no
+    need to specify that context.
+
+Generating the resistance tables.
+---------------------------------
+  If you have a spice model for the transistors in the process, you can use
+spice (or some other circuit simulator) to approximate the resistances.  The
+following circuit (for a cmos process) can be used to extract the resistances
+used by irsim.
+
+                 Vdd                    Vdd
+                  |                      |
+               ___+____               ___+____
+          ----o| pmos |          ----o| pmos | 
+          |    ---+----   out1   |    ---+----
+  in1 ----+       |--------------+       |--------- out2
+          |    ___+____    |     |    ___+____   |
+          -----| pmos |   ---    -----| nmos |  ---
+               ---+----   ---Cap      ---+----  ---Cap
+                  |        |             |       |
+                 Gnd      Gnd           Gnd     Gnd
+
+  Apply a pulse with a rise/fall time of <= .1ns to in1 and measure the
+delay from in1 to out1 and from out1 to out2 for both transitions.  Make sure
+that Cap is sufficiently large (1pf is ok) otherwise the delay will be
+determined primarily by the internal (parasistic) capacitance of the driving
+device.  It is a good idea to ratio the 2 inverters so that the midpoint lies
+in the middle and you can easily measure the delay.  Make sure the pulse is
+sufficiently long to allow the signals to reach a steady state.
+
+  From the delays measured, you can extract the resistances as follows:
+
+	n-channel dynamic-low = out1.tphl / Cap
+	p-channel dynamic-high = out1.tplh / Cap
+	n-channel static = (out2.tphl^2 - out1.tphl^2) / (out1.tplh * Cap)
+	p-channel static = (out2.tplh^2 - out1.tplh^2) / (out1.tphl * Cap)
+
+				note: a^2 ==> a * a
+
+  Similarly, you can masure the delay for an nmos driving a large capacitance
+high to determine "n-channel dynamic-high" and a pmos driving a large
+capacitance low to determine "p-channel dynamic-low".
+
+  Most designs use exclusively minimum length devices, so a single length is
+usually sufficient.  Larger than minimum length transistors are typically
+only used as charge keepers or in short-circuit protection at the pads, where
+the timing is really not relevant.  If the technology does experience short
+channel effects (velocity saturation, etc), and you intend to use different
+length devices, you should probably generate a copule of table entries.  There
+is no need to vary the width of the transistors since the resistance does
+scale linearly with the width.
+
+  If you have a spice model for your process and access to berkeley spice3xx,
+you can use the getres script to automatically generate the resistance
+entries.  You will first have to compile findr.c (use "make -f Makefindr").
+  Getres takes 2 arguments, a spice model, and a 'device configuration file'
+where you specify the sizes of the devices as well as the loading capacitance.
+  Getres will setup a spice file, run spice on it, read the rawfile generated
+and print the table entries in a file called 'resists' as well as on stdout.
+  The 'device configuration' file should look something like this.  This one 
+was used to generate the mosis 2um scalable-cmos irsim prm file:
+
+	#
+	set pwith = 20.0		# with of p-device in um
+	set plen = 2.0			# length of p-device in um
+	set nwith = 10.0		# with of n-device in um
+	set nlen = 2.0			# lenght of n-device in um
+	set cap = 1000			# loading capacitance in fF
+
+  I have ratioed the p-transistor to be twice as wide to bring the threshold
+of the gate closer to 1/2 the swing.  Although this is a crude estimate, it
+will work reasonably well for most processes since n-mobility ~ 2 * p-mobility.
+
+  You can run getres several times by changing the device sizes in this file.
+
+  The following files for the 2um mosis scmos process are included in this
+directory as an example:
+	mosis2um.spi		spice model card for the process
+	dev.2um			'device configuration' file used
+	mosis2um.prm		the prm file generated using the above
+

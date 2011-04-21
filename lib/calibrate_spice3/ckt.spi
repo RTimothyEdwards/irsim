@@ -1,0 +1,41 @@
+*
+* spice test file for generating .prm files.
+*
+* out1 - Output of Inverter to measure step response.
+*
+M0 out1 in1 GND GND N_FET L=N_LENU W=N_WITHU
+M1 out1 in1 VDD VDD P_FET L=P_LENU W=P_WITHU
+*
+* out2 - Output of Inverter driven by out1 to determine slow-input effect.
+*
+M6 out2 out1 GND GND N_FET L=N_LENU W=N_WITHU
+M7 out2 out1 VDD VDD P_FET L=P_LENU W=P_WITHU
+*
+* out3 - Output of a N_FET pulling up to determine dynamic-high resistance.
+*
+M2 out3 in2 VDD GND N_FET L=N_LENU W=N_WITHU
+*
+* out4 - Output of a P_FET pulling down to determine dynamic-low resistance.
+*
+M3 out4 in3 GND VDD P_FET L=P_LENU W=P_WITHU
+*
+* loading capacitors
+*
+C0 out1 GND C_LOADFF
+C1 out2 GND C_LOADFF
+C2 out3 GND C_LOADFF
+C3 out4 GND C_LOADFF
+
+VDD VDD 0 DC 5
+VGnd GND 0 DC 0
+Vmid mid 0 DC 2.5
+
+Vin1 in1 0 0 pwl (0ns 0 0.1ns 5 40ns 5 40.1ns 0)
+Vin2 in2 0 0 pwl (0ns 0 0.1ns 5)
+Vin3 in3 0 5 pwl (0ns 5 0.1ns 0)
+
+.ic V(out4)=5
+
+.tran 0.01ns 80ns
+
+.end

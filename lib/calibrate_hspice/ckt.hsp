@@ -1,0 +1,65 @@
+* hspice test file for generating .prm files.
+*
+* out1 - Output of Inverter to measure step response.
+
+.param	Sup=SUPPLYV
+* It is assumed that opConditions.lib uses Sup to produce Supply
+* eg. for SS corner the lib defines Supply='0.9*Sup'
+.lib 'opConditions.lib' LIBCORNER
+
+M0 out1 in1 GND GND NMOS L=N_LENU W=N_WITHU
+M1 out1 in1 VDD VDD PMOS L=P_LENU W=P_WITHU
+*
+* out2 - Output of Inverter driven by out1 to determine slow-input effect.
+*
+M6 out2 out1 GND GND NMOS L=N_LENU W=N_WITHU
+M7 out2 out1 VDD VDD PMOS L=P_LENU W=P_WITHU
+*
+* out3 - Output of a NMOS pulling up to determine dynamic-high resistance.
+*
+M2 out3 in2 VDD GND NMOS L=N_LENU W=N_WITHU
+*
+* out4 - Output of a PMOS pulling down to determine dynamic-low resistance.
+*
+M3 out4 in3 GND VDD PMOS L=P_LENU W=P_WITHU
+*
+* loading capacitors
+*
+C0 out1 GND C_LOADFF
+C1 out2 GND C_LOADFF
+C2 out3 GND C_LOADFF
+C3 out4 GND C_LOADFF
+
+Rgnd	Gnd	0	0.001
+VDD VDD 0 DC 'Supply'
+Vmid mid 0 DC 'Supply/2'
+
+Vin1 in1 0 0 pwl (0ns 0 0.1ns 'Supply' 40ns 'Supply' 40.1ns 0)
+Vin2 in2 0 0 pwl (0ns 0 0.1ns 'Supply')
+Vin3 in3 0 5 pwl (0ns 'Supply' 0.1ns 0)
+
+.ic V(out4)='Supply' V(out3)=0
+
+.opt post autostop accurate
+.tran 0.05ns 100ns
+
+* measurements
+* DO NOT CHANGE THEIR ORDER - getres depends on them
+*
+.measure	tplh1	trig	v(in1)	val='Supply/2'	fall=1
++			targ	v(out1)	val='Supply/2'	rise=1
+.measure	tphl1	trig	v(in1)	val='Supply/2'	rise=1
++			targ	v(out1)	val='Supply/2'	fall=1
+
+.measure	tplh2	trig	v(out1)	val='Supply/2'	fall=1
++			targ	v(out2)	val='Supply/2'	rise=1
+.measure	tphl2	trig	v(out1)	val='Supply/2'	rise=1
++			targ	v(out2)	val='Supply/2'	fall=1
+
+.measure	tplhN	trig	v(in2)	val='Supply/2'	rise=1
++			targ	v(out3)	val='Supply/2'	rise=1
+
+.measure	tphlP	trig	v(in3)	val='Supply/2'	fall=1
++			targ	v(out4)	val='Supply/2'	fall=1
+
+.end

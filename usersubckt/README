@@ -1,0 +1,24 @@
+This directory provides an example of how "black box" subcircuits work.
+The more involved example is in dll.c and is a dll simulation.
+To see what it does make irsim.user and then run it on 
+dll.sim with dll.cmd. The edges of the two clocks should be aligned
+by the end of the simulation and the updn signal should be switching.
+
+The subcircuit is called by:
+
+ x upDn inClk outClk outClk1 dll
+
+it means call the subcircuit dll (defined in dll.c) with inputs
+(upDn, inClk, outClk) and output (ouClk1).
+
+To create and compile a new subcircuit library, replace "user.c" in
+the Makefile with the source file containing the library initialization
+and evaluation routines.  The files "dll.c" and "flop_mux.c" are provided
+as examples.
+
+Some caveats:
+1. The output delay is always specified in picoseconds.
+2. You might have to change the MAXARGS in sim.c to if you have way too many IO's.
+3. The code in this directory is deprecated and has been replaced by the
+   example code in directory "tclsubckt", which allows subcircuit libraries to
+   be compiled and loaded independently of irsim.

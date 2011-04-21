@@ -1,0 +1,4 @@
+CFLAGS = -g
+
+findr : findr.c
+	cc $(CFLAGS) -o findr findr.c

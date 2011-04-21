@@ -1,0 +1,149 @@
+Notes on Power Estimation using IRSIM
+======================================
+
+New commands		Descriptions
+------------------------------------------------------------------------------
+    powlogfile		start/stop power logfile 
+    powtrace		start/stop power tracing of specified node(s)/vector(s)
+    powstep		toggle the display of power estimate for each timestep
+    sumcap		print out the sum of the capacitance of all nodes
+    vsupply		set supply voltage for calculating power (default 5V)
+------------------------------------------------------------------------------
+
+Example usage of new commands:
+
+irsim> powlogfile foo.trace
+
+Opens foo.trace to which nodal transition reports will
+contain nodal capacitance data (n->ncap from the node structure).
+The format of each line is similar to the line you get when you trace a
+node normally:
+-------------------------
+8300.0 *INPUT* ir/ICacheDataBus_w2.5 -> 0       0.0 0.0 0.390
+
+for an input being changed
+-------------------------
+/m/s[25]/bitbar        0 -> 1  0.8 0.8 0.494
+
+for a normal node change
+-------------------------
+
+The last field is the node capacitance being switched (in pF)
+
+Note that this file can be useful if you want to catch transitions
+yourself and process them.  Ordinarily, I do the following:
+
+irsim> powlogfile /dev/null
+
+which throws away the transitional data.  However, upon closing the "file",
+a summary will come to stdout as shown below.
+
+irsim> powlogfile
+
+With no arguments, powlogfile just closes the opened logfile.
+
+irsim> powtrace <node names>
+
+'powtrace' is used to indicate to irsim which nodes to log power statistics
+on.  For instance:
+
+irsim> powtrace *
+
+will log all transitions to the powlog file, and the summary that is 
+displayed upon closing the file will contain data for all nodes.
+
+Following the above command with a line like the following:
+
+irsim> powtrace -foo/dont/count/me*
+
+would mean that all nodes with the prefix 'foo/dont/count/me' would
+not be included in the powlog file or in the summary.  Note that
+this is the same syntax for the 't' (trace) command that already exists
+in irsim.  
+
+Instead of tracing all nodes by using *, one can look at only the nodes
+that are interesting by using lines of the form:
+
+irsim> powtrace BlockA/interesting/nodes*
+irsim> powtrace BlockB/moreInteresting/nodes*
+
+again, the same syntax for the 't' command.
+
+'powtrace' also sets the context for the 'powstep' command:
+
+irsim> powstep
+
+toggles whether dynamic power estimation is displayed after each
+timestep.
+
+Again, the dynamic power displayed will only be for the nodes that
+have been selected using the 'powtrace' command.
+
+irsim> vsupply 5.0
+Supply Voltage = 5.00 Volts
+
+Sets V=5.0 for use in the P=CV^2/(2t) where C is capacitance switched,
+and t is the timestep.  The default value for vsupply is 5.0 Volts.
+
+irsim> sumcap
+Sum of nodal capacitances: 3699.549805 pF
+
+Gives a sum of ALL nodal capcitances, NOT just those selected with
+the 'powtrace' command.
+
+===========================================================================
+Description of the power summary that is printed when the powlogfile is
+closed:
+
+For each node selected using 'powtrace' a line will be printed to stdout
+in the following format:
+
+e/E/c/Phi/5_498_60       2.486        225            0.154719       0.005565
+
+name                    cap (pF)  # of transitions   mWatts         % of total
+       		 (see note below)		     dissipated in  power due
+				      	  	     this node      to this
+								      node
+Note:  Nodal transitions caused by 'h <node>' or 'l <node>' are
+       not included in the transition count.
+
+After all the node lines go by, a final line will be printed giving the
+total power dissipation of the traced nodes in Watts.
+
+============================================================================
+Example Script:
+
+| This is a script that shows what I usually do:
+| 
+| Normal initialization
+@init.cmd
+| Throw away transitional data
+powlogfile /dev/null
+| Display power at each step
+powstep
+| Invoke simulation script that prods all the right nodes at the right time
+@simulate.cmd
+| Open a normal logfile to catch the summary table
+logfile /tmp/power.report
+| Close the powlogfile to generate the report
+powlogfile
+| Close the logfile
+logfile
+=============================================================================
+
+Now, with grep, awk, sort, and other great programs you might write, you can
+pull whatever data you want out of the resulting files.
+
+Typing 
+
+irsim> help [command]
+
+should give you a help message for the new commands just like it does for
+the old ones
+
+That's all, folks....
+
+If you find bugs or have questions or suggestions, please let me know by
+sending mail to dcr@fugue.
+
+

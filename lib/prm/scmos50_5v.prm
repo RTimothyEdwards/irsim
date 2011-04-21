@@ -1,0 +1,63 @@
+;
+; configuration file for scmos with lamba = 0.5 (0.8um process)
+; 
+;  The results have been extracted with 3.3V supply and 125 degrees temp.
+;  The Hewlett Packard models (cmos26)  have been used
+;  85C - TM - 5V
+; 
+
+lambda	0.5	; 
+
+capga	.0018 ; gate capacitance        -- area, pf/sq-micron
+
+capda 0.000066
+capdp 0.000310
+cappda 0.000395
+cappdp 0.000220
+
+lowthresh  0.4	; logic low threshold as a normalized voltage
+highthresh 0.6	; logic high threshold as a normalized voltage
+
+cntpullup 0	; irrelevant, cmos technology; no depletion transistors
+diffperim 0	; don't include diffusion perimeters for sidewall cap.
+subparea 0	; poly over transistor won't count as part pf bulk-poly cap.
+diffext  0	; diffusion extension for each transistor
+
+ 
+; 5V
+; C=500.00fF, P(w=6.50, l=1.00), N(w=2.50, l=1.00)
+resistance n-channel dynamic-high       2.5     1.00    5572.0
+resistance n-channel dynamic-low        2.5     1.00    3484.0
+resistance n-channel static             2.5     1.00    2952.3
+
+resistance p-channel dynamic-high       6.5     1.00    2584.0
+resistance p-channel dynamic-low        6.5     1.00    5118.0
+resistance p-channel static             6.5     1.00    2298.3
+
+; C=500.00fF, P(w=20.00, l=1.00), N(w=10.00, l=1.00)
+resistance n-channel dynamic-high       10.0    1.00    1206.2
+resistance n-channel dynamic-low        10.0    1.00    881.4
+resistance n-channel static             10.0    1.00    495.7
+
+resistance p-channel dynamic-high       20.0    1.00    946.2
+resistance p-channel dynamic-low        20.0    1.00    1630.6
+resistance p-channel static             20.0    1.00    572.6
+
+; C=500.00fF, P(w=20.00, l=1.50), N(w=10.00, l=1.50)
+resistance n-channel dynamic-high       10.0    1.50    2154.0
+resistance n-channel dynamic-low        10.0    1.50    1454.0
+resistance n-channel static             10.0    1.50    862.1
+
+resistance p-channel dynamic-high       20.0    1.50    1631.0
+resistance p-channel dynamic-low        20.0    1.50    3038.0
+resistance p-channel static             20.0    1.50    949.1
+
+; C=500.00fF, P(w=20.00, l=2.00), N(w=10.00, l=2.00)
+resistance n-channel dynamic-high       10.0    2.00    3114.0
+resistance n-channel dynamic-low        10.0    2.00    1564.6
+resistance n-channel static             10.0    2.00    1382.8
+
+resistance p-channel dynamic-high       20.0    2.00    2514.0
+resistance p-channel dynamic-low        20.0    2.00    5404.0
+resistance p-channel static             20.0    2.00    1440.0
+

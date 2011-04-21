@@ -1,0 +1,195 @@
+'	square macro
+.de Sq
+.ie n\\h'-\\w' 'u'^2
+.el \\h'-\\w' 'u'\\u2\\d
+..
+.TH NETCHANGE 5 "" "" "IRSIM User's Manual"
+.UC
+.SH NAME
+netchange \- format of netchange files read by irsim.
+
+.SH DESCRIPTION
+A \fBnetchange\fP file consists of a series of lines, each of which begins
+with a key letter.
+The key letter beginning a line determines how the remainder
+of the line is interpreted.
+The following are the list of key letters understood.
+.TP
+.B "| \fIany text\fR"
+Lines beginning with a vertical bar are treated as comments and
+ignored by the program.
+.TP
+.B "a\fPdd\fI type gate source drain length width [area]\fR"
+Add a new transistor of
+.I type
+to the network.
+Currently, \fItype\fP may be:
+.RS
+.PD 0
+.RS
+.IP \fBn\fP 4
+n-channel enhancement transistor.
+.IP \fBp\fP 4
+p-channel enhancement transistor.
+.IP \fBd\fP 4
+depletion transistor (for NMOS).
+.RE
+.PD 1
+.PP
+The names of the nodes to which the gate, source, and drain of the
+transistor are connected are given by
+.I gate,
+.I source,
+and
+.I drain
+respectively.
+The length and width of the transistor are given by
+.I length
+and
+.I width
+respectively.
+The
+.I area
+parameter, if given, will use that number as the
+area for calculating the gate capacitance.
+.I Length
+and
+.I width
+should be given in lambda units,
+.I area
+should be in lambda
+.Sq 
+units, these
+will internally be multiplied by the LAMBDA factor from the configuration
+(.prm) file.
+.RE
+.TP
+.B "d\fPelete\fI type gate source drain length width [area]\fR"
+Delete an existing transistor from the net.
+All the parameters have the same meaning as for the \fBa\fPdd command.
+.TP
+.B "m\fPove \fItype gate source drain length width [area] g s d\fR"
+Move an existing transistor to a new location the net.
+.I type, gate, source, drain, length, width, and area
+have the same meaning as for the \fBa\fPdd command.
+.I g, s,
+and
+.I d
+are the names of nodes to which the gate, source and drain should be
+connected.  If a particular terminal(s) is not to be re-connected, the
+name can be specified using an "*".  Any or all of
+.I g, s,
+and
+.I d
+may be "*".  For example, to move the gate of an n-channel transistor from
+node
+.I old
+to
+.I new
+the following command would be used:
+.HP
+		\fBm n old src_node drn_node 4 2.2 new * *\fP
+.IP
+Note that the
+.I drain
+and
+.I source
+terminals, and the
+.I g
+and
+.I s
+terminals are interchangeable; the simulator will know if these are
+swapped.  So the last example could also have been written:
+.HP
+		\fBm n old drn_node src_node 4 2.2 new * *\fP
+.TP
+.B "c\fPapacitance \fInode value\fR"
+Change the capacitance of a node by
+.I value
+picofarads.  
+.I Value
+may be negative, thereby
+decreasing the node's capacitance.
+.I Node
+is the node name.
+.TP
+.B "N \fInode metal-area poly-area diff-area diff-perimeter\fR"
+Change the capacitance of
+.I node
+using the area and perimeter information of the metal, polysilicon,
+and diffusion layers.
+All the parameters should be in lambda (or lambda
+.Sq
+for areas) units, they will internally
+be converted to the appropriate capacitance as defined in the configuration
+file.  The values can be negative to decrease the capacitance.
+.TP
+.B "M \fInode M2A M2P MA MP PA PP DA DP PDA PDP\fR"
+Change the capacitance of
+.I node,
+using the following geometrical information:
+.PP
+.RS
+.PD 0
+.RS
+.IP \fIM2A\fP 6
+area of 2nd-level metal
+.IP \fIM2P\fP 6
+perimeter of 2nd-level metal
+.IP \fIMA\fP 6
+area of 1st-level metal
+.IP \fIMP\fP 6
+perimeter of 1st-level metal
+.IP \fIPA\fP 6
+area of polysilicon
+.IP \fIPP\fP 6
+perimeter of polysilicon
+.IP \fIDA\fP 6
+area of n-diffusion
+.IP \fIDP\fP 6
+perimeter of n-diffusion
+.IP \fIPDA\fP 6
+area of p-diffusion
+.IP \fIPDP\fP 6
+perimeter of p-diffusion
+.RE
+.PD 1
+.PP
+All perimeter values should be in lambda units, area values should
+be in lambda
+.Sq
+units.
+The perimeter measures are half of the actual total perimeter (i.e.,
+they are the sum of the lengths of the top and one side).
+Again, the values may be negative to decrease the capacitance of
+the node.
+.RE
+.TP
+.B "t\fPhreshold \fInode low high\fR"
+Change the threhsold voltages of
+.I node.
+.I Low
+and
+.I high
+should be in normalized voltage units
+(i.e. floating-point numbers in the range 0.0 to 1.0).
+.TP
+.B "D\fPelay \fInode tplh tphl\fR"
+Change the delays for
+.I node
+to be
+.I tplh
+nanoseconds for low-to-high transistions, and
+.I tphl
+ns. for high-to-low transistions.  These should be absolute numbers,
+not relative increments/dercrements.
+.IP \fBNOTE:\fP 6
+For all commands, only the first letter is significant, the rest
+of the string will be ignored.  They are only shown here for clarity.
+
+.SH BUGS
+This is an experimental interface for the incremental simulator and
+is very likely to change in the future.
+
+.SH "SEE ALSO"
+irsim(5) sim(5) presim(1)

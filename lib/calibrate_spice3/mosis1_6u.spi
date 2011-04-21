@@ -1,0 +1,64 @@
+.model m98u_du2 r rsh = 137.8 defw = 0 narrow = 0
+.model m98u_du2 c cj = 0.0004213 cjsw = 1.925e-10 defw = 0 narrow = 0
+.model m98u_du1 r rsh = 73.79 defw = 0 narrow = 0
+.model m98u_du1 c cj = 0.0001154 cjsw = 5.376e-10 defw = 0 narrow = 0
+.model m98u_ml2 r rsh = 0.028 defw = 0 narrow = 0
+.model m98u_ml2 c cj = 0 cjsw = 0 defw = 0 narrow = 0
+.model m98u_ml1 r rsh = 0.054 defw = 0 narrow = 0
+.model m98u_ml1 c cj = 0 cjsw = 0 defw = 0 narrow = 0
+.model pm1 pmos level=4
++ vfb = -0.42297 lvfb = 0.0179715 wvfb = 0.0434289
++ phi = 0.732559 lphi = 0 wphi = 0
++ k1 = 0.493218 lk1 = -0.063134 wk1 = 0.309532
++ k2 = -0.023484 lk2 = 0.00657988 wk2 = 0.0861925
++ eta = -0.0071262 leta = 0.0233634 weta = 0.0117427
++ muz = 194.389 dl = 0.413759 dw = 0.415865
++ u0 = 0.129648 lu0 = 0.0651435 wu0 = -0.084048
++ u1 = 0.00132397 lu1 = 0.127142 wu1 = 0.0157641
++ x2mz = 9.21433 lx2mz = -1.6723 wx2mz = 2.4635
++ x2e = 0.000112942 lx2e = -0.0015519 wx2e = -0.00069824
++ x3e = 0.00093695 lx3e = -0.0020473 wx3e = -0.0010492
++ x2u0 = 0.00701452 lx2u0 = -0.00055748 wx2u0 = 0.000568603
++ x2u1 = 0.00495105 lx2u1 = -0.0047192 wx2u1 = 0.00772334
++ mus = 186.412 lmus = 88.6957 wmus = 13.9146
++ x2ms = 7.7035 lx2ms = 2.17351 wx2ms = 8.71539
++ x3ms = -1.6679 lx3ms = 6.72368 wx3ms = 0.591897
++ x3u1 = -0.042787 lx3u1 = 0.0399626 wx3u1 = 0.00117455
++ tox = 0.0261 temp = 27 vdd = 5
++ cgdo = 4.10566e-10 cgso = 4.10566e-10 cgbo = 7.48472e-10
++ xpart = 1 
++ n0 = 1 ln0 = 0 wn0 = 0
++ nb = 0 lnb = 0 wnb = 0
++ nd = 0 lnd = 0 wnd = 0
++ rsh = 137.8 cj = 0.0004213 cjsw = 1.925e-10
++ js = 0 pb = 0.85 pbsw = 0.85
++ mj = 0.4706 mjsw = 0.3224 wdf = 0
++ dell = 0
+.model nm1 nmos level=4
++ vfb = -1.0201 lvfb = 0.163663 wvfb = 0.061989
++ phi = 0.788032 lphi = 0 wphi = 0
++ k1 = 1.3137 lk1 = -0.18261 wk1 = -0.12209
++ k2 = 0.245245 lk2 = 0.0147686 wk2 = -0.13972
++ eta = -0.009158 leta = 0.0218873 weta = 0.00243441
++ muz = 533.387 dl = 0.616906 dw = 0.248091
++ u0 = 0.0605701 lu0 = 0.0588901 wu0 = -0.057239
++ u1 = 0.0701602 lu1 = 0.389641 wu1 = -0.13923
++ x2mz = 2.89222 lx2mz = -4.3296 wx2mz = 36.8633
++ x2e = -0.0030054 lx2e = -0.0040516 wx2e = -0.00033448
++ x3e = 0.000688347 lx3e = -0.0015262 wx3e = -0.0044141
++ x2u0 = -0.0011753 lx2u0 = -0.0007348 wx2u0 = 0.0165173
++ x2u1 = -0.016385 lx2u1 = 0.0219971 wx2u1 = 0.0124124
++ mus = 694.783 lmus = 229.454 wmus = -204.53
++ x2ms = -10.156 lx2ms = 20.505 wx2ms = 62.192
++ x3ms = 12.5275 lx3ms = 49.102 wx3ms = -46.021
++ x3u1 = 0.0208261 lx3u1 = 0.03636 wx3u1 = -0.040294
++ tox = 0.0261 temp = 27 vdd = 5
++ cgdo = 6.12145e-10 cgso = 6.12145e-10 cgbo = 6.9872e-10
++ xpart = 1 
++ n0 = 1 ln0 = 0 wn0 = 0
++ nb = 0 lnb = 0 wnb = 0
++ nd = 0 lnd = 0 wnd = 0
++ rsh = 73.79 cj = 0.0001154 cjsw = 5.376e-10
++ js = 0 pb = 0.8 pbsw = 0.8
++ mj = 0.551 mjsw = 0.275 wdf = 0
++ dell = 0

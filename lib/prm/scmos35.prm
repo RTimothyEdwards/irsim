@@ -1,0 +1,66 @@
+;
+; configuration file for scmos with lamba = 0.35 (0.6um process + 1um)
+; 
+
+lambda	0.35	; 
+
+capga	.00315 ; gate capacitance        -- area, pf/sq-micron
+
+capda 0.00024
+capdp 0.00026
+cappda 0.000580
+cappdp 0.000170
+
+lowthresh  0.4	; logic low threshold as a normalized voltage
+highthresh 0.6	; logic high threshold as a normalized voltage
+
+cntpullup 0	; irrelevant, cmos technology; no depletion transistors
+diffperim 0	; don't include diffusion perimeters for sidewall cap.
+subparea 0	; poly over transistor won't count as part pf bulk-poly cap.
+diffext  0	; diffusion extension for each transistor
+
+
+;0.7um channel
+; C=500.00fF, P(w=6.50, l=0.70), N(w=2.50, l=0.70)
+resistance n-channel dynamic-high       2.5     0.70    6316.0
+resistance n-channel dynamic-low        2.5     0.70    2718.0
+resistance n-channel static             2.5     0.70    3340.0
+
+resistance p-channel dynamic-high       6.5     0.70    2148.0
+resistance p-channel dynamic-low        6.5     0.70    5354.0
+resistance p-channel static             6.5     0.70    2560.6
+; C=500.00fF, P(w=20.00, l=0.70), N(w=10.00, l=0.70)
+resistance n-channel dynamic-high       10.0    0.70    1267.0
+resistance n-channel dynamic-low        10.0    0.70    672.0
+resistance n-channel static             10.0    0.70    577.8
+
+resistance p-channel dynamic-high       20.0    0.70    791.6
+resistance p-channel dynamic-low        20.0    0.70    1688.4
+resistance p-channel static             20.0    0.70    607.8
+; C=500.00fF, P(w=20.00, l=1.05), N(w=10.00, l=1.05)
+resistance n-channel dynamic-high       10.0    1.05    2124.0
+resistance n-channel dynamic-low        10.0    1.05    961.6
+resistance n-channel static             10.0    1.05    884.8
+
+resistance p-channel dynamic-high       20.0    1.05    1294.0
+resistance p-channel dynamic-low        20.0    1.05    3124.0
+resistance p-channel static             20.0    1.05    1012.2
+
+; C=500.00fF, P(w=20.00, l=1.40), N(w=10.00, l=1.40)
+resistance n-channel dynamic-high       10.0    1.40    3052.0
+resistance n-channel dynamic-low        10.0    1.40    1295.6
+resistance n-channel static             10.0    1.40    1210.4
+
+resistance p-channel dynamic-high       20.0    1.40    1856.0
+resistance p-channel dynamic-low        20.0    1.40    4626.0
+resistance p-channel static             20.0    1.40    1297.4
+
+; C=800.00ff, P(w=26.00u,l= 0.70u), n(w=10.00u,l= 0.70u)
+resistance n-channel dynamic-high	10.0	0.7	1267.0
+resistance n-channel dynamic-low	10.0	0.7	634.0
+resistance n-channel static		10.0	0.7	598.0
+
+resistance p-channel dynamic-high	26.0	0.7	576.0
+resistance p-channel dynamic-low	26.0	0.7	1282.0
+resistance p-channel static		26.0	0.7	667.0
+

@@ -1,0 +1,7 @@
+set pwidth = 6.5         # width of p-device in um
+set plen = 1.0                  # length of p-device in um
+set nwidth = 2.5         # width of n-device in um
+set nlen = 1.0                  # lenght of n-device in um
+set cap = 500                  # loading capacitance in fF
+set supplyV = 3.3		# the operating voltage
+set libCorner = tm		# the corner within the library

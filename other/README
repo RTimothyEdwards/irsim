@@ -1,0 +1,7 @@
+This directory contains programs for converting the binary files generated
+by irsim into ascii.
+
+h2a		Converts a history dump file into ascii.
+
+inet2sim	Converts an .inet file into a .sim file
+

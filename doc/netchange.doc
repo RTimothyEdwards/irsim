@@ -1,0 +1,121 @@
+                                                     NETCHANGE(5)
+
+NAME
+     netchange - format of netchange files read by irsim.
+
+
+DESCRIPTION
+     A netchange file consists of a series of lines, each of
+     which begins with a key letter.  The key letter beginning a
+     line determines how the remainder of the line is inter-
+     preted.  The following are the list of key letters under-
+     stood.
+
+     | any text
+          Lines beginning with a vertical bar are treated as com-
+          ments and ignored by the program.
+
+     add type gate source drain length width [area]
+          Add a new transistor of type to the network.
+          Currently, type may be:
+            n   n-channel enhancement transistor.
+            p   p-channel enhancement transistor.
+            d   depletion transistor (for NMOS).
+
+          The names of the nodes to which the gate, source, and
+          drain of the transistor are connected are given by
+          gate, source, and drain respectively.  The length and
+          width of the transistor are given by length and width
+          respectively.  The area parameter, if given, will use
+          that number as the area for calculating the gate capa-
+          citance.  Length and width should be given in lambda
+          units, area should be in lambda^2 units, these will
+          internally be multiplied by the LAMBDA factor from the
+          configuration (.prm) file.
+
+     delete type gate source drain length width [area]
+          Delete an existing transistor from the net.  All the
+          parameters have the same meaning as for the add com-
+          mand.
+
+     move type gate source drain length width [area] g s d
+          Move an existing transistor to a new location the net.
+          type, gate, source, drain, length, width, have the same
+          meaning as for the add command.  g, s, and d are the
+          names of nodes to which the gate, source and drain
+          should be connected.  If a particular terminal(s) is
+          not to be re-connected, the name can be specified using
+          an "*".  Any or all of g, s, and d may be "*".  For
+          example, to move the gate of an n-channel transistor
+          from node old to new the following command would be
+          used:
+
+               m n old src_node drn_node 4 2.2 new * *
+
+          Note that the drain and source terminals, and the g and
+          s terminals are interchangeable; the simulator will
+          know if these are swapped.  So the last example could
+          also have been written:
+
+               m n old drn_node src_node 4 2.2 new * *
+
+     capacitance node value
+          Change the capacitance of a node by value picofarads.
+          Value may be negative, thereby decreasing the node's
+          capacitance.  Node is the node name.
+
+     N node metal-area poly-area diff-area diff-perimeter
+          Change the capacitance of node using the area and per-
+          imeter information of the metal, polysilicon, and dif-
+          fusion layers.  All the parameters should be in lambda
+          (or lambda^2 for areas) units, they will internally be
+          converted to the appropriate capacitance as defined in
+          the configuration file.  The values can be negative to
+          decrease the capacitance.
+
+     M node M2A M2P MA MP PA PP DA DP PDA PDP
+          Change the capacitance of node, using the following
+          geometrical information:
+
+            M2A   area of 2nd-level metal
+            M2P   perimeter of 2nd-level metal
+            MA    area of 1st-level metal
+            MP    perimeter of 1st-level metal
+            PA    area of polysilicon
+            PP    perimeter of polysilicon
+            DA    area of n-diffusion
+            DP    perimeter of n-diffusion
+            PDA   area of p-diffusion
+            PDP   perimeter of p-diffusion
+
+          All perimeter values should be in lambda units, area
+          values should be in lambda^2 units.  The perimeter
+          measures are half of the actual total perimeter (i.e.,
+          they are the sum of the lengths of the top and one
+          side).  Again, the values may be negative to decrease
+          the capacitance of the node.
+
+     threshold node low high
+          Change the threhsold voltages of node. Low and high
+          should be in normalized voltage units (i.e. floating-
+          point numbers in the range 0.0 to 1.0).
+
+     Delay node tplh tphl
+          Change the delays for node to be tplh nanoseconds for
+          low-to-high transistions, and tphl ns. for high-to-low
+          transistions.  These should be absolute numbers, not
+          relative increments/dercrements.
+
+     NOTE: For all commands, only the first letter is signifi-
+           cant, the rest of the string will be ignored.  They
+           are only shown here for clarity.
+
+
+BUGS
+     This is an experimental interface for the incremental simu-
+     lator and is very likely to change in the future.
+
+
+SEE ALSO
+     irsim(5) sim(5) presim(1)
+

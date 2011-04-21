@@ -1,0 +1,243 @@
+This is release 9.7 of irsim.
+
+----------------------------------------------------------------------------
+Compilation and installation
+----------------------------------------------------------------------------
+
+The make script has been changed to work similarly to the magic-7.3 GNU
+autoconf make.  To make the default IRSIM version, which includes Tcl/Tk
+(if available) and OpenGL (if available), do:
+
+	./configure
+	make
+	make install
+
+----------------------------------------------------------------------------
+Running IRSIM under Magic
+----------------------------------------------------------------------------
+
+Standard magic version:
+   See the magic tutorial #11 (document "tut11.ps" in the magic source
+   distribution).
+
+Tcl-based magic version and Tcl-based IRSIM (irsim-9.6):
+
+   Run the Tcl version of magic in the usual manner.  As an example,
+   consider "tut11a" used in tutorial #11 for demonstrating IRSIM.
+
+	magic -w -d OGL tut11a
+
+   Start IRSIM with:
+
+	irsim
+
+   This is a Tcl procedure which can guess at default values.  Magic
+   starts up with a definition for the procedure which looks for the
+   "irsim.tcl" script in the CAD_ROOT install directory.  Assuming that
+   magic and irsim are installed in the same CAD_ROOT root (e.g.,
+   /usr/local/lib or /home/cad/lib), this file will be sourced, and IRSIM
+   will be ready to run.  If not, it will be necessary to run "source
+   <pathname>/irsim.tcl" by hand, substituting the actual install path
+   for IRSIM.
+
+   If a layout is loaded into magic, it is assumed to be the circuit to
+   be simulated.  If .ext and/or .sim files don't exist for the circuit,
+   they will be created.
+
+   The full syntax is:
+
+	irsim [parameter_file [sim_file]]
+
+   where "parameter_file" is an irsim ".prm" file from the IRSIM library
+   install directory, and "sim_file" is a .sim file, presumably generated
+   in magic by "exttosim".
+
+   At this point, if all goes well and no errors occurred, all IRSIM
+   commands will be available under magic.  Additional commands are added
+   when running irsim under magic.  These are:
+
+	watchnode [node_name [style_name]]
+		Display a node's simulation value on the layout.  If
+		no name is given, find the node under the box and
+		display its value.  The style name is one of magic's
+		display styles from the ".dstyle5" file.  The default
+		is "white".
+
+	unwatchnode node_name
+		Erases the node value from the layout.
+
+	movenode node_name
+		Node values normally appear positioned at the point
+		found by the magic "goto" command.  If this is a
+		poor choice, the node can be moved to a position
+		centered on the magic cursor box using this command.
+
+	watchtime
+		Causes the simulation time to be drawn on the layout,
+		centered on the magic cursor box's current position.
+
+	unwatchtime
+		Erases the simulation time from the layout.
+
+	movetime
+		Moves the position of the simulation time text to be
+		centered on the current position of the magic cursor
+		box.
+
+   For example, with layout file tut11a.mag, after invoking "startirsim", do:
+
+	watchnode bit_0
+	watchnode bit_1
+	watchnode bit_2
+	watchnode bit_3
+	watchnode RESET_B black
+	watchnode hold red3
+
+	vector clk phi1 phi2
+	vector clkb phi1_b phi2_b
+	clock clk 10 00 01 00
+	clock clkb 01 11 10 11
+	vector bits bit_3 bit_2 bit_1 bit_0
+	w clk hold RESET_B bits
+
+	c
+	l hold
+	l RESET_B
+	c
+	h RESET_B
+	c
+	c
+	c
+
+   The values are drawn on the magic layout in time with the simulation.
+   Note that "source tut11a.cmd" is a valid command.  The .cmd file
+   that comes with the tutorial should be okay as-is.  However, note
+   that several commands in IRSIM are not legal Tcl syntax, and have
+   been changed.  Any of these commands in a file must be changed to
+   match before the file can be sourced.  Also, some commands in
+   IRSIM are already defined as Tcl commands.  These are:  time, set,
+   and clear.  To get the expected behavior in IRSIM, they must
+   include the namespace:  irsim::time, irsim::set, irsim::clear.
+   "exit" is a trivial overloaded command.  "clock" is also
+   overloaded, but because the IRSIM and Tcl syntax for "clock"
+   are mutually exclusive, the command is handled by IRSIM and
+   checked for which version of the command is intended.
+
+   Note that it is possible to display vectors on the magic layout.
+   Position the box to an empty area of the layout and type:
+
+	watchnode bits
+
+   Similarly, you can postion the box to another empty area and do:
+
+	watchtime
+
+   to get the simulation time display printed on the magic layout.
+   You do not need to know the name of a node in order to see its
+   value.  For instance, select a random piece of the layout and
+   type "watchnode".  The node value will be displayed at the position
+   of the selection.
+
+   To simply query a node value (without selecting it for display), use
+   the 2-argument form of "assert", combining IRSIM and Magic commands.
+   Select a bit of layout paint, and do:
+
+	assert [getnode]
+
+   -----------------------------------------------------------------------
+
+   Under irsim, the "display" command has an additional option, "tclproc".
+  
+	display tclproc proc_name
+	display -tclproc
+
+   when proc_name is specified, the IRSIM "d" command will invoke the
+   specified Tcl procedure instead of printing values to the screen.
+   The procedure will also be called whenever node and vector values
+   in the watch list ("w" command) are updated.  This method allows
+   signal names, values, and times to be captured and used by other
+   programs.  "watchnode" makes use of this method to write simulated
+   node values back into the magic window.
+   
+   The syntax of the Tcl procedure is:
+
+	proc proc_name { name value time } {}
+   
+   This procedure is called internally from IRSIM.  "name" will be
+   given the name of the node or vector being watched.  "value" will
+   be given the value of the node or vector.  "time" will be given
+   the current simulation time in nanoseconds.  Note that this
+   procedure is always called at least twice, with the last call
+   being name="curtime", value="t", such that procedures may defer
+   printing the time value until all watched node values have been
+   displayed.  Only the last call to the procedure will return its
+   value to the interpreter.
+
+----------------------------------------------------------------------------
+Release Notes
+----------------------------------------------------------------------------
+
+The calibrate directory contains information on creating your own prm files.
+
+Release 9.5+ includes the software to perform incremental simulations, which
+can also be used to create an incremental-fault-simulator.  To make the
+fault simulator, you will have to do it by hand: First use the make_irsim
+script to build irsim, then (before cleaning anything in irsim) go into the
+src/fsim directory and run make.  This will create the program called "ifsim",
+which you can use to run statistical simulations of stuck-at faults.
+The directory src/fsim/doc contains both latex and PostScript versions of the
+documentation needed to use ifsim.
+
+Release 9.5 also includes the following extra code:
+
+ 1) Power estimation code through toggle counts (written by Don Ramsey)
+    The code is not completely debugged yet (?) but there is demand for
+    it from a lot of people.  It can be turned on/off selectively
+    through the "make config" script.  See the file man/powerEst.doc
+    for details on how to use this.
+
+ 2) Code that enables the user to write their own subcircuit models
+    for "analogish stuff". (written by R. Gonzales and S.  Sidiropoulos).
+    Again it is enabled in "make config".  An example pll is in
+    src/irsim/UserSubckt
+ 
+ 3) Some extra commands (assertWhen and until) which may help debugging
+    of asynchronous designs 
+
+ 4) Fixes for Linux displays (M. Godfrey)
+
+Release 9.6 includes the following new features:
+
+ 5) Tcl-based IRSIM (T. Edwards)
+
+ 6) Threaded X11 graphics (no anXhelper!) (T. Edwards)
+
+ 7) Makefile configuration support for Mac OS-X, Solaris, and Cygwin.
+ 
+ 8) Pseudorandom number generator for the Tcl version (T. Edwards)
+
+Release 9.7 includes the following new features:
+
+ 9) GNU autoconf-base "make" process equivalent to that of magic-7.3
+ 
+10) Tk-based Analyzer window, including a full set of command-line commands
+    for manipulating the analyzer.
+
+11) Verilog testbench-like commands "at", "every", "when", and "whenever"
+
+12) Command "settle" to handle problematic tight loops (e.g., back-to-back
+    inverters in flip-flops) by waiting a certain period before setting a
+    node undefined.
+
+13) Command "relax" to handle problematic large loops (e.g., flip-flop/
+    multiplexer loops) by forcing initial conditions.
+
+14) Ability to handle multiple circuits by placing each in its own namespace.
+
+15) Ability to define and set nodes that are not part of an input circuit.
+
+16) Simplified vector definitions and setting, including handling of decimal
+    and hexidecimal notation, and specifying numerical ranges in a vector
+    name (such as "vector D D0:8")
+
+17) Tcl procedure-based user-defined subcircuits.

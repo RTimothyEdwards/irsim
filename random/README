@@ -1,0 +1,49 @@
+This directory contains a dynamically loadable tcl extension which
+supports random number generation.  This extension defines a tcl
+command called "random" which returns a random value.  The
+distribution from which the value is taken is specified by the command
+arguments. 
+
+This source is *apparently* freeware; no authorship or copyright has been
+declared in the source.
+
+By default, with no arguments the number is taken uniformly from [0..1)
+
+   "random -reset" will cause the generator to be reseeded using
+   current pid and current time.
+
+   "random -integer [a [b]]" will cause the number returned to be rounded
+   down to the largest integer less than or equal to the number which
+   would otherwise be returned.  By default, the number returned is
+   within the range of a 32-bit signed integer.  It is capable of
+   returning numbers up to 64 bits unsigned.  With option "random
+   -integer a", the number returned will be between (-a) and (+a).
+   With option "random -integer a b", the number returned will be
+   between (a) and (b).
+
+   "random -bitstream [n]" will generate a uniform random binary value
+   of length n.  The value returned is in string form, with
+   effectively unlimited length.  By default, the number returned is
+   a 32-bit value (32-character string).
+
+   "random -normal m s" will cause the number returned to be taken
+   from a gaussian with mean m and standard deviation s.
+
+   "random -exponential m" will cause the number returned to be taken
+   from an exponential distribution with mean m.
+
+   "random -uniform low high" will cause the number returned to be
+   taken from uniform distribution on [a,b).
+
+   "random -chi2 n" will cause the number returned to be
+   taken from chi2 distribution with n degrees of freedom.
+
+   "random -select n list" will cause n elements to be selected at
+   random from the list with replacement.
+
+   "random -choose n list" will cause n elements to be selected at
+   random from the list without replacement.
+
+   "random -permutation n" will return a permutation of 0..n-1
+
+   "random -permute $list" will return a permutation of $list

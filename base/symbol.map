@@ -1,0 +1,4 @@
+IRSIM_9.6 {
+   global: Tclirsim_Init; Random_Init;
+   local: *;
+};

@@ -1,0 +1,9 @@
+This directory does the calibration run for hspice based models.
+It uses the measure capability of hspice to extract resistances
+the same way the ../calibrate_spice3 programs do.
+
+You might need to tune the script a bit for you local environment.
+Since it assumes that hspice is called with a library called
+opConditions.lib which defines the supply voltage (Supply) based 
+on the parameter Sup (which is in turn defined in the dev.example
+file).

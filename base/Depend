@@ -1,0 +1,24 @@
+access.o: access.c defs.h
+binsim.o: binsim.c defs.h net.h globals.h rsim.h bin_io.h net_macros.h
+cad_dir.o: cad_dir.c defs.h
+config.o: config.c defs.h net.h globals.h
+conn_list.o: conn_list.c defs.h net.h net_macros.h ASSERT.h globals.h
+eval.o: eval.c defs.h net.h globals.h
+fio.o: fio.c defs.h net.h globals.h
+hist.o: hist.c defs.h net.h ASSERT.h globals.h
+hist_io.o: hist_io.c defs.h net.h ASSERT.h bin_io.h globals.h
+intr.o: intr.c defs.h
+mem.o: mem.c defs.h
+netupdate.o: netupdate.c defs.h net.h globals.h net_macros.h
+network.o: network.c defs.h net.h globals.h
+newrstep.o: newrstep.c defs.h net.h globals.h spiketbl.c
+nsubrs.o: nsubrs.c defs.h net.h globals.h
+parallel.o: parallel.c defs.h net.h globals.h net_macros.h
+prints.o: prints.c defs.h
+rsim.o: rsim.c defs.h net.h globals.h rsim.h
+sched.o: sched.c defs.h net.h globals.h ASSERT.h
+sim.o: sim.c defs.h net.h globals.h net_macros.h
+sstep.o: sstep.c net.h defs.h globals.h stables.c
+stack.o: stack.c defs.h net.h globals.h net_macros.h
+tpos.o: tpos.c defs.h net.h globals.h
+usage.o: usage.c defs.h

@@ -1,0 +1,48 @@
+Name:           irsim
+Version:        @VERSION@
+Release:        1
+Summary:        Switch-level simulator
+Group:          Applications/Engineering
+License:        GPL
+URL:            http://www.opencircuitdesign.com/irsim/index.html
+Source:         http://www.opencircuitdesign.com/irsim/archive/%{name}-%{version}.tgz
+BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+BuildRequires:  libX11-devel, libXt-devel, tcl-devel, tk-devel
+Requires:       libX11, libXt, tcl, tk
+
+%description
+IRSIM is a tool for simulating digital circuits. It is a "switch-level"
+simulator; that is, it treats transistors as ideal switches. Extracted
+capacitance and lumped resistance values are used to make the switch a little
+bit more realistic than the ideal, using the RC time constants to predict the
+relative timing of events.
+
+%prep
+%setup -q
+
+%build
+%configure \
+  --with-tcl=%{_libdir} \
+  --with-tk=%{_libdir} \
+  --with-tclincls=%{_includedir} \
+  --with-tkincls=%{_includedir} \
+  --with-tcllibs=%{_libdir} \
+  --with-tklibs=%{_libdir}
+make
+
+%install
+rm -rf $RPM_BUILD_ROOT
+make install DESTDIR=$RPM_BUILD_ROOT
+
+%clean
+rm -rf $RPM_BUILD_ROOT
+
+%files
+%defattr(-,root,root,-)
+%doc README VERSION
+%{_bindir}/irsim
+%{_libdir}/irsim/*
+%{_mandir}/man1/irsim.1.gz
+%{_mandir}/man3/irsim-analyzer.3.gz
+%{_mandir}/man5/netchange.5.gz
+

@@ -1,0 +1,134 @@
+%!
+/MSAVE { /mStat save def } def
+/MRESTORE { mStat restore } def
+/SET { exch def } def
+/SF { /wi SET theFont [wi 0 0 FSIZE 0 0] makefont setfont } def
+/L { newpath moveto lineto stroke } def
+/VL { 2 index exch L } def
+/HL { 1 index L } def
+/BOX { /@yb SET /@xb SET /@yt SET /@xt SET newpath
+ @xb @yb moveto @xb @yt lineto @xt @yt lineto @xt @yb lineto closepath } def
+/SL { moveto show } def
+/SR { exch dup /@xr SET 2 index stringwidth pop sub dup
+ 0 le { pop 0 @xr 3 -1 roll SC } { exch FSIZE 2 div sub moveto show }
+ ifelse } def
+/SCP { /@s SET @s stringwidth pop /@sw SET @sw 2 div sub
+ dup @sw add maxX gt { pop maxX @sw sub } if exch moveto @s show } def
+/SC { FSIZE 2 div sub /@y SET /@x2 SET /@x1 SET /@s SET
+ /@l @x2 @x1 sub def /@x @x1 @x2 add 2 div def
+ /@w @s stringwidth pop def @l @w gt
+ { @y @x @s SCP }
+ { @l FSIZE mul @w 1 add div dup MINFSIZE lt
+ { pop } { /svf currentfont def SF @y @x @s SCP svf setfont } ifelse }ifelse
+} def
+/LE { exch GX GY FSIZE 2 div add SR /@x GX def
+ { dup stringwidth pop /@w SET /@x @x FSIZE add def @x @w add
+ 720 ge { /@x GX FSIZE add def /GY GY FSIZE 2 add sub def } if
+ @x GY SL /@x @x @w add def } repeat /GY GY FSIZE 4 add sub def } def
+/FSIZE 9 def /MINFSIZE 4 def /maxX 718 def
+612 0 translate
+90 rotate
+36 8 translate
+1 setlinecap 0.6 setlinewidth 
+/theFont /Helvetica findfont def FSIZE SF
+MSAVE
+0.82 setgray
+0 553 720 568 BOX OP
+0 setgray
+0 553 720 568 BOX OP
+(control)6 561 FSIZE 2 div sub SL
+(Wed Apr 16 17:07:12 1997
+) 715 561 SR
+0 28 720 568 BOX OP
+0 setlinewidth [1 3] 0 setdash /svfnt currentfont def
+theFont 0.7 FSIZE mul scalefont setfont
+(time \(ns\)) 0 44 48 SC
+45 551 43 VL
+(0.00) 0 90 38 SC
+129 551 43 VL
+(5.00) 0 258 38 SC
+213 551 43 VL
+(10.00) 0 426 38 SC
+297 551 43 VL
+(15.00) 0 594 38 SC
+381 551 43 VL
+(20.00) 0 762 38 SC
+465 551 43 VL
+(25.00) 0 930 38 SC
+548 551 43 VL
+(30.00) 0 1096 38 SC
+633 551 43 VL
+(35.00) 0 1266 38 SC
+717 551 43 VL
+(40.00) 0 1434 38 SC
+43 48 718 HL
+0.6 setlinewidth [] 0 setdash svfnt setfont
+(clkc)43 535 SR
+(clkc_b)43 508 SR
+(reset)43 480 SR
+(upc)43 453 SR
+(dnc)43 426 SR
+(upe)43 399 SR
+(dne)43 371 SR
+(evenearly)43 344 SR
+(ictl)43 312 SR
+(selE)43 275 SR
+(inve)43 241 SR
+(selO)43 210 SR
+(invo)43 176 SR
+(uppd)43 149 SR
+(upi)43 122 SR
+(oflow)43 95 SR
+(uflow)43 68 SR
+0.68 setgray
+45 545 213 524 BOX fill
+0 setgray
+0.68 setgray
+45 518 213 497 BOX fill
+0 setgray
+0.68 setgray
+45 491 213 470 BOX fill
+0 setgray
+0.68 setgray
+45 464 213 443 BOX fill
+0 setgray
+0.68 setgray
+45 436 213 415 BOX fill
+0 setgray
+0.68 setgray
+45 409 213 388 BOX fill
+0 setgray
+0.68 setgray
+45 382 213 361 BOX fill
+0 setgray
+0.68 setgray
+45 355 213 334 BOX fill
+0 setgray
+47 328 213 HL
+47 296 213 HL
+(XXXX)45 213 312 SC
+47 290 213 HL
+47 258 213 HL
+(XXX)45 213 275 SC
+0.68 setgray
+45 252 213 231 BOX fill
+0 setgray
+47 225 213 HL
+47 193 213 HL
+(XXX)45 213 210 SC
+0.68 setgray
+45 187 213 166 BOX fill
+0 setgray
+0.68 setgray
+45 160 213 139 BOX fill
+0 setgray
+0.68 setgray
+45 133 213 111 BOX fill
+0 setgray
+0.68 setgray
+45 105 213 84 BOX fill
+0 setgray
+0.68 setgray
+45 78 213 57 BOX fill
+0 setgray
+showpage MRESTORE

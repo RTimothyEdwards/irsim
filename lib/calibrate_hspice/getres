@@ -1,0 +1,108 @@
+#! /bin/csh -f
+unset noclobber
+
+if( $#argv != 1 ) then
+        echo "usage: getres dev_file"
+        exit 1
+endif
+
+
+if( -f $argv[1] ) then
+        source $argv[1]
+else
+        echo "can't open device configuratin file '"$argv[1]"'"
+        exit 1
+endif
+
+cat ckt.hsp > tmp.hsp
+
+ed - <<end tmp.hsp >& /dev/null
+g/SUPPLYV/s/SUPPLYV/$supplyV/g
+g/LIBCORNER/s/LIBCORNER/$libCorner/g
+g/C_LOAD/s/C_LOAD/$cap/g
+g/N_WITH/s/N_WITH/$nwidth/g
+g/N_LEN/s/N_LEN/$nlen/g
+g/P_WITH/s/P_WITH/$pwidth/g
+g/P_LEN/s/P_LEN/$plen/g
+w
+q
+end
+
+echo Running hspice
+hspice tmp.hsp > tmp.lis
+
+if ( ! -f tmp.mt0 ) then
+	echo "Error: No measurement file from hspice aborting\n"
+	echo "       Check the file tmp.lis"
+	exit 1
+endif
+
+echo "DEVICE-INFO " $cap $nwidth $nlen $pwidth $plen >! /tmp/awkIn.$$
+cat  tmp.mt0 >> /tmp/awkIn.$$
+
+# The following awk script extracts and calculates the resistances
+cat << AWK_END >! /tmp/awk.$$
+#!/bin/awk -f
+BEGIN {
+	found = 0;
+	cap = -1;
+}
+
+
+{
+	if ( substr(\$1, 1, 1) ~ /^[0-9]/ && found == 0 ) {
+		found = 1;
+		if ( NF < 6 ) {
+			printf "Error: less than 6 fields in mt0 file\n";
+			exit 1;
+		}
+		tplh1 = \$1; tphl1 = \$2;
+		tplh2 = \$3; tphl2 = \$4;
+		tplhN = \$5; tphlP = \$6;
+	}
+	# this line is fed to it by the shellscript
+	if  ( \$1 == "DEVICE-INFO" ) {
+		cap = \$2*1E-15;
+		wn  = \$3;
+		ln = \$4;
+		wp  = \$5;
+		lp = \$6;
+	}
+}
+
+
+END {
+ dynL_n = tphl1 / cap ;
+ dynH_p = tplh1 / cap ;
+ st_n = ( tphl2*tphl2 - tphl1*tphl1 ) / ( tplh1*cap);
+ st_p = ( tplh2*tplh2 - tplh1*tplh1 ) / ( tphl1*cap);
+
+ dynH_n = tplhN / cap ;
+ dynL_p = tphlP / cap ;
+
+ printf "; C=%.2ffF, P(w=%.2f, l=%.2f), N(w=%.2f, l=%.2f)\n", cap*1e15, wp, lp, wn, ln
+ printf "resistance n-channel dynamic-high\t%.1f\t%.2f\t%.1f\n", wn,ln, dynH_n
+ printf "resistance n-channel dynamic-low\t%.1f\t%.2f\t%.1f\n", wn, ln, dynL_n
+ printf "resistance n-channel static      \t%.1f\t%.2f\t%.1f\n", wn,ln, st_n
+ printf "\n"
+ printf "resistance p-channel dynamic-high\t%.1f\t%.2f\t%.1f\n", wp,lp, dynH_p
+ printf "resistance p-channel dynamic-low\t%.1f\t%.2f\t%.1f\n", wp, lp, dynL_p
+ printf "resistance p-channel static      \t%.1f\t%.2f\t%.1f\n", wp,lp, st_p
+ printf "\n"
+}
+AWK_END
+
+# this second awk scripts merges numerical lines in the mt0 file
+cat << AWK_END2 > /tmp/awk2.$$
+BEGIN { i = 0 }
+{
+        if ( substr(\$1, 1, 1) ~ /^[0-9]/ && i == 0 ) {
+                printf "%s ", \$0; i=1;
+        } else { print \$0; i = 0; }
+}
+AWK_END2
+
+
+cat /tmp/awkIn.$$ | awk -f /tmp/awk2.$$ | awk -f /tmp/awk.$$
+
+/bin/rm -f /tmp/awk.$$ /tmp/awkIn.$$ tmp.* /tmp/awk2.$$

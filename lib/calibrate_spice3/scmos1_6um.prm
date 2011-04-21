@@ -1,0 +1,29 @@
+; configuration file for scmos with lamba = 1.0 (1.6um process)
+; parameters extracted from spice BSIM models for use with ext2sim.
+; 
+
+capga	.001321	; gate capacitance        -- area, pf/sq-micron
+
+lambda	0.8	; microns/lambda
+
+lowthresh  0.4	; logic low threshold as a normalized voltage
+
+highthresh 0.6	; logic high threshold as a normalized voltage
+
+cntpullup 0	; irrelevant, cmos technology; no depletion transistors
+
+diffperim 0	; don't include diffusion perimeters for sidewall cap.
+
+subparea 0	; poly over transistor won't count as part pf bulk-poly cap.
+
+diffext  0	; diffusion extension for each transistor
+
+; n-channel resistance
+resistance n-channel dynamic-high	10.0	1.6	2271.0
+resistance n-channel dynamic-low	10.0	1.6	1264.0
+resistance n-channel static		10.0	1.6	1201.0
+
+; p-channel resistance
+resistance p-channel dynamic-high	20.0	1.6	1752.0
+resistance p-channel dynamic-low	20.0	1.6	3374.0
+resistance p-channel static		20.0	1.6	1466.0
