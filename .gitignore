@@ -1,0 +1,8 @@
+irsim
+defs.mak
+Depend
+config.cache
+config.log
+*.o
+*.so
+*~
