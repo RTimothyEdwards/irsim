@@ -69,7 +69,7 @@ public	int       tunitdelay = 0;	/* if <> 0, all transitions take
 					 * 'tunitdelay' DELAY-units */
 public	int       tdecay = 0;		/* if <> 0, undriven nodes decay to 
 					 * X after 'tdecay' DELAY-units */
-public  int	  settle = 0;		/* temporary hack.  If driven by
+public  int	  settle = 0;		/* If driven by
 					 * two nodes at opposite values,
 					 * driven node settles to X after
 					 * 'settle' DELAY-units.  Added by
@@ -145,7 +145,7 @@ private	thevenin  input_thev[ N_POTS ];
 private	void	scheduleDriven(), schedulePureCS(), UndoConnList();
 private	void	parallel_op(), CleanEvents();
 private void	EnqueDecay( nptr, int);
-private	int	ComputeDC( nptr, char *);
+private	int	ComputeDC( nptr );
 private	Thev	get_dc_val(), series_op(), get_tau();
 private	double	get_tauP();
 private	pspk	ComputeSpike();
@@ -156,7 +156,6 @@ public void linear_model( n )
   nptr    n;
   {
     int  i, changes;
-    char conflict = FALSE;
 
     nevals++;
 
@@ -166,15 +165,12 @@ public void linear_model( n )
     if( n->nflags & VISITED )
 	BuildConnList( n );
 
-    changes = ComputeDC( n, &conflict );
+    changes = ComputeDC( n );
 
     if( not changes )
 	CleanEvents( n );
     else if( withdriven ) {
-	if (settle != 0 and conflict )
-	   EnqueDecay( n, settle );
-	else
-	   scheduleDriven();
+	scheduleDriven();
     }
     else {
         if( tdecay != 0)
@@ -400,6 +396,11 @@ private void scheduleDriven()
 		    PuntEvent( nd, ev );
 		continue;
 	      }
+	    else if ((settle > 0) && (nd->nflags & CONFLICT)) {
+		EnqueDecay(nd, settle);
+		nd->nflags &= ~CONFLICT;	/* clear CONFLICT flag */
+		continue;
+	    }
 	    else if( tunitdelay )
 	      {
 		delay = tunitdelay;
@@ -525,9 +526,8 @@ private void schedulePureCS( nlist )
  * This routine will update V.min and V.max and add the node to the
  * corresponding dom_driver entry.  Return TRUE if any node changes value.
  */
-private int ComputeDC( nlist, conflict )
+private int ComputeDC( nlist )
   nptr  nlist;
-  char  *conflict;
   {
     register nptr  this;
     register Thev  r;
@@ -562,7 +562,8 @@ private int ComputeDC( nlist, conflict )
 	    r->final = LOW;
 	else {
 	    r->final = X;
-	    if ( withdriven ) *conflict = TRUE;
+	    if ((this->npot != X) && withdriven && (settle > 0))
+		this->nflags |= CONFLICT;
 	}
 
 	if( withdriven )
