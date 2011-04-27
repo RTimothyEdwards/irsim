@@ -56,14 +56,15 @@
 	( ((debug & (FL)) == (FL) and IsWatched( N )) ? 1 : 0 )
 
 		/* flags used in thevenin structure */
-#define	T_DEFINITE	0x01	/* set for a definite rooted path	    */
-#define	T_UDELAY	0x02	/* set if user specified delay encountered  */
-#define	T_SPIKE		0x04	/* set if charge-sharing spike possible	    */
-#define	T_DRIVEN	0x08	/* set if this branch is driven		    */
-#define	T_REFNODE	0x10	/* set for the reference node in pure c-s   */
-#define	T_XTRAN		0x20	/* set if connecting through an X trans.    */
-#define	T_INT		0x40	/* set if we should consider input slope    */
-#define	T_DOMDRIVEN	0x80	/* set if branch driven to dominant voltage */
+#define	T_DEFINITE	0x001	/* set for a definite rooted path	    */
+#define	T_UDELAY	0x002	/* set if user specified delay encountered  */
+#define	T_SPIKE		0x004	/* set if charge-sharing spike possible	    */
+#define	T_DRIVEN	0x008	/* set if this branch is driven		    */
+#define	T_REFNODE	0x010	/* set for the reference node in pure c-s   */
+#define	T_XTRAN		0x020	/* set if connecting through an X trans.    */
+#define	T_INT		0x040	/* set if we should consider input slope    */
+#define	T_DOMDRIVEN	0x080	/* set if branch driven to dominant voltage */
+#define T_CONFLICT	0x100	/* set if there are conflicting drivers	    */
 
 public	int       tunitdelay = 0;	/* if <> 0, all transitions take
 					 * 'tunitdelay' DELAY-units */
@@ -396,9 +397,8 @@ private void scheduleDriven()
 		    PuntEvent( nd, ev );
 		continue;
 	      }
-	    else if ((settle > 0) && (nd->nflags & CONFLICT)) {
+	    else if ((settle > 0) && (r->flags & T_CONFLICT)) {
 		EnqueDecay(nd, settle);
-		nd->nflags &= ~CONFLICT;	/* clear CONFLICT flag */
 		continue;
 	    }
 	    else if( tunitdelay )
@@ -563,7 +563,7 @@ private int ComputeDC( nlist )
 	else {
 	    r->final = X;
 	    if ((this->npot != X) && withdriven && (settle > 0))
-		this->nflags |= CONFLICT;
+		r->flags |= T_CONFLICT;
 	}
 
 	if( withdriven )
