@@ -80,3 +80,50 @@ rm -f /usr/local/lib/irsim/tcl/irsimexec
 cp irsimexec /usr/local/lib/irsim/tcl/irsimexec
 make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/tcltk'
 make[1]: Leaving directory `/home/tim/gitsrc/irsim-9.7'
+make[1]: Entering directory `/home/tim/gitsrc/irsim-9.7'
+./scripts/mkdirs /usr/local/bin /usr/local/share/man \
+	/usr/local/lib/irsim/tcl /usr/local/lib/irsim/prm /usr/local/lib/irsim/tcl/bitmaps
+for dir in lib doc tcltk irsim random tclsubckt tcltk; do \
+	(cd $dir && make install-tcl); done
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/lib'
+make[2]: Nothing to be done for `install-tcl'.
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/lib'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/doc'
+../scripts/mkdirs /usr/local/share/man /usr/local/share/man/man1 /usr/local/share/man/man3 /usr/local/share/man/man5
+cp irsim-analyzer.3 /usr/local/share/man/man3/irsim-analyzer.3
+cp irsim.1 /usr/local/share/man/man1/irsim.1
+cp netchange.5 /usr/local/share/man/man5/netchange.5
+../scripts/mkdirs /usr/local/lib/irsim/doc
+cp irsim-analyzer.doc /usr/local/lib/irsim/doc/irsim-analyzer.doc
+cp irsim.doc /usr/local/lib/irsim/doc/irsim.doc
+cp netchange.doc /usr/local/lib/irsim/doc/netchange.doc
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/doc'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/tcltk'
+rm -f /usr/local/bin/irsim.sh /usr/local/bin/irsim
+cp irsim.sh /usr/local/bin/irsim
+(cd /usr/local/bin; chmod 0755 irsim)
+rm -f /usr/local/lib/irsim/tcl/irsim.tcl
+cp irsim.tcl /usr/local/lib/irsim/tcl/irsim.tcl
+rm -f /usr/local/lib/irsim/tcl/irsimexec
+cp irsimexec /usr/local/lib/irsim/tcl/irsimexec
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/tcltk'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/irsim'
+rm -f /usr/local/lib/irsim/tcl/tclirsim.so
+cp tclirsim.so /usr/local/lib/irsim/tcl/tclirsim.so
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/irsim'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/random'
+rm -f /usr/local/lib/irsim/tcl/random.so
+cp random.so /usr/local/lib/irsim/tcl/random.so
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/random'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/tclsubckt'
+rm -f /usr/local/lib/irsim/tcl/diglib.so
+cp diglib.so /usr/local/lib/irsim/tcl/diglib.so
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/tclsubckt'
+make[2]: Entering directory `/home/tim/gitsrc/irsim-9.7/tcltk'
+rm -f /usr/local/bin/irsim.sh /usr/local/bin/irsim
+cp irsim.sh /usr/local/bin/irsim
+(cd /usr/local/bin; chmod 0755 irsim)
+rm -f /usr/local/lib/irsim/tcl/irsimexec
+cp irsimexec /usr/local/lib/irsim/tcl/irsimexec
+make[2]: Leaving directory `/home/tim/gitsrc/irsim-9.7/tcltk'
+make[1]: Leaving directory `/home/tim/gitsrc/irsim-9.7'
