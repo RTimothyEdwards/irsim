@@ -113,7 +113,7 @@ typedef struct
 
 private	Bucket  bucket[NBINS];		/* free list hash table */
 
-#if !defined(CYGWIN) && !defined(macosx)
+#if !defined(CYGWIN) && !defined(__APPLE__)
 	/* External definitions */
 extern	int	  etext;
 extern	unsigned  sleep();
@@ -126,7 +126,7 @@ extern	unsigned  sleep();
 #define	PAGE_MASK		( PAGE_SIZE - 1 )
 
 #define	FPRINTF			(void) fprintf
-#if defined(CYGWIN) || defined(macosx)
+#if defined(CYGWIN) || defined(__APPLE__)
 private Pointer GetMoreCore( npages )
   int  npages;
   {

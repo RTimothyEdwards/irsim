@@ -1,0 +1,1111 @@
+# Wishrc startup for ToolScript (irsim)
+#
+# For installation:  Put this file and also tclirsim.so into
+# directory ${CAD_ROOT}/irsim/tcl/, and set the "load" line below
+# to point to the location of tclirsim.so.  Also see comments
+# in shell script "irsim.sh".
+#
+
+load /usr/local/lib/irsim/tcl/tclirsim.so
+
+# Load the "random" library, if it exists
+
+catch {load /usr/local/lib/irsim/tcl/random.so}
+
+# It is important to make sure no irsim commands overlap with Tcl built-in
+# commands, because otherwise the namespace import will fail.
+
+proc pushnamespace { name } {
+
+   set y [namespace eval ${name} info commands ::${name}::*]
+   set z [info commands]
+
+   foreach v $y {
+      regsub -all {\*} $v {\\*} i
+      set x [namespace tail $i]
+      if {[lsearch $z $x] < 0} {
+         namespace import $i
+      } else {
+            puts "Warning: ${name} command '$x' use fully-qualified name '$v'"
+      }
+   }
+}
+
+proc popnamespace { name } {
+   set z [info commands]
+   set l [expr [string length ${name}] + 5]
+
+   while {[set v [lsearch $z ${name}_tcl_*]] >= 0} {
+      set y [lindex $z $v]
+      set w [string range $y $l end]
+      interp alias {} ::$w {}
+      rename ::$y ::$w
+      puts "Info: replacing ::$w with ::$y"
+   }
+   namespace forget ::${name}::*
+}
+
+#----------------------------------
+# Convenience routines
+#----------------------------------
+
+# Convert a (decimal) number into a bit vector string.  If dir = 0 (default),
+# MSB is on the left.  if dir = 1, MSB is on the right.
+
+proc irsim::bconvert {value bits {dir 0}} {
+   set str ""
+   for {set i 0} {$i < $bits} {incr i} {
+      if {$dir == 0} {
+	 set str "[expr {$value & 1}]$str"
+      } else {
+         append str [expr {$value & 1}]
+      }
+      set value [expr {$value >> 1}]
+   }
+   return $str
+}
+
+#----------------------------------------------------------------------
+# List nodes in the top-level of a hierarchically-specified netlist,
+# where hierarchy is implied by the use of "/" in the net names.
+#----------------------------------------------------------------------
+
+proc irsim::listtopnodes {{separator /}} {
+   set allnodes [listnodes]
+   set topnodes {}
+   foreach n $allnodes {
+      if {[string first $separator $n] < 0} {
+	 lappend topnodes $n
+      }
+   }
+   return $topnodes
+}
+
+#----------------------------------------------------------------------
+# Cross-Application section
+#----------------------------------------------------------------------
+
+# Check namespaces for existence of other applications
+set UsingMagic 0
+set UsingXCircuit 0
+set UsingNetgen 0
+set nlist [namespace children]
+foreach i $nlist {
+   switch $i {
+      ::magic { set UsingMagic 1 }
+      ::xcircuit { set UsingXCircuit 1 }
+      ::netgen { set UsingNetgen 1 }
+   }
+}
+
+
+# Setup Magic assuming that the Tcl version is installed.
+
+proc magic { args } {
+   global CAD_ROOT
+   global argc
+   global argv
+   set magicscript [glob -nocomplain ${CAD_ROOT}/magic/tcl/magic.tcl]
+   if { ${magicscript} == {} } {
+      puts stderr "\"magic\" requires Tcl-based Magic version 7.2 or newer."
+      puts stderr "Could not find script \"magic.tcl\".  If Magic is installed in a"
+      puts stderr "place other than CAD_ROOT (=${CAD_ROOT}), use the command"
+      puts stderr "\"source <path>/magic.tcl\"."
+   } else {
+      set argv $args
+      set argc [llength $args]
+      uplevel #0 source $magicscript
+   }
+}
+
+# Setup Xcircuit assuming that the Tcl version is installed.
+
+proc xcircuit { args } {
+   global CAD_ROOT
+   global argc
+   global argv
+   set xcircscript [glob -nocomplain ${CAD_ROOT}/xcircuit*/xcircuit.tcl]
+   if { ${xcircscript} == {} } {
+      puts stderr "\"xcircuit\" requires Tcl-based XCircuit version 3.1 or newer."
+      puts stderr "Could not find script \"xcircuit.tcl\".  If XCircuit is installed in a"
+      puts stderr "place other than CAD_ROOT (=${CAD_ROOT}), use the command"
+      puts stderr "\"source <path>/xcircuit.tcl\"."
+   } else {
+      # if there are multiple installed versions, choose the highest version.
+      if {[llength $xcircscript] > 1} {
+        set xcircscript [lindex [lsort -decreasing -dictionary $xcircscript] 0]
+      }
+      set argv $args
+      set argc [llength $args]
+      uplevel source $xcircscript
+   }
+}
+
+# Setup Netgen assuming that the Tcl version is installed.
+
+proc netgen { args } {
+   global CAD_ROOT
+   global argc
+   global argv
+   set netgenscript [glob -nocomplain ${CAD_ROOT}/netgen/tcl/netgen.tcl]
+   if { ${netgenscript} == {} } {
+      puts stderr "\"netgen\" requires Tcl-based Netgen version 1.2 or newer."
+      puts stderr "Could not find script \"netgen.tcl\".  If Netgen is installed in a"
+      puts stderr "place other than CAD_ROOT (=${CAD_ROOT}), use the command"
+      puts stderr "\"source <path>/netgen.tcl\"."
+   } else {
+      set argv $args
+      set argc [llength $args]
+      source $netgenscript
+   }
+}
+
+#-------------------------------------------------------------------
+# Import other Tcl scripts
+#-------------------------------------------------------------------
+
+catch {source /usr/local/lib/irsim/tcl/cver.tcl}
+
+#-------------------------------------------------------------------
+# Backwards-compatibility commands
+#-------------------------------------------------------------------
+
+proc @ { args } {
+   # Process a command file with backwards-compatibility for original
+   # IRSIM commands "set" and "flush"
+   set f [open $args]
+   while {![eof $f]} {
+      set linein [gets $f]
+      regsub -- {^set } $linein "setvector " linein
+      regsub -- {^flush} $linein histflush linein
+      eval $linein
+   }
+   close $f
+}
+
+proc < { args } {
+   restorestate $args
+}
+
+proc << { args } {
+   restoreall $args
+}
+
+proc > { args } {
+   savestate $args
+}
+
+proc ! { args } {
+   querygate $args
+}
+
+proc ? { args } {
+   querysource $args
+}
+
+proc | { args } {
+}
+
+#-------------------------------------------------------------------
+
+set auto_noexec 1       ;# don't EVER call UNIX commands w/o "shell" in front
+
+# Have we called irsim from tkcon or a clone thereof?  If so, set IrsimConsole
+
+if {! $UsingMagic } {
+   if {[lsearch [interp aliases] tkcon] != -1} {
+      set IrsimConsole tkcon
+      wm withdraw .
+
+      # Get rid of some overlapping tkcon commands which are not needed.
+
+      if {[lsearch [info commands] orig_alias] < 0} {rename alias orig_alias}
+   } else {
+      rename unknown tcl_unknown
+      proc unknown { args } {
+         # CAD tools special:
+         # Check for commands which were renamed to tcl_(command)
+
+         set cmd [lindex $args 0]
+         if {[lsearch [info commands] tcl_$cmd] >= 0} {
+            set arglist [concat tcl_$cmd [lrange $args 1 end]]
+            set ret [catch {eval $arglist} result]
+            if {$ret == 0} {
+               return $result
+            } else {
+               return -code $ret -errorcode $errorCode $result
+            }
+         }
+         return [eval [concat tcl_unknown $args]]
+      }
+   }
+}
+
+# These commands are defined by Tcl but not by magic, so they can be
+# altered in any IRSIM mode of operation.
+
+if {[lsearch [info commands] orig_clock] < 0} {rename clock orig_clock}
+if {[lsearch [info commands] orig_trace] < 0} {rename trace orig_trace}
+
+pushnamespace irsim
+
+#----------------------------------
+# The analyzer window setup
+#----------------------------------
+
+set RsimOpts(banner) [irsim::print banner]
+set RsimOpts(legend) [irsim::print legend]
+set RsimOpts(times) [irsim::print times]
+set RsimOpts(outline) [irsim::print outline]
+set RsimOpts(scroll) [simtime scroll]
+set RsimOpts(step) 100.0
+set RsimOpts(sstep) 1000.0
+set RsimOpts(base) 0
+
+toplevel .analyzer
+wm geometry .analyzer 800x350+50+50
+wm protocol .analyzer WM_DELETE_WINDOW {wm withdraw .analyzer}
+
+frame .analyzer.menubar
+frame .analyzer.scope
+
+menubutton .analyzer.menubar.print -text Print \
+	-menu .analyzer.menubar.print.menu -relief groove
+menubutton .analyzer.menubar.base -text Base \
+	-menu .analyzer.menubar.base.menu -relief groove
+menubutton .analyzer.menubar.window -text Window \
+	-menu .analyzer.menubar.window.menu -relief groove
+menubutton .analyzer.menubar.zoom -text Zoom \
+	-menu .analyzer.menubar.zoom.menu -relief groove
+
+set m [menu .analyzer.menubar.print.menu -tearoff 0]
+$m add command -label "File" \
+	-command {GetUserInput "Enter filename:" "[irsim::print title]" \
+	"irsim::print file"}
+$m add command -label "Title" \
+	-command {GetUserInput "Enter title:" "[irsim::print title]" \
+	"irsim::get_title"}
+$m add separator
+$m add check -label "Banner" -variable RsimOpts(banner) \
+	-command {irsim::print banner $RsimOpts(banner)}
+$m add check -label "Legend" -variable RsimOpts(legend) \
+	-command {irsim::print legend $RsimOpts(legend)}
+$m add check -label "Times" -variable RsimOpts(times) \
+	-command {irsim::print times $RsimOpts(times)}
+$m add check -label "Outline" -variable RsimOpts(outline) \
+	-command {irsim::print outline $RsimOpts(outline)}
+
+set m [menu .analyzer.menubar.window.menu -tearoff 0]
+$m add command -label "Manage Traces" \
+	-command {wm deiconify .nodelist; irsim::update_nodelist force}
+$m add command -label "Name Length" \
+	-command {GetUserInput "Length (characters):" "[trace characters]" \
+	"irsim::get_length"}
+$m add check -label "Scroll" -variable RsimOpts(scroll) \
+	-command {simtime scroll $RsimOpts(scroll)}
+$m add command -label "Scroll Step" \
+	-command {GetUserInput "Scroll Step:" "$RsimOpts(step)" \
+	"irsim::set_scrollstep"}
+$m add command -label "Shift Step" \
+	-command {GetUserInput "Scroll Shift Step:" "$RsimOpts(sstep)" \
+	"irsim::set_scrollsstep"}
+
+set m [menu .analyzer.menubar.base.menu -tearoff 0]
+$m add radio -label "Binary" -variable RsimOpts(base) \
+		-value binary -command {base set binary}
+$m add radio -label "Octal" -variable RsimOpts(base) \
+		-value octal -command {base set octal}
+$m add radio -label "Unsigned Decimal" -variable RsimOpts(base) \
+		-value decimal -command {base set decimal}
+$m add radio -label "Signed Decimal" -variable RsimOpts(base) \
+		-value signed -command {base set signed}
+$m add radio -label "Hex" -variable RsimOpts(base) \
+		-value hexidecimal -command {base set hexidecimal}
+
+set m [menu .analyzer.menubar.zoom.menu -tearoff 0]
+$m add command -label "In" -command {zoom in}
+$m add command -label "Out" -command {zoom out}
+$m add command -label "Full" -command {simtime left [simtime begin]; \
+		 simtime right [simtime end]}
+
+label .analyzer.menubar.title -text "logic analyzer display" \
+	-anchor w -padx 5
+
+set scb(center) [image create bitmap \
+	-file /usr/local/lib/irsim/tcl/bitmaps/center.xbm \
+	-background gray -foreground steelblue]
+set scb(lleft) [image create bitmap \
+	-file /usr/local/lib/irsim/tcl/bitmaps/lleft.xbm \
+	-background gray -foreground steelblue]
+set scb(left) [image create bitmap \
+	-file /usr/local/lib/irsim/tcl/bitmaps/left.xbm \
+	-background gray -foreground steelblue]
+set scb(right) [image create bitmap \
+	-file /usr/local/lib/irsim/tcl/bitmaps/right.xbm \
+	-background gray -foreground steelblue]
+set scb(rright) [image create bitmap \
+	-file /usr/local/lib/irsim/tcl/bitmaps/rright.xbm \
+	-background gray -foreground steelblue]
+
+pack .analyzer.menubar.title -side left -expand true -fill both
+pack .analyzer.menubar.print -side right
+pack .analyzer.menubar.window -side right
+pack .analyzer.menubar.base -side right
+pack .analyzer.menubar.zoom -side right
+
+tkanalyzer .analyzer.scope.display -background black
+
+pack .analyzer.menubar -fill x -side top
+pack .analyzer.scope -fill both -side bottom -expand true
+
+grid columnconfigure .analyzer.scope 1 -weight 1
+grid rowconfigure .analyzer.scope 1 -weight 1
+
+label .analyzer.scope.time0 -text "0.0" -borderwidth 2 -relief sunken -anchor e
+label .analyzer.scope.time1 -text "" -borderwidth 2 -relief sunken
+label .analyzer.scope.time2 -text "0.0" -borderwidth 2 -relief sunken -anchor w
+frame .analyzer.scope.names -width 50 -relief sunken -borderwidth 2 \
+	-background skyblue2
+frame .analyzer.scope.values -width 50 -relief sunken -borderwidth 2 \
+	-background skyblue2
+
+frame .analyzer.scope.lbuttons
+frame .analyzer.scope.rbuttons
+
+button .analyzer.scope.lbuttons.center -image $scb(center) -borderwidth 1 \
+		-command {simtime left [simtime begin] ; simtime right [simtime end]}
+button .analyzer.scope.lbuttons.lleft -image $scb(lleft) -borderwidth 1 \
+		-command {simtime move [simtime begin]}
+button .analyzer.scope.lbuttons.left -image $scb(left) -borderwidth 1 \
+		-command {simtime move  -$RsimOpts(step)}
+button .analyzer.scope.rbuttons.right -image $scb(right) -borderwidth 1 \
+		-command {simtime move +$RsimOpts(step).0}
+button .analyzer.scope.rbuttons.rright -image $scb(rright) -borderwidth 1 \
+		-command {irsim::move_to_end}
+
+set c [canvas .analyzer.scope.scrollx -relief sunken -borderwidth 1 -height 13]
+
+$c create rect 2 2 15 15 -fill steelblue -width 0 -tag slider
+bind $c <Button-1> {irsim::center_slider %x}
+bind $c <B1-Motion> {irsim::center_slider %x}
+bind $c <Button-3> {irsim::grab_slider %x}
+bind $c <B3-Motion> {irsim::resize_slider %x}
+
+# Callback function for Print->Title menu button
+
+proc irsim::get_title {title} {
+   irsim::print title "$title"
+   .analyzer.menubar.title configure -text "$title"
+}
+
+proc irsim::get_length {length} {
+   trace characters $length
+}
+
+proc irsim::set_scrollstep {value} {
+   global RsimOpts
+   set RsimOpts(step) $value
+}
+
+proc irsim::set_scrollsstep {value} {
+   global RsimOpts
+   set RsimOpts(sstep) $value
+}
+
+proc irsim::update_slider {} {
+   set a [simtime begin]
+   set b [simtime end]
+   set w [.analyzer.scope.display width]
+   set d [expr {$b - $a}]
+   if {$d > 0} {
+      set sc [expr {($w - 0.0) / $d}]
+      set c [expr {[simtime left] * $sc}]
+      set e [expr {[simtime right] * $sc}]
+      .analyzer.scope.scrollx coords slider $c 2 $e 15
+   }
+}
+
+# Adjust the screen position so that the time endpoint is at the
+# rightmost edge of the screen, at the current zoom factor.
+
+proc irsim::move_to_end {} {
+   set a [simtime right]
+   set b [simtime left]
+   set c [simtime end]
+   simtime move [expr {$c - $a + $b}]
+   irsim::update_times
+   irsim::update_slider
+}
+
+# Find the edge of the slider closest to the pointer, and grab
+# it (button-3 press).
+
+proc irsim::grab_slider {x} {
+   global RsimOpts
+
+   set scoords [.analyzer.scope.scrollx coords slider]
+   set a [lindex $scoords 0]
+   set b [lindex $scoords 2]
+   set m [expr {($a + $b) / 2}]
+   if {$x > $m} {
+      set RsimOpts(slider_edge) right
+   } else {
+      set RsimOpts(slider_edge) left
+   }
+   irsim::resize_slider $x
+}
+
+# Change the scale of the view by moving one end of the slider
+# without changing the other (button-3 motion)
+
+proc irsim::resize_slider {x} {
+   global RsimOpts
+
+   set edge $RsimOpts(slider_edge)
+   set w [.analyzer.scope.display width]
+   set a [simtime begin]
+   set b [simtime end]
+   set d [expr {$b - $a}]
+   if {$d > 0} {
+      set sc [expr {($w - 0.0) / $d}]
+      set newtime [expr {$a + ($x / $sc)}]
+      simtime $RsimOpts(slider_edge) $newtime
+   }
+   irsim::update_times
+   irsim::update_slider
+}
+
+# Adjust the screen position such that, when mapped, the slider
+# is centered on the cursor x position.  This also preps for
+# moving the slider.
+
+proc irsim::center_slider {x} {
+   set a [simtime begin]
+   set b [simtime end]
+   set w [.analyzer.scope.display width]
+   set d [expr {$b - $a}]
+   if {$d > 0} {
+      set sc [expr {($w - 0.0) / $d}]
+      set sz [expr {[simtime right] - [simtime left]}]
+      simtime move [expr {$a + ($x / $sc) - (($sz + 0.0) / 2)}]
+      irsim::update_times
+      irsim::update_slider
+   }
+}
+
+pack .analyzer.scope.lbuttons.left -side right
+pack .analyzer.scope.lbuttons.lleft -side right
+pack .analyzer.scope.lbuttons.center -side right
+pack .analyzer.scope.rbuttons.right -side left
+pack .analyzer.scope.rbuttons.rright -side left
+
+grid .analyzer.scope.time0 -row 0 -column 0 -sticky news
+grid .analyzer.scope.time1 -row 0 -column 1 -sticky news
+grid .analyzer.scope.time2 -row 0 -column 2 -sticky news
+grid .analyzer.scope.names -row 1 -column 0 -sticky news
+grid .analyzer.scope.display -row 1 -column 1 -sticky news
+grid .analyzer.scope.values -row 1 -column 2 -sticky news
+grid .analyzer.scope.lbuttons -row 2 -column 0 -sticky news
+grid .analyzer.scope.scrollx -row 2 -column 1 -sticky news
+grid .analyzer.scope.rbuttons -row 2 -column 2 -sticky news
+
+proc irsim::UpdateAnalyzer {args} {
+   # puts stderr "UpdateAnalyzer $args level [info level]"
+   if {[wm state .analyzer] == "withdrawn"} {
+      wm deiconify .analyzer
+      if {[info level] <= 1} {
+         tkwait visibility .analyzer
+         update idletasks
+         # analyzer $args
+      }
+   }
+   irsim::update_times
+   irsim::update_traces
+   irsim::update_nodelist
+}
+
+# Button callback for marker
+bind .analyzer.scope.display <Button-2> \
+	{marker off ; .analyzer.scope.time1 configure -text ""; irsim::no_values}
+bind .analyzer.scope.display <Button-1> \
+	{if {%x > 0} {marker set [trace cursor %y] [simtime cursor %x];\
+	irsim::update_times; irsim::update_values}}
+bind .analyzer.scope.display <B1-Motion> \
+	{if {%x > 0} {marker set [trace cursor %y] [simtime cursor %x];\
+	irsim::update_times; irsim::update_values}}
+bind .analyzer.scope.display <ButtonPress-3> \
+	{if {%x > 0} {marker 2 move [simtime cursor %x]; irsim::update_times}}
+bind .analyzer.scope.display <B3-Motion> \
+	{if {%x > 0} {marker 2 move [simtime cursor %x]; irsim::update_times}}
+bind .analyzer.scope.display <ButtonRelease-3> \
+	{if {%x > 0} {marker 2 off; irsim::update_times}}
+bind .analyzer.scope.display <B3-Key-z> {irsim::zoom_to_delta}
+
+bind .analyzer.scope.display <Left>  {simtime move -$RsimOpts(step)}
+bind .analyzer.scope.display <Right> {simtime move +$RsimOpts(step)}
+bind .analyzer.scope.display <Shift-Key-Left>  {simtime move -$RsimOpts(sstep)}
+bind .analyzer.scope.display <Shift-Key-Right> {simtime move +$RsimOpts(sstep)}
+bind .analyzer.scope.display <Key-z> {zoom out}
+bind .analyzer.scope.display <Key-Z> {zoom in}
+bind .analyzer.scope.display <Key-v> \
+	{simtime left [simtime begin]; simtime right [simtime end]}
+
+bind .analyzer.scope.display <Enter> {focus %W}
+bind .analyzer.scope <Configure> { \
+	update idletasks; irsim::update_traces; \
+	update idletasks; irsim::update_slider}
+
+wm withdraw .analyzer
+.analyzer.scope.display init	;# force mapping of window
+irsim::tag analyzer {irsim::UpdateAnalyzer %N}
+irsim::tag ana {irsim::UpdateAnalyzer %N}
+
+irsim::tag s {irsim::update_all}
+irsim::tag p {irsim::update_all}
+irsim::tag c {irsim::update_all}
+irsim::tag R {irsim::update_all}
+irsim::tag simtime {irsim::update_if_move %1 %2}
+irsim::tag base {irsim::update_if_base_change %1}
+irsim::tag zoom {irsim::update_all}
+irsim::tag trace {irsim::trace_callback %1 %2}
+
+proc irsim::trace_callback {option {name {}}} {
+   global RsimOpts
+   if {$option == "select"} {
+      set tl [trace list all]
+      foreach tr $tl {
+         .analyzer.scope.names.b_$tr configure -background yellow
+      }
+      .analyzer.scope.names.b_$name configure -background orange
+      set RsimOpts(base) [base get $name]
+   } elseif {$option == "remove"} {
+      grid columnconfigure .analyzer.scope 0 -minsize 40
+      grid columnconfigure .analyzer.scope 2 -minsize 40
+      irsim::update_traces
+      irsim::update_nodelist
+   } elseif {$option == "characters"} {
+      grid columnconfigure .analyzer.scope 0 -minsize 40
+      irsim::update_traces
+   } elseif {$option == "move"} {
+      irsim::update_traces
+   }
+}
+
+# Zoom to make the area mapped out by the marker & delta become the
+# full screen view.
+
+proc irsim::zoom_to_delta {} {
+   set x1 [simtime marker]
+   set x2 [simtime delta]
+   if {$x2 != {}} {
+      if {$x1 > $x2} {
+         set x $x1
+         set x1 $x2
+         set x2 $x
+      }
+      simtime left $x1
+      simtime right $x2
+   }
+}
+
+# Update various widgets in response to a simulation time change
+# Format time string to two decimal places
+proc irsim::update_all {} {
+   if {[info level] <= 1} {
+      irsim::update_times
+      irsim::update_slider
+   }
+}
+
+# Update on a "simtime move" command
+proc irsim::update_if_move {{option {}} {targ {}}} {
+   global RsimOpts
+   if {[info level] <= 1} {
+      if {$option == "move" || $targ != {}} {
+         irsim::update_times
+         irsim::update_slider
+	 set RsimOpts(scroll) [simtime scroll]
+      }
+   }
+}
+
+# Update on a "base set" command
+proc irsim::update_if_base_change {{option {}}} {
+   if {[info level] <= 1} {
+      if {$option == "set"} {
+	 irsim::update_traces
+	 irsim::update_values
+      }
+   }
+}
+
+proc irsim::update_times {} {
+   .analyzer.scope.time0 configure -text [format "%0.2f" \
+	[simtime left]]
+   set tmarker [simtime marker]
+   if {$tmarker != {}} {
+      set dmarker [simtime delta]
+      if {$dmarker != {}} {
+         .analyzer.scope.time1 configure -text \
+	 [format "%0.2f %0.2f (delta = %0.2f)" \
+	 $tmarker $dmarker [expr {$dmarker - $tmarker}]]
+      } else {
+         .analyzer.scope.time1 configure -text [format "%0.2f" $tmarker]
+      }
+   }
+   .analyzer.scope.time2 configure -text [format "%0.2f" [simtime right]]
+}
+
+proc irsim::update_traces {} {
+   set tl [trace list all]
+   set minv 0
+   set minn 0
+   foreach tr [place slaves .analyzer.scope.names] {place forget $tr}
+   foreach tr [place slaves .analyzer.scope.values] {place forget $tr}
+   foreach tr $tl {
+      set yl [trace bottom $tr]
+      set yt [trace top $tr]
+      incr yt
+      set yh [expr {$yl - $yt - 1}]
+      if {[catch {place .analyzer.scope.names.b_$tr -y $yt -height $yh}]} {
+         button .analyzer.scope.names.b_$tr -text $tr -borderwidth 1 \
+		-relief ridge -background yellow \
+		-command "trace select $tr"
+	 place .analyzer.scope.names.b_$tr -y $yt -height $yh \
+		-relwidth 1 -relx 0
+      }
+      set newminn [font measure [.analyzer.scope.names.b_$tr cget -font] $tr]
+      set newminn [expr {$newminn + 10}]	;# allow 10-pixel surround
+      if {$newminn > $minn} {
+	 set minn $newminn
+	 grid columnconfigure .analyzer.scope 0 -minsize $minn
+      }
+
+      if {[catch {place .analyzer.scope.values.b_$tr -y $yt -height $yh}]} {
+         label .analyzer.scope.values.b_$tr -text "" -borderwidth 1 \
+		-relief ridge -background yellowgreen
+	 place .analyzer.scope.values.b_$tr -y $yt -height $yh \
+		-relwidth 1 -relx 0
+      }
+      set trbase [trace base $tr]
+      if {$trbase < 1} {set trbase 1}
+      if {$trbase == 5} {
+         set trdigits [expr ([trace bits $tr] + 2) / 3]
+      } elseif {$trbase == 6} {
+         set trdigits [expr 1 + (([trace bits $tr] + 2) / 3)]
+      } else {
+         set trdigits [expr ([trace bits $tr] + $trbase - 1) / $trbase]
+      }
+      set newminv [font measure [.analyzer.scope.values.b_$tr cget -font] \
+		[string repeat X $trdigits]]
+      set newminv [expr {$newminv + 10}]	;# allow 10-pixel surround
+      if {$newminv > $minv} {
+	 set minv $newminv
+	 grid columnconfigure .analyzer.scope 2 -minsize $minv
+      }
+   }
+   # Even up all the boundaries to match the largest.
+   foreach tr [place slaves .analyzer.scope.names] {place $tr -relwidth 1}
+   foreach tr [place slaves .analyzer.scope.values] {place $tr -relwidth 1}
+}
+
+proc irsim::update_values {} {
+   set tl [trace list all]
+   foreach tr $tl {
+      set ltext [trace value $tr]
+      if {$ltext != {}} {
+         .analyzer.scope.values.b_$tr configure -text [trace value $tr]
+      }
+   }
+}
+
+proc irsim::no_values {} {
+   set tl [trace list all]
+   foreach tr $tl {
+      .analyzer.scope.values.b_$tr configure -text ""
+   }
+}
+
+#----------------------------------
+# End of analyzer window setup
+#----------------------------------
+
+#----------------------------------
+# Node list window setup
+#----------------------------------
+
+toplevel .nodelist
+frame .nodelist.freenodes
+frame .nodelist.usednodes
+frame .nodelist.freevectors
+frame .nodelist.usedvectors
+listbox .nodelist.freenodes.list \
+	-yscrollcommand {.nodelist.freenodes.sbar set}
+scrollbar .nodelist.freenodes.sbar -width 10 -orient vertical \
+	-command {.nodelist.freenodes.list yview}
+listbox .nodelist.usednodes.list \
+	-yscrollcommand {.nodelist.usednodes.sbar set}
+scrollbar .nodelist.usednodes.sbar -width 10 -orient vertical \
+	-command {.nodelist.usednodes.list yview}
+listbox .nodelist.freevectors.list \
+	-yscrollcommand {.nodelist.freevectors.sbar set}
+scrollbar .nodelist.freevectors.sbar -width 10 -orient vertical \
+	-command {.nodelist.freevectors.list yview}
+listbox .nodelist.usedvectors.list \
+	-yscrollcommand {.nodelist.usedvectors.sbar set}
+scrollbar .nodelist.usedvectors.sbar -width 10 -orient vertical \
+	-command {.nodelist.usedvectors.list yview}
+label .nodelist.freenodes.title -text "Nodes"
+label .nodelist.usednodes.title -text "Nodes in Analyzer"
+label .nodelist.freevectors.title -text "Vectors"
+label .nodelist.usedvectors.title -text "Vectors in Analyzer"
+
+pack .nodelist.freenodes.title -side top
+pack .nodelist.freenodes.list -side left -expand true -fill both
+pack .nodelist.freenodes.sbar -side right -fill y
+pack .nodelist.usednodes.title -side top
+pack .nodelist.usednodes.list -side left -expand true -fill both
+pack .nodelist.usednodes.sbar -side right -fill y
+pack .nodelist.freevectors.title -side top
+pack .nodelist.freevectors.list -side left -expand true -fill both
+pack .nodelist.freevectors.sbar -side right -fill y
+pack .nodelist.usedvectors.title -side top
+pack .nodelist.usedvectors.list -side left -expand true -fill both
+pack .nodelist.usedvectors.sbar -side right -fill y
+
+label .nodelist.title -text "IRSIM node and vector lists"
+frame .nodelist.bbar
+button .nodelist.bbar.close -text "Close" -command {wm withdraw .nodelist}
+pack .nodelist.bbar.close -side bottom -padx 5 -pady 5
+
+grid .nodelist.title -row 0 -column 0 -columnspan 2 -sticky news
+grid .nodelist.freenodes -row 1 -column 0 -sticky news
+grid .nodelist.usednodes -row 1 -column 1 -sticky news
+grid .nodelist.freevectors -row 2 -column 0 -sticky news
+grid .nodelist.usedvectors -row 2 -column 1 -sticky news
+grid .nodelist.bbar -row 3 -column 0 -columnspan 2 -sticky news
+
+grid columnconfigure .nodelist 0 -weight 1
+grid columnconfigure .nodelist 1 -weight 1
+grid rowconfigure .nodelist 1 -weight 1
+grid rowconfigure .nodelist 2 -weight 1
+
+bind .nodelist.freenodes.list <ButtonRelease-1> {irsim::pushnode %y}
+bind .nodelist.usednodes.list <ButtonRelease-1> {irsim::popnode %y}
+bind .nodelist.freevectors.list <ButtonRelease-1> {irsim::pushvector %y}
+bind .nodelist.usedvectors.list <ButtonRelease-1> {irsim::popvector %y}
+
+proc irsim::pushnode {y} {
+   set p_idx [.nodelist.freenodes.list nearest $y]
+   set p_key [.nodelist.freenodes.list get $p_idx]
+   .nodelist.freenodes.list delete $p_idx
+   .nodelist.usednodes.list insert end $p_key
+   ana $p_key
+}
+
+proc irsim::popnode {y} {
+   set p_idx [.nodelist.usednodes.list nearest $y]
+   set p_key [.nodelist.usednodes.list get $p_idx]
+   .nodelist.usednodes.list delete $p_idx
+   .nodelist.freenodes.list insert end $p_key
+   trace remove $p_key
+}
+
+proc irsim::pushvector {y} {
+   set p_idx [.nodelist.freevectors.list nearest $y]
+   set p_key [.nodelist.freevectors.list get $p_idx]
+   .nodelist.freevectors.list delete $p_idx
+   .nodelist.usedvectors.list insert end $p_key
+   ana $p_key
+}
+
+proc irsim::popvector {y} {
+   set p_idx [.nodelist.usedvectors.list nearest $y]
+   set p_key [.nodelist.usedvectors.list get $p_idx]
+   .nodelist.usedvectors.list delete $p_idx
+   .nodelist.freevectors.list insert end $p_key
+   trace remove $p_key
+}
+
+wm withdraw .nodelist
+
+proc irsim::update_nodelist {{state {}}} {
+   if {$state != "force"} {
+      if {[wm state .nodelist] == "withdrawn"} {return}
+   }
+   set n {}
+   set v {}
+   set tn {}
+   set tv {}
+   foreach t [trace list all] {
+      if {[trace class $t] == "vector"} {lappend tv $t} else {lappend tn $t}
+   }
+   foreach i [lsort [listnodes]] {
+      if {[lsearch $tn $i] < 0} {lappend n $i}
+   }
+   foreach i [lsort [listvectors]] {
+      if {[lsearch $tv $i] < 0} {lappend v $i}
+   }
+
+   .nodelist.freenodes.list delete 0 end
+   .nodelist.usednodes.list delete 0 end
+   .nodelist.freevectors.list delete 0 end
+   .nodelist.usedvectors.list delete 0 end
+
+   foreach i $n {
+      .nodelist.freenodes.list insert end $i
+   }
+   foreach i $v {
+      .nodelist.freevectors.list insert end $i
+   }
+   foreach i $tn {
+      .nodelist.usednodes.list insert end $i
+   }
+   foreach i $tv {
+      .nodelist.usedvectors.list insert end $i
+   }
+}
+
+#----------------------------------
+# User prompt window setup
+#----------------------------------
+
+toplevel .irsimprompt
+label .irsimprompt.message -anchor w
+pack .irsimprompt.message -side top -expand true -fill x -padx 10 -pady 5
+entry .irsimprompt.entry -width 40 -background white
+pack .irsimprompt.entry -side top -padx 10
+frame .irsimprompt.buttons
+button .irsimprompt.buttons.cancel -text "Cancel" -command {wm withdraw .irsimprompt}
+button .irsimprompt.buttons.okay -text "Okay"
+pack .irsimprompt.buttons.cancel -side left
+pack .irsimprompt.buttons.okay -side right
+pack .irsimprompt.buttons -side bottom -expand true -fill x -padx 10 -pady 5
+bind .irsimprompt.entry <Return> {.irsimprompt.buttons.okay invoke}
+wm withdraw .irsimprompt
+
+proc GetUserInput {prompt_text default_value action_proc args} {
+  .irsimprompt.message configure -text $prompt_text
+  .irsimprompt.entry delete 0 end
+  .irsimprompt.entry insert 0 $default_value
+  .irsimprompt.buttons.okay configure \
+	-command [subst {$action_proc \[.irsimprompt.entry get\] $args ; \
+	wm withdraw .irsimprompt}]
+
+  wm deiconify .irsimprompt
+  catch {focus .irsimprompt.entry}
+}
+
+#----------------------------------
+# End of user prompt window setup
+#----------------------------------
+
+# Check for the presence of the "magic" namespace, and if it exists, set up
+# handling between the two programs.
+
+if { $UsingMagic } {
+
+   array set magicnodes {}	;# initialize node dictionary
+   set nodevalues {}
+
+   # Callback routine which returns a node value to Tcl
+
+   proc nodegetvalue { name value tval } {
+      global nodevalues
+      if {"${value}" != "t"} {lappend nodevalues ${value}}
+   }
+
+   # Callback which returns the time to Tcl
+
+   proc timegetvalue { name value tval } {
+      return $tval
+   }
+
+   # Magic-to-IRSIM node name conversion (to be done)
+
+   proc magictoirsim { nodename } {
+      return $nodename
+   }
+
+   # Watch the currently selected node in IRSIM
+
+   proc watchnode { {wnode {} } {color white} } {
+      global magicnodes
+      global nodevalues
+
+      if { $wnode == {} } {
+         set wnode [magictoirsim [magic::getnode]]
+	 if {$wnode == {} } { return }
+      } else {
+	 goto $wnode
+         set wnode [magictoirsim $wnode]
+      }
+      set bvals [magic::box values]
+      set fx [expr {([lindex $bvals 0] + [lindex $bvals 2]) / 2}]
+      set fy [expr {([lindex $bvals 1] + [lindex $bvals 3]) / 2}]
+      set nodevalues {}
+      display tclproc nodegetvalue
+      irsim::d ${wnode}
+      set ival [lindex $nodevalues 0]
+      display tclproc nodecallback
+      magic::element add text irsim_$wnode $color $fx $fy "${wnode}=${ival}"
+      irsim::w $wnode
+      set magicnodes(${wnode}) irsim_${wnode}
+   }
+
+   # Stop watching a node
+
+   proc unwatchnode { wnode } {
+      global magicnodes
+      magic::element delete irsim_$wnode
+      unset magicnodes($wnode)
+   }
+
+   # Move a node to be centered in the current box
+
+   proc movenode { wnode } {
+      global magicnodes
+      set bvals [magic::box values]
+      set fx [expr {([lindex $bvals 0] + [lindex $bvals 2]) / 2}]
+      set fy [expr {([lindex $bvals 1] + [lindex $bvals 3]) / 2}]
+      magic::element configure $magicnodes(${wnode}) position $fx $fy
+   }
+
+   # Display the time in the magic window, positioned where the box is.
+
+   proc watchtime {} {
+      global magicnodes
+      set bvals [magic::box values]
+      set fx [expr {([lindex $bvals 0] + [lindex $bvals 2]) / 2}]
+      set fy [expr {([lindex $bvals 1] + [lindex $bvals 3]) / 2}]
+      display tclproc timegetvalue
+      set tval [irsim::d]
+      display tclproc nodecallback
+      magic::element add text irsim_curtime white $fx $fy "time=${tval}ns"
+      set magicnodes(curtime) irsim_curtime
+   }
+
+   # Stop watching the time
+
+   proc unwatchtime {} {
+      unwatchnode curtime
+   }
+
+   proc movetime {} {
+      movenode curtime
+   }
+
+   # Search for a file in either the current directory or magic's
+   # cell path.
+
+   proc pathfile { filename } {
+      global CAD_ROOT
+
+      set spath [join [list . [subst [magic::path cell]]]]
+      foreach i $spath {
+	 set rfile [glob -nocomplain ${i}/${filename}]
+	 if { $rfile != {} } { return $rfile }
+      }
+      return {}
+   }
+
+   # Callback function for printing nodes and vectors
+
+   proc nodecallback { name value tval } {
+      global magicnodes
+      if {"${value}" == "t"} {
+	 if {[info exists magicnodes(curtime)]} {
+	    magic::element configure $magicnodes(curtime) text "time=${tval}ns"
+	    puts stdout "\n"
+	 } else {
+	    puts stdout "time=${tval}ns\n"
+	 }
+      } else {
+	 if {[info exists magicnodes($name)]} {
+	    magic::element configure $magicnodes($name) text "${name}=${value}"
+	 } else {
+	    puts -nonewline stdout "${name}=${value} "
+	 }
+      }
+   }
+   # Start irsim intelligently; assume basic parameters; extract and
+   # do ext2sim if necessary.
+   # To-do: guess the parameter file name from the extract style?
+
+   proc irsim { { prmfile scmos100 } { cellname {} } } {
+      if { $cellname == {} } {
+	 # Get the current window's cellname
+	 set curcell [ magic::cellname list window ]
+	 set simfile [ pathfile ${curcell}.sim ]
+	 if { $simfile == {} } {
+	    set extfile [ pathfile ${curcell}.ext ]
+	    if { $extfile == {} } {
+	       magic::extract all
+	    }
+	    magic::exttosim
+	 }
+      } else {
+	 if {[ file ext $cellname ] == ".sim"} {
+	    set simfile $cellname
+	 } else {
+	    set curcell [ file root $cellname ]
+	    set simfile ${cellname}.sim
+	 }
+      }
+      irsim::start $prmfile $simfile
+
+      # Setup for callback functions displaying in magic.
+      display tclproc nodecallback
+   }
+
+# If we are using magic, we return to the interpreter here;  IRSIM is
+# started using the "irsim::start" command and the procedures just defined.
+
+} else {
+   # If magic is not active, the command "watchnode" calls "analyzer".
+   proc watchnode {args} {wm deiconify .analyzer; update idletasks; analyzer $args}
+
+   # The command "watchtime" is meaningless w/o magic, but if it's called,
+   # then it is assumed that the analyzer window is expected to pop up.
+   proc watchtime {args} {wm deiconify .analyzer; update idletasks; analyzer}
+
+   if {[string range [wm title .] 0 3] == "wish"} {
+      wm withdraw .
+   }
+
+#----------------------------------
+# Parse command-line argument list
+#----------------------------------
+
+   if {[string length $argv] == 0} {
+      irsim::start
+   } else {
+      set argafter {irsim::start}
+      for {set i 0} {$i < $argc} {incr i 1} {
+         set x [lindex $argv $i]
+#
+# Command-line argument handling goes here
+# We have to handle all of irsim's command line arguments so we can
+# figure out if a cell has been named for preloading.
+#
+# "-w" is reserved:  expects a "wrapper.tcl" program to run.
+#
+         switch -regexp -- $x {
+            ^-w(rap)?(per)?$ {       ;# This regexp accepts -w, -wrap, and -wrapper
+               source /usr/local/lib/irsim/tcl/wrapper.tcl
+            }
+            -s -
+            -n* {
+               lappend argafter $x
+            }
+            default {
+               lappend argafter $x
+            }
+         }
+      }
+      eval $argafter       ;# irsim::start ${argv}
+   }
+}
+
+#----------------------------------------------------------------------------
+# Irsim start function drops back to interpreter after initialization & setup
