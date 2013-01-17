@@ -164,7 +164,7 @@ proc netgen { args } {
 # Import other Tcl scripts
 #-------------------------------------------------------------------
 
-catch {source TCL_DIR/cver.tcl}
+catch {source TCL_DIR/vcd.tcl}
 
 #-------------------------------------------------------------------
 # Backwards-compatibility commands

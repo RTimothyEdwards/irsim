@@ -16,7 +16,7 @@ CFLAGS += -I${IRSIMDIR}/base -I${IRSIMDIR}/analyzer
 TCL_FILES = \
 	$(DESTDIR)${TCLDIR}/tkcon.tcl \
 	$(DESTDIR)${TCLDIR}/console.tcl \
-	$(DESTDIR)${TCLDIR}/cver.tcl \
+	$(DESTDIR)${TCLDIR}/vcd.tcl \
 	$(DESTDIR)${TCLDIR}/irsim.tcl
 
 tcl-main: irsimexec irsim.tcl irsim.sh

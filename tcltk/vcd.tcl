@@ -1,15 +1,14 @@
-#--------------------------------------
-# cver.tcl
-#--------------------------------------
-# Support for "cver" dumpfiles in IRSIM
-# Adds command "readcver <dumpfile>",
-#  which reads in the file and displays
-#  the traces in the analyzer.
-#--------------------------------------
+#---------------------------------------------------------
+# vcd.tcl
+#---------------------------------------------------------
+# Support for reading "VCD" format dumpfiles in IRSIM.
+# Adds command "readvcd <dumpfile>", which reads in
+# the file and displays the traces in the analyzer.
+#---------------------------------------------------------
 
-proc readcver {dumpfile} {
+proc readvcd {dumpfile} {
    if { [catch {open $dumpfile r} df] } {
-      puts stderr "Could not open CVER dumpfile $dumpfile\n"
+      puts stderr "Could not open VCD dumpfile $dumpfile\n"
       return
    }
    while {[gets $df line] >= 0} {
@@ -83,4 +82,13 @@ proc readcver {dumpfile} {
    }
 
    close $df
+}
+
+#---------------------------------------------------------
+# For backward compatibility.  Procedure was originally named "readcver",
+# but the format is VCD.
+#---------------------------------------------------------
+
+proc readcver {dumpfile} {
+   readvcd $dumpfile
 }
