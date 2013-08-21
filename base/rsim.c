@@ -1245,7 +1245,7 @@ private char *readVector( vstring, nbits )
 		      newvecs[b] = '0';
 		  newvecs[b] = '\0';
 		  for (b = 0; b < nbits; b++)
-		      if (nval & (1 << b))
+		      if (nval & ((Ulong)1 << b))
 		          newvecs[nbits - (b + 1)] = '1';
 		  if ((nval & ~(((Ulong)1 << b) - 1)) != 0)
 		  {
