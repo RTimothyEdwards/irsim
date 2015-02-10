@@ -87,6 +87,7 @@ install-tcl-real: install-tcl-dirs
 clean:
 	for dir in ${MODULES} ${PROGRAMS} ${UNUSED_MODULES}; do \
 		(cd $$dir && ${MAKE} clean); done
+	${RM} *.log
 
 distclean:
 	touch defs.mak
@@ -95,7 +96,6 @@ distclean:
 	${RM} ${IRSIMDIR}/scripts/default.conf
 	${RM} ${IRSIMDIR}/scripts/config.log ${IRSIMDIR}/scripts/config.status
 	${RM} scripts/irsim.spec irsim-`cat VERSION` irsim-`cat VERSION`.tgz
-	${RM} *.log
 
 dist:
 	${RM} scripts/irsim.spec irsim-`cat VERSION` irsim-`cat VERSION`.tgz
