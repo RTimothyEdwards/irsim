@@ -239,18 +239,18 @@ proc ::tkcon::Init {} {
 	    if {![interp issafe]} {cd [file dirname [info script]]}
 	    set envHome		PREF_FOLDER
 	    set rcfile		tkcon.cfg
-	    set histfile	tkcon.hst
+	    set histfile	irsim_tkcon.hst
 	    catch {console hide}
 	}
 	windows		{
 	    set envHome		HOME
 	    set rcfile		tkcon.cfg
-	    set histfile	tkcon.hst
+	    set histfile	irsim_tkcon.hst
 	}
 	unix		{
 	    set envHome		HOME
 	    set rcfile		.tkconrc
-	    set histfile	.tkcon_history
+	    set histfile	.irsim_tkcon_hst
 	}
     }
     if {[info exists env($envHome)]} {
@@ -4135,6 +4135,8 @@ proc ::tkcon::Bindings {} {
     foreach ev [bind Text] { bind TkConsole $ev [bind Text $ev] }	
     ## We really didn't want the newline insertion
     bind TkConsole <Control-Key-o> {}
+    bind TkConsole <<NextLine>> {}
+    bind TkConsole <<PrevLine>> {}
 
     ## Now make all our virtual event bindings
     foreach {ev key} [subst -nocommand -noback {

@@ -2293,6 +2293,11 @@ private int doexit()
   {
     TerminateAnalyzer();
 
+#ifdef TCL_IRSIM
+    Tcl_Eval(irsiminterp, "catch {tkcon eval exit}\n");
+    /* exit() call is not reached unless console is not present */
+#endif
+
     exit( (targc == 2) ? atoi( targv[1] ) : 0 );
   }
 
