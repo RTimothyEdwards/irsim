@@ -43,7 +43,7 @@ dnl assert that input files are of type C, or else the preprocessing
 dnl stage will not execute correctly on the ".in" files in the scmos
 dnl directory.
 
-if test "$CPP" = "gcc -E" ; then
+if test "$CPP" = "$CC -E" ; then
    CPP="$CPP -x c"
 fi
 
@@ -346,11 +346,10 @@ if test $usingTcl ; then
        `ls -dr /usr/local/tcl/tcl[[7-9]].[[0-9]]* 2>/dev/null` \
        /usr/local/tcl \
        /usr/local/lib \
-       /usr/local \
-       `ls -dr /usr/share/tcltk/tcl[[7-9]].[[0-9]]* 2>/dev/null` \
-       /sw/lib \
-       /usr/lib \
        /usr/lib64 \
+       /usr/local \
+       `ls -dr /usr/lib/tcl[[7-9]].[[0-9]]* 2>/dev/null` \
+       /sw/lib \
        /usr
       do
         if test -r "$dir/tclConfig.sh" ; then
@@ -430,14 +429,16 @@ if test $usingTcl ; then
     if test "x$tk_config_sh" = "x" ; then
       for dir in \
        `ls -dr /usr/local/tcl/tcl[[7-9]].[[0-9]]* 2>/dev/null` \
+       `ls -dr /usr/local/tk/tk[[7-9]].[[0-9]]* 2>/dev/null` \
        /usr/local/tcl \
        /usr/local/lib \
-       /sw/lib \
+       /usr/lib64 \
        /usr/local \
-       `ls -dr /usr/share/tcltk/tk[[7-9]].[[0-9]]* 2>/dev/null` \
+       `ls -dr /usr/lib/tcl[[7-9]].[[0-9]]* 2>/dev/null` \
+       `ls -dr /usr/lib/tk[[7-9]].[[0-9]]* 2>/dev/null` \
+       /sw/lib \
        ${x_libraries} \
        /usr/lib \
-       /usr/lib64 \
        /usr
       do
         if test -r "$dir/tkConfig.sh" ; then
@@ -551,8 +552,14 @@ if test $usingTcl ; then
       ;;
   esac
 
-  TCL_LIB_SPEC="-l${TCL_LIB_NAME}"
-  TK_LIB_SPEC="-l${TK_LIB_NAME}"
+  loclib=`echo ${TCL_LIB_SPEC} | sed -e 's/.*-L//' -e 's/ .*//'`
+
+  if test "x${TCL_LIB_SPEC}" = "x" ; then
+     TCL_LIB_SPEC="-l${TCL_LIB_NAME}"
+  fi
+  if test "x${TK_LIB_SPEC}" = "x" ; then
+     TK_LIB_SPEC="-l${TK_LIB_NAME}"
+  fi
 
 # Find the version of "wish" that corresponds to TCL_EXEC_PREFIX
 # We really ought to run "ldd" to confirm that the linked libraries match.
@@ -589,21 +596,27 @@ if test $usingTcl ; then
   case $target in
      *-hpux*)
         SHDLIB_EXT=".sl"
+        SHDLIB_EXT_ALT=".sl"
         ;;
      *cygwin*)
         SHDLIB_EXT=".dll"
+        SHDLIB_EXT_ALT=".dll.a"
 	;;
      *darwin*)
         SHDLIB_EXT=".dylib"
+        SHDLIB_EXT_ALT=".dylib"
         ;;
      *)
         SHDLIB_EXT=".so"
+        SHDLIB_EXT_ALT=".so"
         ;;
   esac
 
   if test "x${irsim_with_tcl_libraries}" != "x" ; then
     for libname in \
-     "${irsim_with_tcl_libraries}/lib${TCL_LIB_NAME}${SHDLIB_EXT}"
+     "${irsim_with_tcl_libraries}/${TCL_LIB_FILE}" \
+     "${irsim_with_tcl_libraries}/lib${TCL_LIB_NAME}${SHDLIB_EXT}" \
+     "${irsim_with_tcl_libraries}/lib${TCL_LIB_NAME}${SHDLIB_EXT_ALT}"
     do
       if test -r "$libname" ; then
         TCL_LIB_DIR="${irsim_with_tcl_libraries}"
@@ -618,8 +631,8 @@ if test $usingTcl ; then
     fi
   else
     for libname in \
-     "${TCL_EXEC_PREFIX}/lib/lib${TCL_LIB_NAME}${SHDLIB_EXT}" \
-     "${TCL_EXEC_PREFIX}/lib64/lib${TCL_LIB_NAME}${SHDLIB_EXT}"
+     "${loclib:=$TCL_EXEC_PREFIX}/lib}/lib${TCL_LIB_NAME}${SHDLIB_EXT}" \
+     "${loclib:=$TCL_EXEC_PREFIX}/lib}/lib${TCL_LIB_NAME}${SHDLIB_EXT_ALT}"
     do
       if test -r "$libname" ; then
         TCL_LIB_DIR="${TCL_EXEC_PREFIX}/lib"
@@ -637,7 +650,9 @@ fi
 if test $usingTcl ; then
   if test "x${irsim_with_tk_libraries}" != "x" ; then
     for libname in \
-     "${irsim_with_tk_libraries}/lib${TK_LIB_NAME}${SHDLIB_EXT}"
+     "${irsim_with_tk_libraries}/{TCL_LIB_FILE}" \
+     "${irsim_with_tk_libraries}/lib${TK_LIB_NAME}${SHDLIB_EXT}" \
+     "${irsim_with_tk_libraries}/lib${TK_LIB_NAME}${SHDLIB_EXT_ALT}"
     do
       if test -r "$libname" ; then
         TK_LIB_DIR="${irsim_with_tk_libraries}"
@@ -651,8 +666,8 @@ if test $usingTcl ; then
     fi
   else
     for libname in \
-     "${TK_EXEC_PREFIX}/lib64/lib${TK_LIB_NAME}${SHDLIB_EXT}" \
-     "${TK_EXEC_PREFIX}/lib/lib${TK_LIB_NAME}${SHDLIB_EXT}"
+     "${loclib:=${TK_EXEC_PREFIX}/lib}/lib${TK_LIB_NAME}${SHDLIB_EXT}" \
+     "${loclib:=${TK_EXEC_PREFIX}/lib}/lib${TK_LIB_NAME}${SHDLIB_EXT_ALT}"
     do
       if test -r "$libname" ; then
         TK_LIB_DIR="${TK_EXEC_PREFIX}/lib"
@@ -1088,8 +1103,8 @@ if test $usingTcl ; then
       # Not available on all versions:  check for include file.
       AC_CHECK_HEADER(dlfcn.h, test_ok=yes, test_ok=no)
       if test "$test_ok" = yes; then
-        SHLIB_CFLAGS="-fpic"
-        LDDL_FLAGS="-Bshareable -x ${LIB_SPEC}"
+        SHLIB_CFLAGS="-fPIC"
+        LDDL_FLAGS="-shared ${LIB_SPEC}"
       fi
       ;;
 
