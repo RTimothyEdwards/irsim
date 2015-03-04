@@ -37,16 +37,6 @@ if test x$M4 = xno; then
   AC_MSG_ERROR([M4 is required])
 fi
 
-dnl check size of pointer for correct behavior on 64-bit systems
-dnl If the C preprocessor is GCC, we need to force the flag to
-dnl assert that input files are of type C, or else the preprocessing
-dnl stage will not execute correctly on the ".in" files in the scmos
-dnl directory.
-
-if test "$CPP" = "$CC -E" ; then
-   CPP="$CPP -x c"
-fi
-
 dnl check if the linker is a GNU linker
 
 #------------------------------------------------------------

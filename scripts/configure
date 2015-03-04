@@ -4151,11 +4151,6 @@ if test x$M4 = xno; then
 fi
 
 
-if test "$CPP" = "$CC -E" ; then
-   CPP="$CPP -x c"
-fi
-
-
 #------------------------------------------------------------
 # AC_PROG_LD - find the path to the GNU or non-GNU linker
 # (This stuff ripped from libtool)
