@@ -1214,6 +1214,7 @@ private char *readVector( vstring, nbits )
 	       case 'b':
 		   for (b = 0 ; b < nbits; b++) newvecs[b] = '0';
 		   sprintf(newvecs + (nbits - strlen(locstring + 2)), locstring + 2);
+		   r = 1;
 		   break;
 	       case 'd':
 		   nval = strtoUlong(locstring + 2, &result, 10);

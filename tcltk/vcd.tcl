@@ -7,6 +7,7 @@
 #---------------------------------------------------------
 
 proc readvcd {dumpfile} {
+   set prefix ""
    if { [catch {open $dumpfile r} df] } {
       puts stderr "Could not open VCD dumpfile $dumpfile\n"
       return
@@ -24,7 +25,7 @@ proc readvcd {dumpfile} {
 	    }
 	    timescale {
 	       gets $df line
-	       regexp {([0-9]+)[ \t]+([^ ]+)} $line lmatch scale metric
+	       regexp {([0-9]+)[ \t]*([^ ]+)} $line lmatch scale metric
 	       switch $metric {
 	          fs {set scale [expr 0.001 * $scale]}
 	          ns {set scale [expr 1000 * $scale]}
@@ -34,16 +35,24 @@ proc readvcd {dumpfile} {
 	       regexp {^\$var[ \t]+[^ ]+[ \t]+([0-9]+)[ \t]+([^ ]+)[ \t]+([^ ]+)} \
 			$line lmatch bitlen repchar signame
 	       if {$bitlen == 1} {
-		  addnode $signame
+		  addnode ${prefix}${signame}
 	       } else {
 	          for {set i 0} {$i < $bitlen} {incr i} {
-	             addnode ${signame}\[$i\]
+	             addnode ${prefix}${signame}\[$i\]
 		  }
 		  incr bitlen -1
-		  vector ${signame} ${signame}\[0:${bitlen}\]
+		  vector ${prefix}${signame} ${prefix}${signame}\[0:${bitlen}\]
 	       }
-	       set nodenames($repchar) $signame
-	       ana $signame
+	       set nodenames($repchar) ${prefix}${signame}
+	       ana ${prefix}${signame}
+	    }
+	    scope {
+	       regexp {^\$scope[ \t]+([^ ]+)[ \t]+([^ ]+)} \
+			$line lmatch scopetype instname
+	       set prefix "${prefix}${instname}/"
+	    }
+	    upscope {
+	       set prefix ""
 	    }
          }
       } else {
