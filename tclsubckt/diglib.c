@@ -27,6 +27,9 @@
 #include "globals.h"
 #endif
 
+#ifdef USER_SUBCKT
+#ifdef TCLSUBCKT
+
 #define DEBUG 0
 #define dprintf if (DEBUG) lprintf
 
@@ -492,3 +495,5 @@ int Diglib_Init(Tcl_Interp *interp)
 }
 
 #endif /* TCL_IRSIM */
+#endif /* TCLSUBCKT */
+#endif /* USER_SUBCKT */

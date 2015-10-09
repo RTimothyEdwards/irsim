@@ -522,7 +522,11 @@ static int _irsim_start(ClientData clientData,
     InitThevs();
     InitCAD();
     init_hist();
+#ifdef USER_SUBCKT
+#ifdef TCLSUBCKT
     init_subs(subs);
+#endif
+#endif
     InitTimes(sim_time0, stepsize, cur_delta, 0);
     sprintf(versionstr, "IRSIM %s.%s compiled on %s\n", IRSIM_VERSION,
 		IRSIM_REVISION, IRSIM_DATE);
