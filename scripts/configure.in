@@ -840,7 +840,6 @@ case $target in
   *cygwin*)
     AC_DEFINE(CYGWIN)
     AC_DEFINE(i386)
-    AC_DEFINE(WIN32)
     ;; 
   *darwin*)
     if test "$CPP" = "cc -E" ; then
