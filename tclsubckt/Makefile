@@ -22,7 +22,7 @@ diglib.o: diglib.c
 diglib${SHDLIB_EXT}: diglib.o
 	@echo --- making diglib subcircuit shared library
 	${RM} diglib${SHDLIB_EXT}
-	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ ${LDDL_FLAGS} diglib.o \
+	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} diglib.o \
 		${MAC_SHARED} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
 install-tcl: $(DESTDIR)${TCLDIR}/diglib${SHDLIB_EXT}

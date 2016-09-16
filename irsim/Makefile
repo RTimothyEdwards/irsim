@@ -22,7 +22,7 @@ tcl-main: tclirsim${SHDLIB_EXT}
 tclirsim${SHDLIB_EXT}: ${EXTRA_LIBS}
 	@echo --- making irsim Tcl library \(tclirsim${SHDLIB_EXT}\)
 	${RM} tclirsim${SHDLIB_EXT}
-	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ ${LDDL_FLAGS} ${LD_RUN_PATH} \
+	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} ${LD_RUN_PATH} \
 		${EXTRA_LIBS} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
 $(DESTDIR)${BINDIR}/irsim:

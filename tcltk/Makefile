@@ -26,7 +26,7 @@ install-tcl: irsimexec $(DESTDIR)${BINDIR}/irsim.sh ${TCL_FILES}
 	${CP} irsimexec $(DESTDIR)${TCLDIR}/irsimexec
 
 irsimexec: irsimexec.c tclirsim.o
-	${CC} ${CFLAGS} ${CPPFLAGS} ${DFLAGS} irsimexec.c -o irsimexec \
+	${CC} ${CFLAGS} ${CPPFLAGS} ${DFLAGS} ${LDFLAGS} irsimexec.c -o irsimexec \
 		${LIBS} ${LIB_SPECS}
 
 irsim.tcl: irsim.tcl.in

@@ -21,7 +21,7 @@ randwrap.o: random.c
 random${SHDLIB_EXT}: randwrap.o
 	@echo --- making random Tcl library
 	${RM} random${SHDLIB_EXT}
-	${CC} ${CFLAGS} ${CPPFLAGS} -o $@ ${LDDL_FLAGS} randwrap.o \
+	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} randwrap.o \
 		${MAC_SHARED} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
 install-tcl: $(DESTDIR)${TCLDIR}/random${SHDLIB_EXT}
