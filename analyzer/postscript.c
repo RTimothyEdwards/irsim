@@ -141,7 +141,7 @@ public void WritePSfile( psfname )
 
     if( *psfname == '\0' )
 	psfname = fname;
-    else
+    else if (fname != psfname)
 	(void) strcpy( fname, psfname );
 
     if( (psout = fopen( psfname, "w" )) == NULL )
