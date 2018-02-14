@@ -17,7 +17,7 @@ IRSIM_WISH=WISH_EXE
 export IRSIM_WISH
 
 # Hacks for Cygwin
-if [ ${TERM:=""} = "cygwin" ]; then
+if [ "`uname | cut -d_ -f1`" = "CYGWIN" ]; then
    export PATH="$PATH:TCLLIB_DIR"
    export DISPLAY=${DISPLAY:=":0"}
 fi
