@@ -504,6 +504,7 @@ static int _irsim_start(ClientData clientData,
 	Tcl_Interp *interp, int argc, char *argv[])
 {
     int i, arg1, has_prm_file = -1;
+    int result = TCL_OK;
     char versionstr[128];
 
     /* Did we start in the same interpreter as we initialized? */
@@ -599,6 +600,7 @@ static int _irsim_start(ClientData clientData,
 
     filename = "command line";
     lineno = 1;
+    result = TCL_OK;
     for (i = arg1; i < argc; i++) {
 	if (argv[i][0] == '-') {
 	    char *farg;
@@ -606,8 +608,10 @@ static int _irsim_start(ClientData clientData,
 	    if (!strcmp(&argv[i][1], "c") && (i < (argc - 1)))
 	    {
 		farg = argv[++i];
-		if (!finput(farg))
-		    rsimerror(filename, lineno, "cannot open %s for input\n", farg);
+		if (!finput(farg)) {
+		    rsimerror(filename, lineno, "error reading script %s\n", farg);
+		    result = TCL_ERROR;
+		}
 	    }
 	    else if (!strcmp(&argv[i][1], "@") && (i < (argc - 1)))
 	    {
@@ -617,12 +621,14 @@ static int _irsim_start(ClientData clientData,
 	    else
 	    {
 		farg = &argv[i][1];
-		if (!finput(farg))
-		    rsimerror(filename, lineno, "cannot open %s for input\n", farg);
+		if (!finput(farg)) {
+		    rsimerror(filename, lineno, "error reading script  %s\n", farg);
+		    result = TCL_ERROR;
+		}
 	    }
 	}
     }
-    return TCL_OK;
+    return result;
 }
 
 /*--------------------------------------*/

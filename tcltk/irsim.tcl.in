@@ -1103,7 +1103,12 @@ if { $UsingMagic } {
             }
          }
       }
-      eval $argafter       ;# irsim::start ${argv}
+      set ret [catch {eval $argafter} result]       ;# irsim::start ${argv}
+      if {$ret == 0} {
+         return result
+      } else {
+         return -code $ret -errorcode $errorCode $result
+      }
    }
 }
 
