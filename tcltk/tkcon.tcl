@@ -742,9 +742,9 @@ proc ::tkcon::EvalCmd {w cmd} {
 		    set tag [UniqueTag $w]
 		    $w insert output $res [list stderr $tag] \n stderr
 		    $w tag bind $tag <Enter> \
-			    [list $w tag configure $tag -under 1]
+			    [list $w tag configure $tag -underline 1]
 		    $w tag bind $tag <Leave> \
-			    [list $w tag configure $tag -under 0]
+			    [list $w tag configure $tag -underline 0]
 		    $w tag bind $tag <ButtonRelease-1> \
 			    "if {!\[info exists tkPriv(mouseMoved)\] || !\$tkPriv(mouseMoved)} \
 			    {[list edit -attach [Attach] -type error -- $PRIV(errorInfo)]}"
@@ -2473,8 +2473,8 @@ proc ::tkcon::ErrorHighlight w {
 	    set tag [UniqueTag $w]
 	    $w tag add $tag $start+${c0}c $start+1c+${c1}c
 	    $w tag configure $tag -foreground $COLOR(stdout)
-	    $w tag bind $tag <Enter> [list $w tag configure $tag -under 1]
-	    $w tag bind $tag <Leave> [list $w tag configure $tag -under 0]
+	    $w tag bind $tag <Enter> [list $w tag configure $tag -underline 1]
+	    $w tag bind $tag <Leave> [list $w tag configure $tag -underline 0]
 	    $w tag bind $tag <ButtonRelease-1> "if {!\$tkPriv(mouseMoved)} \
 		    {[list edit -attach $app -type proc -find $what -- $cmd]}"
 	}
@@ -2502,8 +2502,8 @@ proc ::tkcon::ErrorHighlight w {
 	    set tag [UniqueTag $w]
 	    $w tag add $tag $ix+1c $start
 	    $w tag configure $tag -foreground $COLOR(proc)
-	    $w tag bind $tag <Enter> [list $w tag configure $tag -under 1]
-	    $w tag bind $tag <Leave> [list $w tag configure $tag -under 0]
+	    $w tag bind $tag <Enter> [list $w tag configure $tag -underline 1]
+	    $w tag bind $tag <Leave> [list $w tag configure $tag -underline 0]
 	    $w tag bind $tag <ButtonRelease-1> "if {!\$tkPriv(mouseMoved)} \
 		    {[list edit -attach $app -type proc -- $cmd]}"
 	}
@@ -2553,8 +2553,8 @@ proc tkcon {cmd args} {
 	    ## 'congets' a replacement for [gets stdin]
 	    # Use the 'gets' alias of 'tkcon_gets' command instead of
 	    # calling the *get* methods directly for best compatability
-	    if {[llength $args]} {
-		return -code error "wrong # args: must be \"tkcon congets\""
+	    if {[llength $args] > 1} {
+		return -code error "wrong # args: must be \"tkcon congets [pfix]\""
 	    }
 	    tkcon show
 	    set old [bind TkConsole <<TkCon_Eval>>]
@@ -2562,7 +2562,12 @@ proc tkcon {cmd args} {
 	    set w $::tkcon::PRIV(console)
 	    # Make sure to move the limit to get the right data
 	    $w mark set insert end
-	    $w mark set limit insert
+ 	    if {[llength $args]} {
+		$w mark set limit insert
+		$w insert end $args
+	    } else {
+	        $w mark set limit insert
+	    }
 	    $w see end
 	    vwait ::tkcon::PRIV(wait)
 	    set line [::tkcon::CmdGet $w]
@@ -2799,13 +2804,19 @@ proc tkcon_puts args {
     foreach {arg1 arg2 arg3} $args { break }
 
     if {$len == 1} {
-	tkcon console insert output "$arg1\n" stdout
+	set sarg $arg1
+	set nl 1
+	set farg stdout
     } elseif {$len == 2} {
 	if {![string compare $arg1 -nonewline]} {
-	    tkcon console insert output $arg2 stdout
+	    set sarg $arg2
+	    set farg stdout
+	    set nl 0
 	} elseif {![string compare $arg1 stdout] \
 		|| ![string compare $arg1 stderr]} {
-	    tkcon console insert output "$arg2\n" $arg1
+	    set sarg $arg2
+	    set farg $arg1
+	    set nl 1
 	} else {
 	    set len 0
 	}
@@ -2813,11 +2824,15 @@ proc tkcon_puts args {
 	if {![string compare $arg1 -nonewline] \
 		&& (![string compare $arg2 stdout] \
 		|| ![string compare $arg2 stderr])} {
-	    tkcon console insert output $arg3 $arg2
+	    set sarg $arg3
+	    set farg $arg2
+	    set nl 0
 	} elseif {(![string compare $arg1 stdout] \
 		|| ![string compare $arg1 stderr]) \
 		&& ![string compare $arg3 nonewline]} {
-	    tkcon console insert output $arg2 $arg1
+	    set sarg $arg2
+	    set farg $arg1
+	    set nl 0
 	} else {
 	    set len 0
 	}
@@ -2827,7 +2842,41 @@ proc tkcon_puts args {
 
     ## $len == 0 means it wasn't handled by tkcon above.
     ##
-    if {$len == 0} {
+
+    if {$len != 0} {
+
+	## "poor man's" \r substitution---erase everything on the output
+	## line and print from character after the \r
+
+	set rpt [string last \r $sarg]
+	if {$rpt >= 0} {
+	    tkcon console delete "insert linestart" "insert lineend"
+	    set sarg [string range $sarg [expr {$rpt + 1}] end]
+	}
+
+	set bpt [string first \b $sarg]
+	if {$bpt >= 0} {
+	    set narg [string range $sarg [expr {$bpt + 1}] end]
+	    set sarg [string range $sarg 0 [expr {$bpt - 1}]]
+	    set nl 0
+	}
+
+	if {$nl == 0} {
+	    tkcon console insert output $sarg $farg
+	} else {
+	    tkcon console insert output "$sarg\n" $farg
+	}
+
+	if {$bpt >= 0} {
+	    tkcon console delete "insert -1 char" insert
+	    if {$nl == 0} {
+		tkcon_puts $farg $narg nonewline
+	    } else {
+		tkcon_puts $farg $narg
+	    }
+	}
+
+    } else {
 	global errorCode errorInfo
 	if {[catch "tkcon_tcl_puts $args" msg]} {
 	    regsub tkcon_tcl_puts $msg puts msg
@@ -2955,14 +3004,14 @@ proc edit {args} {
 	##
 	set text $w.text
 	set m [menu [::tkcon::MenuButton $menu Edit edit]]
-	$m add command -label "Cut"   -under 2 \
+	$m add command -label "Cut"   -underline 2 \
 		-command [list tk_textCut $text]
-	$m add command -label "Copy"  -under 0 \
+	$m add command -label "Copy"  -underline 0 \
 		-command [list tk_textCopy $text]
-	$m add command -label "Paste" -under 0 \
+	$m add command -label "Paste" -underline 0 \
 		-command [list tk_textPaste $text]
 	$m add separator
-	$m add command -label "Find" -under 0 \
+	$m add command -label "Find" -underline 0 \
 		-command [list ::tkcon::FindBox $text]
 
 	## Send To Menu
