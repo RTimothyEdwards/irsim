@@ -4226,7 +4226,13 @@ private int do_stats()
 
 
 /*
- * Shift the command left/right by 1.
+ * Shift the command left/right by 1.  HOWEVER, never overwrite the
+ * command (argument 0), as otherwise the Tcl tag callback feature
+ * gets messed up, since it does a lookup on a table indexed by the
+ * command name.  NOTE:  This is a hack solution, as a tag callback
+ * function could try to look at command arguments.  A proper
+ * solution would be to always pass the index of the argument to
+ * shift over, rather than shifting everything.
  */
 void shift_args( left )
   int  left;
@@ -4238,7 +4244,7 @@ void shift_args( left )
     if( left )
       {
 	targc--;
-	for( ac = 0, ap = targv, wp = wildCard; ac < targc; ac++ )
+	for( ac = 1, ap = targv, wp = wildCard; ac < targc; ac++ )
 	    ap[ac] = ap[ac + 1],    wp[ac] = wp[ac + 1];
       }
     else
