@@ -574,7 +574,8 @@ proc irsim::trace_callback {option {name {}}} {
    if {$option == "select"} {
       set tl [trace list all]
       foreach tr $tl {
-         .analyzer.scope.names.b_$tr configure -background yellow
+	  set tr2 [string map {. #} $tr]
+         .analyzer.scope.names.b_$tr2 configure -background yellow
       }
       .analyzer.scope.names.b_$name configure -background orange
       set RsimOpts(base) [base get $name]
@@ -663,28 +664,29 @@ proc irsim::update_traces {} {
    foreach tr [place slaves .analyzer.scope.names] {place forget $tr}
    foreach tr [place slaves .analyzer.scope.values] {place forget $tr}
    foreach tr $tl {
+      set tr2 [string map {. #} $tr]
       set yl [trace bottom $tr]
       set yt [trace top $tr]
       incr yt
       set yh [expr {$yl - $yt - 1}]
-      if {[catch {place .analyzer.scope.names.b_$tr -y $yt -height $yh}]} {
-         button .analyzer.scope.names.b_$tr -text $tr -borderwidth 1 \
+      if {[catch {place .analyzer.scope.names.b_$tr2 -y $yt -height $yh}]} {
+         button .analyzer.scope.names.b_$tr2 -text $tr -borderwidth 1 \
 		-relief ridge -background yellow \
 		-command "trace select $tr"
-	 place .analyzer.scope.names.b_$tr -y $yt -height $yh \
+	 place .analyzer.scope.names.b_$tr2 -y $yt -height $yh \
 		-relwidth 1 -relx 0
       }
-      set newminn [font measure [.analyzer.scope.names.b_$tr cget -font] $tr]
+      set newminn [font measure [.analyzer.scope.names.b_$tr2 cget -font] $tr]
       set newminn [expr {$newminn + 10}]	;# allow 10-pixel surround
       if {$newminn > $minn} {
 	 set minn $newminn
 	 grid columnconfigure .analyzer.scope 0 -minsize $minn
       }
 
-      if {[catch {place .analyzer.scope.values.b_$tr -y $yt -height $yh}]} {
-         label .analyzer.scope.values.b_$tr -text "" -borderwidth 1 \
+      if {[catch {place .analyzer.scope.values.b_$tr2 -y $yt -height $yh}]} {
+         label .analyzer.scope.values.b_$tr2 -text "" -borderwidth 1 \
 		-relief ridge -background yellowgreen
-	 place .analyzer.scope.values.b_$tr -y $yt -height $yh \
+	 place .analyzer.scope.values.b_$tr2 -y $yt -height $yh \
 		-relwidth 1 -relx 0
       }
       set trbase [trace base $tr]
@@ -696,7 +698,7 @@ proc irsim::update_traces {} {
       } else {
          set trdigits [expr ([trace bits $tr] + $trbase - 1) / $trbase]
       }
-      set newminv [font measure [.analyzer.scope.values.b_$tr cget -font] \
+      set newminv [font measure [.analyzer.scope.values.b_$tr2 cget -font] \
 		[string repeat X $trdigits]]
       set newminv [expr {$newminv + 10}]	;# allow 10-pixel surround
       if {$newminv > $minv} {
@@ -712,9 +714,10 @@ proc irsim::update_traces {} {
 proc irsim::update_values {} {
    set tl [trace list all]
    foreach tr $tl {
+      set tr2 [string map {. #} $tr]
       set ltext [trace value $tr]
       if {$ltext != {}} {
-         .analyzer.scope.values.b_$tr configure -text [trace value $tr]
+         .analyzer.scope.values.b_$tr2 configure -text [trace value $tr]
       }
    }
 }
@@ -722,7 +725,8 @@ proc irsim::update_values {} {
 proc irsim::no_values {} {
    set tl [trace list all]
    foreach tr $tl {
-      .analyzer.scope.values.b_$tr configure -text ""
+      set tr2 [string map {. #} $tr]
+      .analyzer.scope.values.b_$tr2 configure -text ""
    }
 }
 
