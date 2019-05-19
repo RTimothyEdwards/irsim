@@ -1213,7 +1213,7 @@ private char *readVector( vstring, nbits )
 	   switch (c) {
 	       case 'b':
 		   for (b = 0 ; b < nbits; b++) newvecs[b] = '0';
-		   sprintf(newvecs + (nbits - strlen(locstring + 2)), locstring + 2);
+		   strcpy(newvecs + (nbits - strlen(locstring + 2)), locstring + 2);
 		   r = 1;
 		   break;
 	       case 'd':

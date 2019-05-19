@@ -242,7 +242,7 @@ private void WriteAscii( f )
     (void) fprintf( f, "CTDE %.6f\n", CTDE );
 
 	/* add extensions here */
-    (void) fprintf( f, endAscii );
+    (void) fprintf( f, "%s", endAscii );
   }
 
 
