@@ -25,17 +25,17 @@ tclirsim${SHDLIB_EXT}: ${EXTRA_LIBS}
 	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} ${LD_RUN_PATH} \
 		${EXTRA_LIBS} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
-$(DESTDIR)${BINDIR}/irsim:
-	${RM} $(DESTDIR)${BINDIR}/irsim
-	${CP} irsim $(DESTDIR)${BINDIR}/irsim
+$(DESTDIR)${INSTALL_BINDIR}/irsim:
+	${RM} $(DESTDIR)${INSTALL_BINDIR}/irsim
+	${CP} irsim $(DESTDIR)${INSTALL_BINDIR}/irsim
 
-$(DESTDIR)${BINDIR}/gentbl:
-	${RM} $(DESTDIR)${BINDIR}/gentbl
-	${CP} gentbl $(DESTDIR)${BINDIR}/gentbl
+$(DESTDIR)${INSTALL_BINDIR}/gentbl:
+	${RM} $(DESTDIR)${INSTALL_BINDIR}/gentbl
+	${CP} gentbl $(DESTDIR)${INSTALL_BINDIR}/gentbl
 
-$(DESTDIR)${BINDIR}/genspktbl:
-	${RM} $(DESTDIR)${BINDIR}/genspktbl
-	${CP} genspktbl $(DESTDIR)${BINDIR}/genspktbl
+$(DESTDIR)${INSTALL_BINDIR}/genspktbl:
+	${RM} $(DESTDIR)${INSTALL_BINDIR}/genspktbl
+	${CP} genspktbl $(DESTDIR)${INSTALL_BINDIR}/genspktbl
 
 gentbl:
 	${CC} ${CFLAGS} ${CPPFLAGS} ${DFLAGS} gentbl.c -o $@ ${LIBS}
@@ -43,13 +43,13 @@ gentbl:
 genspktbl:
 	${CC} ${CFLAGS} ${CPPFLAGS} ${DFLAGS} genspktbl.c -o $@ ${LIBS}
 
-install: $(DESTDIR)${BINDIR}/irsim $(DESTDIR)${BINDIR}/gentbl \
-		$(DESTDIR)${BINDIR}/genspktbl
+install: $(DESTDIR)${INSTALL_BINDIR}/irsim $(DESTDIR)${INSTALL_BINDIR}/gentbl \
+		$(DESTDIR)${INSTALL_BINDIR}/genspktbl
 
-install-tcl: $(DESTDIR)${TCLDIR}/tclirsim${SHDLIB_EXT}
+install-tcl: $(DESTDIR)${INSTALL_TCLDIR}/tclirsim${SHDLIB_EXT}
 
-$(DESTDIR)${TCLDIR}/tclirsim${SHDLIB_EXT}: tclirsim${SHDLIB_EXT}
-	${RM} $(DESTDIR)${TCLDIR}/tclirsim${SHDLIB_EXT}
-	${CP} tclirsim${SHDLIB_EXT} $(DESTDIR)${TCLDIR}/tclirsim${SHDLIB_EXT}
+$(DESTDIR)${INSTALL_TCLDIR}/tclirsim${SHDLIB_EXT}: tclirsim${SHDLIB_EXT}
+	${RM} $(DESTDIR)${INSTALL_TCLDIR}/tclirsim${SHDLIB_EXT}
+	${CP} tclirsim${SHDLIB_EXT} $(DESTDIR)${INSTALL_TCLDIR}/tclirsim${SHDLIB_EXT}
 
 include ${IRSIMDIR}/rules.mak

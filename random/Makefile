@@ -24,10 +24,10 @@ random${SHDLIB_EXT}: randwrap.o
 	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} randwrap.o \
 		${MAC_SHARED} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
-install-tcl: $(DESTDIR)${TCLDIR}/random${SHDLIB_EXT}
+install-tcl: $(DESTDIR)${INSTALL_TCLDIR}/random${SHDLIB_EXT}
 
-$(DESTDIR)${TCLDIR}/random${SHDLIB_EXT}: random${SHDLIB_EXT}
-	${RM} $(DESTDIR)${TCLDIR}/random${SHDLIB_EXT}
-	${CP} random${SHDLIB_EXT} $(DESTDIR)${TCLDIR}/random${SHDLIB_EXT}
+$(DESTDIR)${INSTALL_TCLDIR}/random${SHDLIB_EXT}: random${SHDLIB_EXT}
+	${RM} $(DESTDIR)${INSTALL_TCLDIR}/random${SHDLIB_EXT}
+	${CP} random${SHDLIB_EXT} $(DESTDIR)${INSTALL_TCLDIR}/random${SHDLIB_EXT}
 
 include ${IRSIMDIR}/rules.mak

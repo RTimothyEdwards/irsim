@@ -37,6 +37,15 @@ PRMDIR                 = ${libdir}/irsim/prm
 TCLDIR                 = ${libdir}/irsim/tcl
 XBMDIR                 = ${libdir}/irsim/tcl/bitmaps
 
+INSTALL_BINDIR         = ${dist_prefix}/bin
+INSTALL_MANDIR         = ${dist_prefix}/share/man
+INSTALL_LIBDIR         = ${dist_prefix}/lib
+INSTALL_DOCDIR         = ${INSTALL_LIBDIR}/irsim/doc
+INSTALL_SYSDIR         = ${INSTALL_LIBDIR}/irsim/sys
+INSTALL_PRMDIR         = ${INSTALL_LIBDIR}/irsim/prm
+INSTALL_TCLDIR         = ${INSTALL_LIBDIR}/irsim/tcl
+INSTALL_XBMDIR         = ${INSTALL_LIBDIR}/irsim/tcl/bitmaps
+
 MAIN_EXTRA_LIBS	       = @extra_libs@
 LD_EXTRA_LIBS	       = @ld_extra_libs@
 LD_SHARED	       = @ld_extra_objs@

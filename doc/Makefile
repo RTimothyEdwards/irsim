@@ -2,20 +2,20 @@ IRSIMDIR = ..
 
 include ${IRSIMDIR}/defs.mak
 
-MANDIRS = $(DESTDIR)${MANDIR} \
-	  $(DESTDIR)${MANDIR}/man1 \
-	  $(DESTDIR)${MANDIR}/man3 \
-	  $(DESTDIR)${MANDIR}/man5
-DOCDIRS = $(DESTDIR)${DOCDIR}
+MANDIRS = $(DESTDIR)${INSTALL_MANDIR} \
+	  $(DESTDIR)${INSTALL_MANDIR}/man1 \
+	  $(DESTDIR)${INSTALL_MANDIR}/man3 \
+	  $(DESTDIR)${INSTALL_MANDIR}/man5
+DOCDIRS = $(DESTDIR)${INSTALL_DOCDIR}
 
-MANFILES = $(DESTDIR)${MANDIR}/man3/irsim-analyzer.3 \
-	   $(DESTDIR)${MANDIR}/man1/irsim.1 \
-	   $(DESTDIR)${MANDIR}/man5/netchange.5 
+MANFILES = $(DESTDIR)${INSTALL_MANDIR}/man3/irsim-analyzer.3 \
+	   $(DESTDIR)${INSTALL_MANDIR}/man1/irsim.1 \
+	   $(DESTDIR)${INSTALL_MANDIR}/man5/netchange.5 
 
-DOCFILES = $(DESTDIR)${DOCDIR}/irsim-analyzer.doc \
-	   $(DESTDIR)${DOCDIR}/irsim.doc \
-	   $(DESTDIR)${DOCDIR}/netchange.doc \
-	   $(DESTDIR)${DOCDIR}/powerEst.doc
+DOCFILES = $(DESTDIR)${INSTALL_DOCDIR}/irsim-analyzer.doc \
+	   $(DESTDIR)${INSTALL_DOCDIR}/irsim.doc \
+	   $(DESTDIR)${INSTALL_DOCDIR}/netchange.doc \
+	   $(DESTDIR)${INSTALL_DOCDIR}/powerEst.doc
 
 install: ${MANDIRS} ${MANFILES} ${DOCDIRS} ${DOCFILES}
 
@@ -31,14 +31,14 @@ ${DOCDIRS}: make-doc-dirs
 make-doc-dirs:
 	${SCRIPTS}/mkdirs ${DOCDIRS}
 
-$(DESTDIR)${MANDIR}/man1/%: % ${MANDIRS}
-	${CP} $* $(DESTDIR)${MANDIR}/man1/$*
+$(DESTDIR)${INSTALL_MANDIR}/man1/%: % ${MANDIRS}
+	${CP} $* $(DESTDIR)${INSTALL_MANDIR}/man1/$*
 
-$(DESTDIR)${MANDIR}/man3/%: % ${MANDIRS}
-	${CP} $* $(DESTDIR)${MANDIR}/man3/$*
+$(DESTDIR)${INSTALL_MANDIR}/man3/%: % ${MANDIRS}
+	${CP} $* $(DESTDIR)${INSTALL_MANDIR}/man3/$*
 
-$(DESTDIR)${MANDIR}/man5/%: % ${MANDIRS}
-	${CP} $* $(DESTDIR)${MANDIR}/man5/$*
+$(DESTDIR)${INSTALL_MANDIR}/man5/%: % ${MANDIRS}
+	${CP} $* $(DESTDIR)${INSTALL_MANDIR}/man5/$*
 
-$(DESTDIR)${DOCDIR}/%: % ${DOCDIRS}
-	${CP} $* $(DESTDIR)${DOCDIR}/$*
+$(DESTDIR)${INSTALL_DOCDIR}/%: % ${DOCDIRS}
+	${CP} $* $(DESTDIR)${INSTALL_DOCDIR}/$*

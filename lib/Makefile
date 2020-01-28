@@ -25,16 +25,16 @@ tsmc35p.20.n98tp.3.3.prm
 
 BITMAPS = left.xbm right.xbm lleft.xbm rright.xbm center.xbm
 
-INST_FILES= $(FILES:%=$(DESTDIR)${PRMDIR}/%)
+INST_FILES= $(FILES:%=$(DESTDIR)${INSTALL_PRMDIR}/%)
 
-INST_BITMAPS= $(BITMAPS:%=$(DESTDIR)${XBMDIR}/%)
+INST_BITMAPS= $(BITMAPS:%=$(DESTDIR)${INSTALL_XBMDIR}/%)
 
 install-tcl: ${INST_FILES} ${INST_BITMAPS}
 
 install: ${INST_FILES}
 
-$(DESTDIR)${PRMDIR}/%: prm/%
-	(cd prm; ${CP} $* $(DESTDIR)${PRMDIR}/$*)
+$(DESTDIR)${INSTALL_PRMDIR}/%: prm/%
+	(cd prm; ${CP} $* $(DESTDIR)${INSTALL_PRMDIR}/$*)
 
-$(DESTDIR)${XBMDIR}/%: bitmaps/%
-	(cd bitmaps; ${CP} $* $(DESTDIR)${XBMDIR}/$*)
+$(DESTDIR)${INSTALL_XBMDIR}/%: bitmaps/%
+	(cd bitmaps; ${CP} $* $(DESTDIR)${INSTALL_XBMDIR}/$*)

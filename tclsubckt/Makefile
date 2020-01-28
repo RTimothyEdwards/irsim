@@ -25,10 +25,10 @@ diglib${SHDLIB_EXT}: diglib.o
 	${CC} ${CFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ ${LDDL_FLAGS} diglib.o \
 		${MAC_SHARED} -lc ${LIBS} ${LD_EXTRA_LIBS}
 
-install-tcl: $(DESTDIR)${TCLDIR}/diglib${SHDLIB_EXT}
+install-tcl: $(DESTDIR)${INSTALL_TCLDIR}/diglib${SHDLIB_EXT}
 
-$(DESTDIR)${TCLDIR}/diglib${SHDLIB_EXT}: diglib${SHDLIB_EXT}
-	${RM} $(DESTDIR)${TCLDIR}/diglib${SHDLIB_EXT}
-	${CP} diglib${SHDLIB_EXT} $(DESTDIR)${TCLDIR}/diglib${SHDLIB_EXT}
+$(DESTDIR)${INSTALL_TCLDIR}/diglib${SHDLIB_EXT}: diglib${SHDLIB_EXT}
+	${RM} $(DESTDIR)${INSTALL_TCLDIR}/diglib${SHDLIB_EXT}
+	${CP} diglib${SHDLIB_EXT} $(DESTDIR)${INSTALL_TCLDIR}/diglib${SHDLIB_EXT}
 
 include ${IRSIMDIR}/rules.mak
