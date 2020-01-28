@@ -4912,7 +4912,7 @@ if test "${with_distdir+set}" = set; then :
   if test "$withval" = "no" -o "$withval" = "NO" ; then
      dist_prefix="\${exec_prefix}"
   else
-     dist_prefix=$arg
+     dist_prefix=${withval}
   fi
 
 fi
