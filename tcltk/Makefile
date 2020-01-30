@@ -14,16 +14,16 @@ SRCS += ${GR_SRCS}
 CFLAGS += -I${IRSIMDIR}/base -I${IRSIMDIR}/analyzer
 
 TCL_FILES = \
-	$(DESTDIR)${TCLDIR}/tkcon.tcl \
-	$(DESTDIR)${TCLDIR}/console.tcl \
-	$(DESTDIR)${TCLDIR}/vcd.tcl \
-	$(DESTDIR)${TCLDIR}/irsim.tcl
+	$(DESTDIR)${INSTALL_TCLDIR}/tkcon.tcl \
+	$(DESTDIR)${INSTALL_TCLDIR}/console.tcl \
+	$(DESTDIR)${INSTALL_TCLDIR}/vcd.tcl \
+	$(DESTDIR)${INSTALL_TCLDIR}/irsim.tcl
 
 tcl-main: irsimexec irsim.tcl irsim.sh
 
-install-tcl: irsimexec $(DESTDIR)${BINDIR}/irsim.sh ${TCL_FILES}
-	${RM} $(DESTDIR)${TCLDIR}/irsimexec
-	${CP} irsimexec $(DESTDIR)${TCLDIR}/irsimexec
+install-tcl: irsimexec $(DESTDIR)${INSTALL_BINDIR}/irsim.sh ${TCL_FILES}
+	${RM} $(DESTDIR)${INSTALL_TCLDIR}/irsimexec
+	${CP} irsimexec $(DESTDIR)${INSTALL_TCLDIR}/irsimexec
 
 irsimexec: irsimexec.c tclirsim.o
 	${CC} ${CFLAGS} ${CPPFLAGS} ${DFLAGS} ${LDFLAGS} irsimexec.c -o irsimexec \
@@ -40,14 +40,14 @@ irsim.sh: irsim.sh.in
 	    -e /WISH_EXE/s%WISH_EXE%${WISH_EXE}%g \
 	    irsim.sh.in > irsim.sh
 
-$(DESTDIR)${TCLDIR}/%: %
-	${RM} $(DESTDIR)${TCLDIR}/$*
-	${CP} $* $(DESTDIR)${TCLDIR}/$*
+$(DESTDIR)${INSTALL_TCLDIR}/%: %
+	${RM} $(DESTDIR)${INSTALL_TCLDIR}/$*
+	${CP} $* $(DESTDIR)${INSTALL_TCLDIR}/$*
 
-$(DESTDIR)${BINDIR}/irsim.sh: irsim.sh
-	${RM} $(DESTDIR)${BINDIR}/irsim.sh $(DESTDIR)${BINDIR}/irsim
-	${CP} irsim.sh $(DESTDIR)${BINDIR}/irsim
-	(cd $(DESTDIR)${BINDIR}; chmod 0755 irsim)
+$(DESTDIR)${INSTALL_BINDIR}/irsim.sh: irsim.sh
+	${RM} $(DESTDIR)${INSTALL_BINDIR}/irsim.sh $(DESTDIR)${INSTALL_BINDIR}/irsim
+	${CP} irsim.sh $(DESTDIR)${INSTALL_BINDIR}/irsim
+	(cd $(DESTDIR)${INSTALL_BINDIR}; chmod 0755 irsim)
 
 
 include ${IRSIMDIR}/rules.mak

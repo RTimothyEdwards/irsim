@@ -57,8 +57,8 @@ depend:
 install: $(INSTALL_TARGET)
 
 install-irsim:
-	@echo --- installing executables to $(DESTDIR)${BINDIR}
-	@echo --- installing run-time files to $(DESTDIR)${LIBDIR}
+	@echo --- installing executables to $(DESTDIR)${INSTALL_BINDIR}
+	@echo --- installing run-time files to $(DESTDIR)${INSTALL_LIBDIR}
 	@${MAKE} install-real >> install.log
 
 install-real: install-dirs
@@ -68,16 +68,16 @@ install-real: install-dirs
 		(cd $$dir && ${MAKE} install); done
 
 install-tcl-dirs:
-	${IRSIMDIR}/scripts/mkdirs $(DESTDIR)${BINDIR} $(DESTDIR)${MANDIR} \
-		$(DESTDIR)${TCLDIR} $(DESTDIR)${PRMDIR} $(DESTDIR)${XBMDIR}
+	${IRSIMDIR}/scripts/mkdirs $(DESTDIR)${INSTALL_BINDIR} $(DESTDIR)${INSTALL_MANDIR} \
+		$(DESTDIR)${INSTALL_TCLDIR} $(DESTDIR)${INSTALL_PRMDIR} $(DESTDIR)${INSTALL_XBMDIR}
 
 install-dirs:
-	${IRSIMDIR}/scripts/mkdirs $(DESTDIR)${BINDIR} $(DESTDIR)${MANDIR} \
-		$(DESTDIR)${PRMDIR}
+	${IRSIMDIR}/scripts/mkdirs $(DESTDIR)${INSTALL_BINDIR} $(DESTDIR)${INSTALL_MANDIR} \
+		$(DESTDIR)${INSTALL_PRMDIR}
 
 install-tcl:
-	@echo --- installing executables to $(DESTDIR)${BINDIR}
-	@echo --- installing run-time files to $(DESTDIR)${LIBDIR}
+	@echo --- installing executables to $(DESTDIR)${INSTALL_BINDIR}
+	@echo --- installing run-time files to $(DESTDIR)${INSTALL_LIBDIR}
 	@${MAKE} install-tcl-real 2>&1 >> install.log
 
 install-tcl-real: install-tcl-dirs
