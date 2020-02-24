@@ -8,4 +8,7 @@ install.log
 *.o
 *.so
 *~
+<<<<<<< HEAD
 UPDATE_ME
+=======
+>>>>>>> master
