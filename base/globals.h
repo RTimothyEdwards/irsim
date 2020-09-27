@@ -53,7 +53,7 @@ extern double	CPTDE;
 extern double	CTGA;
 extern double  LAMBDA ;
 extern double  LAMBDA2 ;
-extern long	LAMBDACM ;
+extern double	LAMBDACM ;
 extern double  LOWTHRESH ;
 extern double  HIGHTHRESH ;
 extern double  DIFFEXT ;

@@ -49,7 +49,7 @@ public	double	CTGA;		/* xtor gate capacitance -- area */
 
 public	double  LAMBDA = 2.5;	  /* microns/lambda */
 public	double  LAMBDA2 = 6.25;	  /* LAMBDA**2 */
-public	long	LAMBDACM = 250;	  /* centi-microns/lambda */
+public	double	LAMBDACM = 250;	  /* centi-microns/lambda */
 public	double  LOWTHRESH = 0.3;  /* low voltage threshold, normalized units */
 public	double  HIGHTHRESH = 0.8; /* high voltage threshold,normalized units */
 public	double  DIFFEXT = 0;	  /* width of source/drain diffusion */
