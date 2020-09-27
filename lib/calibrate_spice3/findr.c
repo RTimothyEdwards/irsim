@@ -1,5 +1,8 @@
 #include <stdio.h>
 #include <ctype.h>
+#include <malloc.h>
+#include <string.h>
+#include <stdlib.h>
 
 
 typedef struct
@@ -361,20 +364,20 @@ int find_delays()
 	fprintf( stderr, "variable 'time' missing\n" );
 	return( 0 );
       }
-    if( (vdd = find( "vdd" )) == NULL )
+    if( (vdd = find( "v(vdd)" )) == NULL )
       {
 	fprintf( stderr, "variable 'vdd' missing\n" );
 	return( 0 );
       }
     midpoint = vdd->vals[0] / 2.0;
 
-    if( (in1 = FindTransitions( "in1", BOTH )) == NULL ) return( 0 );
-    if( (in2 = FindTransitions( "in2", L_H )) == NULL ) return( 0 );
-    if( (in3 = FindTransitions( "in3", H_L )) == NULL ) return( 0 );
-    if( (out1 = FindTransitions( "out1", BOTH )) == NULL ) return( 0 );
-    if( (out2 = FindTransitions( "out2", BOTH )) == NULL ) return( 0 );
-    if( (out3 = FindTransitions( "out3", L_H )) == NULL ) return( 0 );
-    if( (out4 = FindTransitions( "out4", H_L )) == NULL ) return( 0 );
+    if( (in1 = FindTransitions( "v(in1)", BOTH )) == NULL ) return( 0 );
+    if( (in2 = FindTransitions( "v(in2)", L_H )) == NULL ) return( 0 );
+    if( (in3 = FindTransitions( "v(in3)", H_L )) == NULL ) return( 0 );
+    if( (out1 = FindTransitions( "v(out1)", BOTH )) == NULL ) return( 0 );
+    if( (out2 = FindTransitions( "v(out2)", BOTH )) == NULL ) return( 0 );
+    if( (out3 = FindTransitions( "v(out3)", L_H )) == NULL ) return( 0 );
+    if( (out4 = FindTransitions( "v(out4)", H_L )) == NULL ) return( 0 );
 
     out1->tphl = out1->hl_t - in1->lh_t;
     out1->tplh = out1->lh_t - in1->hl_t;
