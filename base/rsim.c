@@ -3415,14 +3415,16 @@ private int doprintAlias()
 /*
  * Helper routine to print pending events
  */
-private int print_list( n, l, eolist )
+private int print_list( n, l, eolist, doX )
   evptr  l, eolist;
   int    n;
+  int	 doX;
   {
     if( l == NULL )
 	return( n );
     for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
       {
+	if ((doX == FALSE) && (vchars[l->eval] == 'X')) continue;
 	lprintf( stdout, "Node %s -> %c @ %.3fns (%.3fns)\n",
 	  pnode( l->enode ), vchars[ l->eval ], d2ns( l->ntime ),
 	  d2ns( l->ntime - cur_delta ) );
@@ -3432,7 +3434,24 @@ private int print_list( n, l, eolist )
 
 
 /*
- * Print list of pending events
+ * Print list of pending events, including pending unknowns.
+ */
+private int printPendingX()
+  {
+    int    n;
+    Ulong   delta = 0;
+    evptr  list, eolst;
+
+    n = (targc == 2) ? atoi( targv[1] ) : -1;
+
+    while( (delta = pending_events( delta, &list, &eolst )) and n != 0 )
+        n = print_list( n, list, eolst, TRUE );
+    n = print_list( n, list, eolst, TRUE );
+    return( 0 );
+  }
+
+/*
+ * Print list of pending events, excluding pending unknowns.
  */
 private int printPending()
   {
@@ -3443,10 +3462,11 @@ private int printPending()
     n = (targc == 2) ? atoi( targv[1] ) : -1;
 
     while( (delta = pending_events( delta, &list, &eolst )) and n != 0 )
-        n = print_list( n, list, eolst );
-    n = print_list( n, list, eolst );
+        n = print_list( n, list, eolst, FALSE );
+    n = print_list( n, list, eolst, FALSE );
     return( 0 );
   }
+
 
 
 /*
@@ -4672,6 +4692,8 @@ public Command  cmds[] =
     { "print",		domsg,		1,	MAXARGS,
       "[text...] -> print specified text"				},
     { "printp",		printPending,	1,	2,
+      "[n] -> print up to 'n' pending events (default: all)"		},
+    { "printpx",	printPendingX,	1,	2,
       "[n] -> print up to 'n' pending events (default: all)"		},
     { "printx",		doprintX,	1,	1,
       " -> print all undefined (X) nodes"				},
