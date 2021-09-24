@@ -54,5 +54,4 @@ typedef Ulong pointertype;
 ERROR: Cannot compile without knowing the size of a pointer.  See base/net.h
 #endif
 
-
 #endif /* _LOCTYPES_H */

@@ -378,9 +378,9 @@ private void ChangeNodeName( nd, str )
 
     CAP_CHANGE( nd, ch_nlist, 0 );
 
-    if( str_eql( str, "Vdd" ) )
+    if( str_eql( str, power_net_name ) )
 	new_VDD = nd;
-    else if( str_eql( str, "Gnd" ) )
+    else if( str_eql( str, ground_net_name ) )
 	new_GND = nd;
   }
 

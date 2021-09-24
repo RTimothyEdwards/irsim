@@ -180,8 +180,8 @@ public nptr RsimGetNode( name_in )
     int skip = 0;
     char *name = name_in;
 
-    if (strcasecmp(name, "Vdd") == 0) ispwrname = 1;
-    if (strcasecmp(name, "GND") == 0) ispwrname = 1;
+    if (power_net_name && (strcasecmp(name, power_net_name) == 0)) ispwrname = 1;
+    if (ground_net_name && (strcasecmp(name, ground_net_name) == 0)) ispwrname = 1;
 
     if ((simprefix != NULL) && (ispwrname == 0)) {
 	/* Append the prefix to nodes.  This allows multiple files to be read	*/
@@ -200,10 +200,10 @@ public nptr RsimGetNode( name_in )
     if( i == 0 )
       {
 	if( strcmp( name, n->nname ) != 0 ) {
-	    if ( strcasecmp( name, "Vdd" ) == 0 ) {
+	    if ( strcasecmp( name, power_net_name ) == 0 ) {
 		skip = warnVdd ; warnVdd = TRUE ;
 	    }
-	    if ( strcasecmp( name, "GND" ) == 0 ) {
+	    if ( strcasecmp( name, ground_net_name ) == 0 ) {
 		skip = warnGnd ; warnGnd = TRUE ;
 	    }
 	    if ( skip == 0 ) 

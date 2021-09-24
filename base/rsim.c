@@ -80,6 +80,9 @@ public	int	analyzerON = FALSE;	/* set when analyzer is running */
 public	Ulong	sim_time0 = 0;		/* starting time (see flush_hist) */
 public	FILE	*logfile = NULL;	/* log file of transactions */
 
+public char	*power_net_name = NULL;    /* Net name for power */
+public char	*ground_net_name = NULL;   /* Net name for ground */
+
 #ifdef	POWER_EST
 public	FILE	*caplogfile = NULL;	/* log file of cap transitions */
 public	double	toggled_cap = 0;	/* indicative of total power of chip */
@@ -2999,6 +3002,53 @@ private int do_wrstate()
     return( 0 );
   }
 
+/*
+ * declare a power net name
+ */
+
+private int dopower()
+  {
+    if( targc == 2 )
+      {
+	if (*(targv[1]) == '\0')
+	    power_net_name = NULL;
+	else
+	    power_net_name = strdup(targv[1]);
+      }
+    else
+      {
+	if (power_net_name != NULL)
+	    lprintf( stdout, "Power net = \"%s\"\n", power_net_name );
+	else
+	    lprintf( stdout, "Power net name is not set, default is Vdd\n" );
+      }
+
+    return( 0 );
+  }
+
+/*
+ * declare a ground net name
+ */
+
+private int doground()
+  {
+    if( targc == 2 )
+      {
+	if (*(targv[1]) == '\0')
+	    ground_net_name = NULL;
+	else
+	    ground_net_name = strdup(targv[1]);
+      }
+    else
+      {
+	if (ground_net_name != NULL)
+	    lprintf( stdout, "Ground net = \"%s\"\n", ground_net_name );
+	else
+	    lprintf( stdout, "Ground net name is not set, default is Gnd\n" );
+      }
+
+    return( 0 );
+  }
 
 /*
  * set decay parameter
@@ -4669,6 +4719,8 @@ public Command  cmds[] =
     { "clstats",	do_cl_stats,	1,	2,
       "[file] -> print connection-list statistics"			},
 #endif /* CL_STATS */
+    { "ground",		doground,	1,	2,
+      "[name] -> add name for ground net"				},
     { "help",		do_help,	1,	MAXARGS,
       "[command]... -> print info on command(s) or available commands"	},
     { "hist",           doHist,         1,      2,
@@ -4689,6 +4741,8 @@ public Command  cmds[] =
       "step clock one simulation step (phase)"				},
     { "path",		dopath,		2,	MAXARGS,
       "node/vector... -> critical path for last transition of node(s)"	},
+    { "power",		dopower,	1,	2,
+      "[name] -> add name for power net"				},
     { "print",		domsg,		1,	MAXARGS,
       "[text...] -> print specified text"				},
     { "printp",		printPending,	1,	2,

@@ -545,6 +545,22 @@ static int _irsim_start(ClientData clientData,
 		case 's' :			/* stack series transistors */
 		    stack_txtors = TRUE;
 		    break;
+		case 'p' :			/* declare power net name */
+		    if (arg1 == argc - 1) {
+			Usage("Switch -p: requires a power net name argument\n");
+			return TCL_ERROR;
+		    }
+		    arg1++;
+		    power_net_name = strdup(argv[arg1]);
+		    break;
+		case 'g' :			/* declare ground net name */
+		    if (arg1 == argc - 1) {
+			Usage("Switch -g: requires a ground net name argument\n");
+			return TCL_ERROR;
+		    }
+		    arg1++;
+		    ground_net_name = strdup(argv[arg1]);
+		    break;
 		default :
 		    Usage("Unknown switch: %s\n", argv[arg1]);
 		    return TCL_ERROR;

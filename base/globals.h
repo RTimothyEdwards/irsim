@@ -239,7 +239,9 @@ extern void rsimerror( /* int max, ...*/ );
 
 	/* EXPORTS FROM rsim.c */
 
-extern  int     contline ;
+extern char	*power_net_name ;
+extern char	*ground_net_name ;
+extern int      contline ;
 extern int	analyzerON ;
 extern Ulong	sim_time0 ;
 extern Ulong	stepsize ;
