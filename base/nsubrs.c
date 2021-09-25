@@ -39,8 +39,8 @@ public	char  *ttype[ NTTYPES ] =
   };
 
 
-#define	HASHSIZE		4387	/* hash table size */
-#define	NBIT_HASH		14	/* number of bits for HASHSIZE */
+#define	HASHSIZE		99997	/* hash table size */
+#define	NBIT_HASH		18	/* number of bits for HASHSIZE */
 
 private	nptr  hash[HASHSIZE];
 
@@ -74,16 +74,16 @@ private	char  lcase[128] =
 
 
 
-private int sym_hash( name )
-  register char  *name;
-  {
-    register int  hashcode = 0;
+private long sym_hash(name)
+    register char *name;
+{
+    unsigned long hashcode;
 
-    do
-	hashcode = (hashcode << 1) ^ (*name | 0x20);
-    while( *(++name) );
-    return( ((hashcode >= 0) ? hashcode : ~hashcode) % HASHSIZE );
-  }
+    for (hashcode = 0; *name != '\0'; )
+	hashcode = (*name++) + (hashcode << 6) + (hashcode << 16) - hashcode;
+
+    return (hashcode % HASHSIZE);
+}
 
 
 /*
@@ -180,8 +180,8 @@ public nptr RsimGetNode( name_in )
     int skip = 0;
     char *name = name_in;
 
-    if (strcasecmp(name, "Vdd") == 0) ispwrname = 1;
-    if (strcasecmp(name, "GND") == 0) ispwrname = 1;
+    if (power_net_name && (strcasecmp(name, power_net_name) == 0)) ispwrname = 1;
+    if (ground_net_name && (strcasecmp(name, ground_net_name) == 0)) ispwrname = 1;
 
     if ((simprefix != NULL) && (ispwrname == 0)) {
 	/* Append the prefix to nodes.  This allows multiple files to be read	*/
@@ -200,10 +200,10 @@ public nptr RsimGetNode( name_in )
     if( i == 0 )
       {
 	if( strcmp( name, n->nname ) != 0 ) {
-	    if ( strcasecmp( name, "Vdd" ) == 0 ) {
+	    if ( strcasecmp( name, power_net_name ) == 0 ) {
 		skip = warnVdd ; warnVdd = TRUE ;
 	    }
-	    if ( strcasecmp( name, "GND" ) == 0 ) {
+	    if ( strcasecmp( name, ground_net_name ) == 0 ) {
 		skip = warnGnd ; warnGnd = TRUE ;
 	    }
 	    if ( skip == 0 ) 
@@ -366,7 +366,7 @@ public void walk_net( fun, arg )
   int   (*fun)();
   char  *arg;
   {
-    register int   index;
+    register long   index;
     register nptr  n;
 
     for( index = 0; index < HASHSIZE; index++ )
@@ -387,7 +387,8 @@ public void walk_net_index( fun, arg )
   int   (*fun)();
   char  *arg;
   {
-    register Uint  mi, ma;
+    register Uint  mi;
+    register long ma;
     register nptr  n;
 
     for( ma = 0; ma < HASHSIZE; ma++ )
@@ -405,7 +406,7 @@ public void walk_net_index( fun, arg )
  */
 public nptr GetNodeList()
   {
-    register int   index;
+    register long  index;
     register nptr  n, *last;
     struct Node    head;
 
@@ -430,7 +431,8 @@ public nptr Index2node( index )
   pointertype index;
   {
     register nptr  n;
-    register unsigned  ma, mi;
+    register long ma;
+    register unsigned int mi;
 
     ma = index & ((1 << NBIT_HASH) - 1);
     mi = index >> NBIT_HASH;
@@ -448,7 +450,8 @@ public pointertype Node2index( nd )
   nptr  nd;
   {
     register nptr      n;
-    register unsigned  mi, ma;
+    register long      ma;
+    register unsigned int mi;
     pointertype        val;
 
     if( nd != NULL )
@@ -477,7 +480,7 @@ public int match_net( pattern, fun, arg )
   int   (*fun)();
   char  *arg;
   {
-    register int   index;
+    register long   index;
     register nptr  n;
     int            total = 0;
 
@@ -501,7 +504,7 @@ public
 /* initialize hash table */
 public void init_hash()
   {
-    register int  i;
+    register long  i;
 
     for( i = 0; i < HASHSIZE; i += 1 )
 	hash[i] = NULL;

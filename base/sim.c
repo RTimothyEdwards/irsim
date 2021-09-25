@@ -885,7 +885,15 @@ public int rd_network( simfile, prefix, has_param_file )
 	init_counts();
 	init_listTbl();
 
-	VDD_node = RsimGetNode( "Vdd" );
+	if (power_net_name == NULL)
+	  {
+	    lprintf(stdout, "Using default name \"Vdd\" for power net.\n");
+	    power_net_name = strdup( "Vdd" );
+	    VDD_node = RsimGetNode( "Vdd" );
+	  }
+	else
+	    VDD_node = RsimGetNode( power_net_name );
+
 	VDD_node->npot = HIGH;
 	VDD_node->nflags |= (INPUT | POWER_RAIL);
 	VDD_node->head.inp = 1;
@@ -896,7 +904,15 @@ public int rd_network( simfile, prefix, has_param_file )
 	VDD_node->head.next = last_hist;
 	VDD_node->curr = &(VDD_node->head);
 
-	GND_node = RsimGetNode( "Gnd" );
+	if (ground_net_name == NULL)
+	  {
+	    lprintf(stdout, "Using default name \"Gnd\" for ground net.\n");
+	    ground_net_name = strdup( "Gnd" );
+	    GND_node = RsimGetNode( "Gnd" );
+	  }
+	else
+	    GND_node = RsimGetNode( ground_net_name );
+
 	GND_node->npot = LOW;
 	GND_node->nflags |= (INPUT | POWER_RAIL);
 	GND_node->head.inp = 1;
