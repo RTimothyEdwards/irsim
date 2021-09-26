@@ -27,6 +27,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include <math.h>			/* for fabs() function */
 
 #include "defs.h"
 #include "net.h"
@@ -150,7 +151,7 @@ private nptr connect_txtors()
 	  }
 	else
 	  {
-		/* do not connect gate if ALWAYSON since they do not matter */
+	    /* do not connect gate if ALWAYSON since they do not matter. */
 	    if( t->ttype & ALWAYSON )
 	      {
 		CONNECT( on_trans, t );
@@ -160,15 +161,26 @@ private nptr connect_txtors()
 		CONNECT( t->gate->ngate, t );
 	      }
 
+	    /* Devices connected to the power rail are handled separately.  */
+	    /* However, resistors tied to the power rails will not get	    */
+	    /* updated otherwise, so makes those exceptions.		    */
 	    if( not (src->nflags & POWER_RAIL) )
 	      {
 		CONNECT( src->nterm, t );
 		LINK_TO_LIST( src, nd_list, visited );
 	      }
+	    else if( t->ttype == RESIST )
+	      {
+		CONNECT( t->gate->ngate, t );
+	      }
 	    if( not (drn->nflags & POWER_RAIL) )
 	      {
 		CONNECT( drn->nterm, t );
 		LINK_TO_LIST( drn, nd_list, visited );
+	      }
+	    else if( t->ttype == RESIST )
+	      {
+		CONNECT( t->gate->ngate, t );
 	      }
 	  }
       }
@@ -889,11 +901,9 @@ public int rd_network( simfile, prefix, has_param_file )
 	  {
 	    lprintf(stdout, "Using default name \"Vdd\" for power net.\n");
 	    power_net_name = strdup( "Vdd" );
-	    VDD_node = RsimGetNode( "Vdd" );
 	  }
-	else
-	    VDD_node = RsimGetNode( power_net_name );
 
+	VDD_node = RsimGetNode( power_net_name );
 	VDD_node->npot = HIGH;
 	VDD_node->nflags |= (INPUT | POWER_RAIL);
 	VDD_node->head.inp = 1;
@@ -908,11 +918,9 @@ public int rd_network( simfile, prefix, has_param_file )
 	  {
 	    lprintf(stdout, "Using default name \"Gnd\" for ground net.\n");
 	    ground_net_name = strdup( "Gnd" );
-	    GND_node = RsimGetNode( "Gnd" );
 	  }
-	else
-	    GND_node = RsimGetNode( ground_net_name );
 
+	GND_node = RsimGetNode( ground_net_name );
 	GND_node->npot = LOW;
 	GND_node->nflags |= (INPUT | POWER_RAIL);
 	GND_node->head.inp = 1;
