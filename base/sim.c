@@ -504,8 +504,8 @@ public void alias( targc, targv )
 
 	if( m->nflags & POWER_RAIL )
 	  {
-	    rsimerror( simfname, lineno, "Can't alias the power supplies\n" );
-	    continue;
+	    // rsimerror( simfname, lineno, "Can't alias the power supplies\n" );
+	    // continue;
 	  }
 
 	n->ncap += m->ncap;
@@ -616,6 +616,193 @@ private void ncap( targc, targv )
       }
     else
 	BAD_ARGC( 'c', targc, targv );
+  }
+
+/*
+ * new subcircuit device.  Determine from the device_list record what
+ * kind of a device this is and call the appropriate procedure.
+ */
+private void newdevice( targc, targv )
+  int   targc;
+  char  *targv[];
+  {
+    static int lastn = -1;
+    static int lastp = -1;
+    int i, idx = -1, nargc, type;
+    char **nargv;
+    int length, width;
+    double value;
+    char svalue[128];
+
+    /* Normally, the vast majority of devices in a .sim file will be
+     * one type of nFET and one type of pFET, so record the indexes
+     * in lastn and lastp and check those records first, for
+     * efficiency.
+     */
+    if (lastn >= 0)
+	if (!strcmp(targv[targc - 1], device_names[lastn]->devname))
+	    idx = lastn;
+
+    if ((idx == -1) && (lastp >= 0))
+	if (!strcmp(targv[targc - 1], device_names[lastp]->devname))
+	    idx = lastp;
+
+    if (idx == -1)
+    {
+        for (i = 0; device_names[i] != NULL; i++) 
+	{
+	    if ((i == lastn) || (i == lastp)) continue;
+	    if (!strcmp(targv[targc - 1], device_names[i]->devname))
+	    {
+		idx = i;
+		break;
+	    }
+	}
+    }
+
+#ifdef USER_SUBCKT
+    if (idx == -1)
+    {
+	newsubckt(targc, targv);
+	return;
+    }
+#endif
+
+    if (idx == -1)
+    {
+	rsimerror( simfname, lineno, "Unknown device name." );
+	return;
+    }
+
+    /* The following expects that all transistors are 4-terminal devices
+     * (SPICE-compatible).  Other devices may or may not have a substrate
+     * terminal (both ways are SPICE-compatible);  the substrate terminal
+     * for these devices is ignored.  For nFET and pFET transistors, the
+     * substrate is ignored but is used to set the power and ground net
+     * names.
+     */
+
+    type = device_names[idx]->devtype;
+    switch (type)
+    {
+	case NFET:
+	    lastn = idx;
+	    if (targc >= 10)
+	    {
+		nargc = targc - 2;
+		nargv = (char **)malloc(nargc * sizeof(char *));
+		nargv[0] = targv[0];
+		nargv[1] = targv[1];    /* Gate */
+		nargv[2] = targv[2];    /* Source */
+		nargv[3] = targv[3];    /* Drain */
+		nargv[4] = targv[targc - 5] + 2;    /* Length */
+		nargv[5] = targv[targc - 4] + 2;    /* Width */
+		nargv[6] = targv[targc - 3] + 2;    /* X position */
+		nargv[7] = targv[targc - 2] + 2;    /* Y position */
+		newtrans(NCHAN, nargc, nargv);
+		free(nargv);
+	    }
+	    else
+		rsimerror( simfname, lineno, "Incorrect number of arguments "
+			" for nFET subcircuit device." );
+	    break;
+
+	case PFET:
+	    lastp = idx;
+	    if (targc >= 10)
+	    {
+		nargc = targc - 2;
+		nargv = (char **)malloc(nargc * sizeof(char *));
+		nargv[0] = targv[0];
+		nargv[1] = targv[1];    /* Gate */
+		nargv[2] = targv[2];    /* Source */
+		nargv[3] = targv[3];    /* Drain */
+		nargv[4] = targv[targc - 5] + 2;    /* Length */
+		nargv[5] = targv[targc - 4] + 2;    /* Width */
+		nargv[6] = targv[targc - 3] + 2;    /* X position */
+		nargv[7] = targv[targc - 2] + 2;    /* Y position */
+		newtrans(PCHAN, nargc, nargv);
+		free(nargv);
+	    }
+	    else
+		rsimerror( simfname, lineno, "Incorrect number of arguments "
+			" for nFET subcircuit device." );
+	    break;
+
+	case CAPACITOR:
+	    if (targc >= 8)
+	    {
+		nargc = 4;
+		nargv = (char **)malloc(nargc * sizeof(char *));
+		nargv[0] = targv[0];
+		nargv[1] = targv[1];    /* Top */
+		nargv[2] = targv[2];    /* Bottom */
+
+		length = rconvert( targv[targc - 5] + 2 ) * LAMBDACM;
+		width = rconvert( targv[targc - 4] + 2 ) * LAMBDACM;
+		value = (double)(length * width) * device_names[idx]->devvalue;
+		sprintf(svalue, "%g", value);
+		nargv[3] = svalue;
+		ncap(nargc, nargv);
+		free(nargv);
+	    }
+	    else
+		rsimerror( simfname, lineno, "Incorrect number of arguments "
+			" for capacitor subcircuit device." );
+	    break;
+
+	case RESISTOR:
+	    if (targc >= 8)
+	    {
+		nargc = 4;
+		nargv = (char **)malloc(nargc * sizeof(char *));
+		nargv[0] = targv[0];
+		nargv[1] = targv[1];    /* Terminal 1 */
+		nargv[2] = targv[2];    /* Terminal 2 */
+
+		length = rconvert( targv[targc - 5] + 2 ) * LAMBDACM;
+		width = rconvert( targv[targc - 4] + 2 ) * LAMBDACM;
+		/* Compute resistance argument from device length and width
+		 * and the resistance per square value in the parameter file.
+		 */
+		value = ((double)length / (double)width)
+			    * device_names[idx]->devvalue;
+		sprintf(svalue, "%g", value);
+		nargv[3] = svalue;
+		newtrans(RESIST, targc, targv);
+		free(nargv);
+	    }
+	    else
+		rsimerror( simfname, lineno, "Incorrect number of arguments "
+			" for capacitor subcircuit device." );
+	    break;
+
+	case DIODE:
+	    if (targc >= 8)
+	    {
+		nargc = 4;
+		nargv = (char **)malloc(nargc * sizeof(char *));
+		nargv[0] = targv[0];
+		nargv[1] = targv[1];    /* Cathode */
+		nargv[2] = targv[2];    /* Anode */
+
+		/* Treat the diode as an equivalent capacitance.
+		 * Compute capacitance argument from device area
+		 * and the capacitance per unit area in the parameter file.
+		 */
+		length = rconvert( targv[targc - 5] + 2 ) * LAMBDACM;
+		width = rconvert( targv[targc - 4] + 2 ) * LAMBDACM;
+		value = (double)(length * width) * device_names[idx]->devvalue;
+		sprintf(svalue, "%g", value);
+		nargv[3] = svalue;
+		ncap(nargc, nargv);
+		free(nargv);
+	    }
+	    else
+		rsimerror( simfname, lineno, "Incorrect number of arguments "
+			" for capacitor subcircuit device." );
+	    break;
+    }
   }
 
 
@@ -802,11 +989,9 @@ private int input_sim (simfile, has_param_file)
 		newtrans(RESIST, targc, targv);
 		break;
 
-#ifdef	USER_SUBCKT 
 	    case 'x':
-		newsubckt(targc, targv);
+		newdevice(targc, targv);
 		break;
-#endif
 	    case 'N':
 		node_info(targc, targv);
 		break;

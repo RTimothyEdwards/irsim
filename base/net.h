@@ -306,6 +306,14 @@ struct Input
 #define	POWER		3	/* resist. for power calculation (unused) */
 #define	R_TYPES		3	/* number of resistance contexts */
 
+	/* device types when translating from "x" subcircuits */
+#define NFET		0	/* 4-terminal nFET transitor */
+#define PFET		1	/* 4-terminal pFET transitor */
+#define RESISTOR	2	/* 2-terminal resistor */
+#define CAPACITOR	3	/* 2-terminal capacitor */
+#define DIODE		4	/* 2-terminal diode */
+#define NUM_DEVICE_TYPES 5	/* Number of device types enumerated above */
+
 	/* Define TRUE and FALSE values */
 #define TRUE  1
 #define FALSE 0
