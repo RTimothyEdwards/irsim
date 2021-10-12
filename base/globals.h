@@ -65,6 +65,15 @@ extern int	config_flags ;
 #define	TDIFFCAP	0x01	/* set if DIFFPERIM or DIFFEXTF are true     */
 #define CONFIG_LOADED	0x20	/* set if configuration file has been loaded */
 
+typedef struct
+  {
+    char *devname;	/* Name of subcircuit device */
+    int	  devtype;	/* Type of subcircuit device (e.g., NFET) */
+    float devvalue;	/* Value associated with device (e.g., resistance) */
+  } DevRec;
+
+extern DevRec	**device_names;
+
 extern int config( /*  cname */ );
 extern Resists *requiv( /*  type, width, length */ );
 

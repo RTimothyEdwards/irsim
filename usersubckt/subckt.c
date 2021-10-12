@@ -102,7 +102,9 @@ public userSubCircuit *subckt_instantiate(char *sname, int *inst, uptr *udatap)
 
     objv[0] = Tcl_NewStringObj(sname, -1);
     Tcl_AppendToObj(objv[0], "_init", 5);
+    Tcl_IncrRefCount(objv[0]);
     result = Tcl_EvalObjv(irsiminterp, 1, objv, 0);
+    Tcl_DecrRefCount(objv[0]);
     if (result == TCL_OK)
     {
 	int i, listlen, noutputs, ninputs;
@@ -280,7 +282,9 @@ public void subckt_model_C(tptr t)
 	objv[1] = Tcl_NewStringObj(in, nins);
 	objv[2] = Tcl_NewStringObj(out, nouts);
 	objv[3] = (Tcl_Obj *)udata;
+	for (i = 0; i < 4; i++) Tcl_IncrRefCount(objv[i]);
 	result = Tcl_EvalObjv(irsiminterp, 4, objv, 0);
+	for (i = 0; i < 4; i++) Tcl_DecrRefCount(objv[i]);
 
 	if (result == TCL_OK)
 	{

@@ -56,6 +56,8 @@ public	double  DIFFEXT = 0;	  /* width of source/drain diffusion */
 
 public	int	config_flags = 0;
 
+public  DevRec	**device_names;    /* Subcircuit-to-device naming */
+
 /* values of config_flags */
 
 public
@@ -118,6 +120,7 @@ private	char	*ttype_drop[ NTTYPES ];
 
 	/* forward references */
 private	void    insert();
+private	void    makedevice();
 
 
 private int ParseLine( line, args )
@@ -222,6 +225,10 @@ again:
        maxerr = 1;
     }
 
+    /* Initialize table of devices */
+    device_names = (DevRec **)malloc(sizeof(DevRec *));
+    device_names[0] = (DevRec *)NULL;
+
     while( fgetline( line, LSIZE, cfile ) != NULL )
       {
 	lineno++;
@@ -235,6 +242,19 @@ again:
 	    else
 	      {
 		rsimerror( currfile, lineno, "syntax error in resistance spec\n" );
+		nerrs++;
+	      }
+	    continue;
+	  }
+	else if( str_eql( "device", targv[0] ) == 0 )
+	  {
+	    if( targc >= 4 )
+		makedevice( targv[1], targv[2], targv[3] );
+	    else if( targc >= 3 )
+		makedevice( targv[1], targv[2], (float)0.0 );
+	    else
+	      {
+		rsimerror( currfile, lineno, "syntax error in device\n" );
 		nerrs++;
 	      }
 	    continue;
@@ -559,3 +579,46 @@ private void insert( type, context, w, l, r )
     nerrs++;
   }
 
+/* interpret device record (conversion from subcircuit to device) */
+
+private void makedevice( type, name, value )
+  char  *type, *name;
+  float value;
+  {
+    int i, j, typeidx;
+    DevRec **devlist, *newdev;
+
+    if (!strcmp(type, "nfet"))
+	typeidx = NFET;
+    else if (!strcmp(type, "pfet"))
+	typeidx = PFET;
+    else if (!strcmp(type, "capacitor"))
+	typeidx = CAPACITOR;
+    else if (!strcmp(type, "resistor"))
+	typeidx = RESISTOR;
+    else if (!strcmp(type, "diode"))
+	typeidx = DIODE;
+    else
+    {
+	rsimerror( currfile, lineno, "bad device type\n" );
+	nerrs++;
+	return;
+    }
+
+    newdev = (DevRec *)malloc(sizeof(DevRec));
+    newdev->devname = strdup(name);
+    newdev->devtype = typeidx;
+    newdev->devvalue = value;
+
+    /* This is inefficient but there will only be a small number of devices
+     * so it doesn't really matter how efficient it is.
+     */
+    for (i = 0; device_names[i] != NULL; i++);
+    devlist = (DevRec **)malloc((i + 2) * sizeof(DevRec *));
+    for (j = 0; j < i; j++)
+	devlist[j] = device_names[j];
+    devlist[j] = newdev;
+    devlist[j + 1] = NULL;
+    free(device_names);
+    device_names = devlist;
+  }
