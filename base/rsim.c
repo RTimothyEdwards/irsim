@@ -91,6 +91,7 @@ public  float   capstarttime = 0.0;
 public  float   capstoptime = 0.0;
 public  float	captime = 0.0;
 public  float	powermult = 0.0;	/* to do power estimate in milliWatts */
+public  float   power = 0.0; 		/* power estimate logged after powquery */
 public  int	pstep = 0;		/* Bool - end of step power display */
 public  float   step_cap_x_trans = 0;	/* Stepwise C*trans count */
 #endif /* POWER_EST */
@@ -2262,6 +2263,7 @@ private int dostep()
 
 #ifdef POWER_EST
     if( pstep )
+	power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart)));
 	lprintf(stdout,
 	   "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
 	   step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart))));
@@ -2270,6 +2272,17 @@ private int dostep()
     return( 0 );
   }
 
+/* 
+ * set the power estimation previously calculated by the powtrace command
+ */
+private float setpow() 
+  {
+#ifdef POWER_EST
+    lprintf(stdout, 
+    	"Dynamic power estimate retrieved was = %f mW\n", power);
+#endif /* POWER_EST */ 
+    return power;
+  }
 
 /*
  * display info about a node
@@ -2954,6 +2967,7 @@ private int setcaplog()
 	captime = capstoptime - capstarttime;
 	powermult = vsupply*vsupply/(2*captime);
 	walk_net( capsummer, (char *) 0 );
+	power = toggled_cap * powermult * 1e-3;
 	lprintf(stdout,
 	 "Dynamic power estimate for powtrace'd nodes = %f Watts (%f)\n",
 	   toggled_cap * powermult * 1e-3, toggled_cap);
@@ -4821,6 +4835,8 @@ public Command  cmds[] =
 #ifdef POWER_EST
     { "powlogfile",	setcaplog,	1,	2,
       "[[+]file] -> start/stop power logfile (+file appends to file)"	},
+    { "powquery", 	setpow,		1, 	2,
+      "node/vector -> query node/vector power value"			},
     { "powtrace",	setpowtrace,	2,	MAXARGS,
       "[-]node/vector... -> start/stop power tracing specified node/vector(s)"},
     { "sumcap",		sumcap,		1,	2,
