@@ -427,7 +427,7 @@ Copyright (C) 2012 Free Software Foundation, Inc.
 This config.status script is free software; the Free Software Foundation
 gives unlimited permission to copy, distribute and modify it."
 
-ac_pwd='/home/jason/Documents/ocd/irsim/scripts'
+ac_pwd='/home/jasonl/Documents/ocd/irsim/scripts'
 srcdir='..'
 INSTALL='/usr/bin/install -c'
 test -n "$AWK" || AWK=awk

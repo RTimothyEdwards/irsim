@@ -2275,13 +2275,15 @@ private int dostep()
 /* 
  * set the power estimation previously calculated by the powtrace command
  */
-private float setpow() 
+private int getpow() 
   {
-#ifdef POWER_EST
+#ifdef TCL_IRSIM 
+    Tcl_SetObjResult(irsiminterp, Tcl_NewDoubleObj((double)power));
+#else
     lprintf(stdout, 
     	"Dynamic power estimate retrieved was = %f mW\n", power);
-#endif /* POWER_EST */ 
-    return power;
+#endif 
+    return 0;
   }
 
 /*
@@ -4648,7 +4650,6 @@ public Command  cmds[] =
     /* not to conflict with Tcl syntax.					*/
     /* Note that "@" is missing, as it is covered by the Tcl "source"	*/
     /* command.								*/
-
     { "restorestate",	do_rdstate,	2,	2,
       "file -> restore network state from file"				},
     { "restoreall",	do_rdstate,	2,	2,
@@ -4757,6 +4758,8 @@ public Command  cmds[] =
       "node/vector... -> critical path for last transition of node(s)"	},
     { "power",		dopower,	1,	2,
       "[name] -> add name for power net"				},
+    { "powquery", 	getpow,		1, 	2,
+      "node/vector -> query node/vector power value"			},
     { "print",		domsg,		1,	MAXARGS,
       "[text...] -> print specified text"				},
     { "printp",		printPending,	1,	2,
@@ -4835,8 +4838,6 @@ public Command  cmds[] =
 #ifdef POWER_EST
     { "powlogfile",	setcaplog,	1,	2,
       "[[+]file] -> start/stop power logfile (+file appends to file)"	},
-    { "powquery", 	setpow,		1, 	2,
-      "node/vector -> query node/vector power value"			},
     { "powtrace",	setpowtrace,	2,	MAXARGS,
       "[-]node/vector... -> start/stop power tracing specified node/vector(s)"},
     { "sumcap",		sumcap,		1,	2,
