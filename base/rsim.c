@@ -2262,11 +2262,13 @@ private int dostep()
 	pnwatchlist();
 
 #ifdef POWER_EST
-    if( pstep )
+    if( pstep ) 
+      {
 	power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart)));
 	lprintf(stdout,
 	   "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
-	   step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart))));
+	   step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart)))); 
+      }
 #endif /* POWER_EST */
 
     return( 0 );
@@ -2285,6 +2287,7 @@ private int getpow()
 #endif 
     return 0;
   }
+
 
 /*
  * display info about a node
@@ -4758,7 +4761,7 @@ public Command  cmds[] =
       "node/vector... -> critical path for last transition of node(s)"	},
     { "power",		dopower,	1,	2,
       "[name] -> add name for power net"				},
-    { "powquery", 	getpow,		1, 	2,
+    { "powquery", 	getpow, 	1, 	2,
       "node/vector -> query node/vector power value"			},
     { "print",		domsg,		1,	MAXARGS,
       "[text...] -> print specified text"				},
