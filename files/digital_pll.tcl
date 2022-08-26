@@ -53,5 +53,5 @@ s 500
 # Define external clock
 
 every 1000 {toggle osc}
-
+#vsupply VPWR 1.8
 # Continue simulation manually

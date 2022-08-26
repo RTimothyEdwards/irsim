@@ -59,7 +59,7 @@ private void pgvalue( t )
     if( debug )
 	lprintf( stdout, "[%s] ", states[t->state] );
 
-    if( t->ttype & GATELIST )
+    if( t->flags & GATELIST )
       {
 	lprintf( stdout, "( " );
 	for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
@@ -113,8 +113,8 @@ private void pr_t_res( fp, r )
 private void ptrans( t )
   register tptr  t;
   {
-    lprintf( stdout, "%s ", ttype[ BASETYPE( t->ttype ) ] );
-    if( BASETYPE( t->ttype ) != RESIST )
+    lprintf( stdout, "%s ", device_names[t->ttype]->devname );
+    if( device_names[t->ttype]->devtype != RESIST )
 	pgvalue( t );
 
     pvalue( pnode( t->source ), t->source );
@@ -514,16 +514,19 @@ public int info( n, which )
 		nptr  rail;
 
 		rail = (t->drain->nflags & POWER_RAIL) ? t->drain : t->source;
-		if( BASETYPE( t->ttype ) == NCHAN and rail == GND_node )
+		if( device_names[t->ttype]->devtype == NCHAN and rail == GND_node )
 		    drive = "pulled down by ";
-		else if( BASETYPE( t->ttype ) == PCHAN and rail == VDD_node )
-		    drive = "pulled up by ";
-		else if( BASETYPE( t->ttype ) == DEP and rail == VDD_node and
-		  other_node( t, rail ) == t->gate )
-		    drive = "pullup ";
-		else
-		    ptrans( t );
-
+		else {
+			for (int i = 0; i < VDD_node_size; i++ ) {
+				if( device_names[t->ttype]->devtype == PCHAN and rail == *(VDD_node+i) )
+		    			drive = "pulled up by ";		
+				else if( device_names[t->ttype]->devtype == DEP and rail == *(VDD_node+i) and
+		 		 	other_node( t, rail ) == t->gate )
+		    			drive = "pullup ";
+			}
+		}
+		if (drive == NULL)
+			ptrans( t );
 		if( drive != NULL )
 		  {
 		    lprintf( stdout, drive );

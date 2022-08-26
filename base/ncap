@@ -1,0 +1,761 @@
+binsim.c:    for( n = GetNodeList(); n != NULL; n = n->n.next )
+binsim.c:	cap = n->ncap;
+binsim.c:	for( l = n->nterm; l != NULL; l = l->next )
+binsim.c:	node.flags[0] = n->nflags & SAVE_FLAGS;
+binsim.c:	if( n->vhigh != vhigh or n->vlow != vlow )
+binsim.c:	if( n->nflags & ALIAS )
+binsim.c:	    PackBytes( node.n.alias, Node2index( n->nlink ), NB_NDINDEX )
+binsim.c:	if( n->nflags & USERDELAY )
+binsim.c:	    PackBytes( delays.tphl, n->tphl, NB_TP );
+binsim.c:	    PackBytes( delays.tplh, n->tplh, NB_TP );
+binsim.c:	    PackBytes( thresh.vhigh, n->vhigh * VTH_SCALE, NB_VTHRESH );
+binsim.c:	    PackBytes( thresh.vlow, n->vlow * VTH_SCALE, NB_VTHRESH );
+binsim.c:	n->nflags = node.flags[0];
+binsim.c:	if( n->nflags & ALIAS )
+binsim.c:	    n->c.time = tmp;
+binsim.c:	    n->n.next = aliases;
+binsim.c:	    n->ncap = tmp * (1/CAP_SCALE);
+binsim.c:	    if( n->ncap < MIN_CAP )
+binsim.c:		n->ncap = MIN_CAP;
+binsim.c:	if( n->nflags & USERDELAY )
+binsim.c:	    UnpackBytes( delays.tphl, n->tphl, NB_TP );
+binsim.c:	    UnpackBytes( delays.tplh, n->tplh, NB_TP );
+binsim.c:	if( n->nflags & WATCHED )
+binsim.c:	    n->nflags &= ~WATCHED;
+binsim.c:	    n->vhigh = tmp * (1/VTH_SCALE);
+binsim.c:	    n->vlow = tmp * (1/VTH_SCALE);
+binsim.c:    for( n = aliases; n != NULL; n = n->n.next )
+binsim.c:	n->nlink = Index2node( n->c.time );
+binsim.c:	n->c.time = 0;
+nsubrs.c:    for( i = 1, n = *prev; n != NULL; n = *(prev = &n->hnext) )
+nsubrs.c:	if( (i = str_eql( name, n->nname )) >= 0 )
+nsubrs.c:	if( strcmp( name, n->nname ) != 0 ) {
+nsubrs.c:	          name, n->nname );
+nsubrs.c:	while( n->nflags & ALIAS )
+nsubrs.c:	    n = n->nlink;
+nsubrs.c:    freeNodes = n->nlink;
+nsubrs.c:    n->hnext = *prev;	/* insert node into hash table, after prev */
+nsubrs.c:    n->ngate = n->nterm = NULL;
+nsubrs.c:    n->nflags = 0;
+nsubrs.c:    n->ncap = MIN_CAP;
+nsubrs.c:    n->vlow = LOWTHRESH;
+nsubrs.c:    n->vhigh = HIGHTHRESH;
+nsubrs.c:    n->c.time = 0;
+nsubrs.c:    n->tplh = 0;
+nsubrs.c:    n->tphl = 0;
+nsubrs.c:    n->t.cause = NULL;
+nsubrs.c:    n->nlink = NULL;
+nsubrs.c:    n->events = NULL;
+nsubrs.c:    n->npot = X;
+nsubrs.c:    n->awpending = NULL ;
+nsubrs.c:    n->head.next = last_hist;
+nsubrs.c:    n->head.time = 0;
+nsubrs.c:    n->head.val = X;
+nsubrs.c:    n->head.inp = 0;
+nsubrs.c:    n->head.punt = 0;
+nsubrs.c:    n->head.t.r.rtime = n->head.t.r.delay = 0;
+nsubrs.c:    n->curr = &(n->head);
+nsubrs.c:    n->nname = Valloc( i, 1 );
+nsubrs.c:    bcopy( name, n->nname, i );
+nsubrs.c:    freeNodes = n->nlink;
+nsubrs.c:    n->hnext = n;	/* node NOT inserted in hash-table */
+nsubrs.c:    n->ngate = n->nterm = NULL;
+nsubrs.c:    n->nflags = 0;
+nsubrs.c:    n->ncap = MIN_CAP;
+nsubrs.c:    n->vlow = LOWTHRESH;
+nsubrs.c:    n->vhigh = HIGHTHRESH;
+nsubrs.c:    n->c.time = 0;
+nsubrs.c:    n->tplh = 0;
+nsubrs.c:    n->tphl = 0;
+nsubrs.c:    n->t.cause = NULL;
+nsubrs.c:    n->nlink = NULL;
+nsubrs.c:    n->events = NULL;
+nsubrs.c:    n->npot = X;
+nsubrs.c:    n->head.next = last_hist;
+nsubrs.c:    n->head.time = 0;
+nsubrs.c:    n->head.val = X;
+nsubrs.c:    n->head.inp = 0;
+nsubrs.c:    n->head.punt = 0;
+nsubrs.c:    n->head.t.r.rtime = n->head.t.r.delay = 0;
+nsubrs.c:    n->curr = &(n->head);
+nsubrs.c:    n->nname = Valloc( i, 1 );
+nsubrs.c:    bcopy( name, n->nname, i );
+nsubrs.c:    for( n = *prev; n != NULL; n = *(prev = &n->hnext) )
+nsubrs.c:	i = str_eql( name, n->nname );
+nsubrs.c:    for( n = *prev; n != NULL ; n = *(prev = &n->hnext) )
+nsubrs.c:	    Vfree( n->nname );
+nsubrs.c:	    n->nname = NULL;
+nsubrs.c:	    *prev = n->hnext;
+nsubrs.c:	    n->hnext = n;		/* mark node not in hash-table */
+nsubrs.c:	for( n = hash[index]; n; n = n->hnext )
+nsubrs.c:	for( n = hash[ ma ], mi = 0; n; n = n->hnext, mi++ )
+nsubrs.c:	for( n = hash[index]; n != NULL; n = n->hnext )
+nsubrs.c:	    last = &(n->n.next);
+nsubrs.c:    for( n = hash[ ma ]; n != NULL and mi != 0; n = n->hnext, mi-- );
+nsubrs.c:	for( n = hash[ ma ], mi = 0; n != NULL; n = n->hnext, mi++ )
+nsubrs.c:	for( n = hash[index]; n; n = n->hnext )
+sched.c:    if( (n->events != NULL) and (n->events->ntime > etime) )
+sched.c:	for( marker = n->events; (marker->nlink != NULL) and
+sched.c:	new->nlink = n->events;
+sched.c:	n->events = new;
+sched.c:    while( n->events != NULL )
+sched.c:	free_event( n->events );
+sched.c:    n->events = new;
+sched.c:	    if( (n->events != NULL) and (n->events->ntime > etime) )
+sched.c:		for( marker = n->events; (marker->nlink != NULL) and
+sched.c:		ev->nlink = n->events;
+sched.c:		n->events = ev;
+hist_io.c:		n--;
+hist_io.c:	    n--;
+hist_io.c:	for( n = ndlist; n != NULL; n = n->n.next )
+hist_io.c:	    while( n->events != NULL )
+hist_io.c:		free_event( n->events );
+eval.c:      d2ns( e->ntime ), pnode( n ), vchars[ n->npot ] );
+eval.c:    if( n->nflags & INPUT )
+eval.c:      d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
+eval.c:    if( n->nflags & INPUT )
+eval.c:	  d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
+eval.c:	  d2ns( e->ntime ), pnode( n ), vchars[ n->npot ], vchars[ e->eval ] );
+eval.c:	    d2ns( e->rtime ), d2ns( e->delay ), n->ncap );
+eval.c:    n->toggles++;
+eval.c:    toggled_cap += n->ncap;    /* When finished, P = toggle_cap * v*v / (2t) */
+eval.c:     if ( not (n->nflags & INPUT) ) 
+eval.c:	  step_cap_x_trans += n->ncap;
+eval.c:	  step_pow_x_trans += n->vsupply2 * step_cap_x_trans;
+eval.c:	  lprintf( stdout, "Vsupply2: %f, step_cap_x_trans: %f\n", n->vsupply2, step_cap_x_trans );
+eval.c:	all_flags |= n->nflags;
+eval.c:	  (n->nflags & (WATCHED | STOPONCHANGE)) ) )
+eval.c:	else if( n->nflags & (WATCHED | STOPONCHANGE) )
+eval.c:	else if( n->nflags & (POWWATCHED | STOPONCHANGE) )
+eval.c:	if( pstep && (n->nflags & (POWWATCHED | STOPONCHANGE) ) )
+eval.c:	n->npot = e->eval;
+eval.c:	if( not (n->nflags & INPUT) and (n->curr->val != n->npot) )
+eval.c:	    AddHist( n, n->npot, 0, e->ntime, (long) e->delay, (long) e->rtime );
+eval.c:	if ( n->awpending != NULL && (POT2MASK(n->npot) & n->awmask) )
+eval.c:	for( l = n->ngate; l != NULL; l = l->next )
+eval.c:	    if( (n->nflags & (INPUT | POWER_RAIL)) != INPUT )
+eval.c:	    for( l = n->nterm; l != NULL; l = l->next )
+eval.c:	n->c.time = event->ntime;	/* set up the cause stuff */
+eval.c:	n->t.cause = event->p.cause;
+eval.c:	for( l = n->ngate; l != NULL; l = l->next )
+eval.c:	if( (n->nflags & (INPUT | POWER_RAIL)) == INPUT )
+eval.c:	    for( l = n->nterm; l != NULL; l = l->next )
+eval.c:	brk_flag |= n->nflags;
+eval.c:	n->npot = val;
+eval.c:	n->nflags &= ~INPUT_MASK;
+eval.c:	n->nflags |= INPUT;
+eval.c:	if( n->curr->val != val or not (n->curr->inp) )
+eval.c:	AddHist( n, (int) n->curr->val, 0, cur_delta, 0L, 0L );
+eval.c:	if( n->nflags & VISITED )
+eval.c:		if( n->npot == LOW )
+eval.c:		else if( n->npot == X )
+eval.c:		if( n->npot == HIGH )
+eval.c:		else if( n->npot == X )
+conn_list.c:    n->nflags &= ~VISITED;
+conn_list.c:    next = this = n->nlink = n;
+sstep.c:    if( n->nflags & VISITED )
+sstep.c:    if( n->nflags & INPUT )
+sstep.c:	result = thev_value[n->npot];
+sstep.c:    n->nflags |= VISITED;
+sstep.c:    result = (n->ngate == NULL) ? xcharged_state[n->npot] :
+sstep.c:				  charged_state[n->npot];
+sstep.c:    for( l = n->nterm; l != NULL; l = l->next )
+sstep.c:    n->nflags &= ~VISITED;
+rsim.w~:    if( not (n->nflags & MERGED) )
+rsim.w~:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.w~:	if (n->nflags & MERGED)
+rsim.w~:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.w~:	if (!(n->nflags & MERGED))
+rsim.w~:			vchars[n->npot], d2ns(cur_delta));
+rsim.w~:    if (!(n->nflags & VISITED))
+rsim.w~:	n->nflags |= VISITED;
+rsim.w~:	n->n.next = NULL;
+rsim.w~:	*ptail = &n->n.next;
+rsim.w~:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.w~:    if( n->nflags & MERGED )
+rsim.w~:	n->nflags |= WATCHED;
+rsim.w~:    else if( n->nflags & WATCHED )
+rsim.w~:	n->nflags &= ~WATCHED;
+rsim.w~:    if( n->nflags & MERGED )
+rsim.w~:	n->nflags |= POWWATCHED;
+rsim.w~:    else if( n->nflags & POWWATCHED )
+rsim.w~:	n->nflags &= ~POWWATCHED;
+rsim.w~:    if( n->nflags & MERGED )
+rsim.w~:	n->nflags &= ~STOPONCHANGE;
+rsim.w~:	n->nflags |= STOPONCHANGE;
+rsim.w~:    if( not (n->nflags & (MERGED | ALIAS)) and !isnan(n->ncap))
+rsim.w~:      *capsum += n->ncap;
+rsim.w~:    n->nflags &= ~VISITED;
+rsim.w~:    if ( (n->nflags & VISITED) or (n == GND_node) ) 
+rsim.w~:    n->vsupply2 = vsupply * vsupply;
+rsim.w~:    n->nflags |= VISITED;
+rsim.w~:    lptr l = n->nterm;
+rsim.w~:	    if( n->nflags & MERGED )
+rsim.w~:	if( n->npot != val )
+rsim.w~:    if (n->awpending) {
+rsim.w~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.w~:		n->awpending = p->nxt;
+rsim.w~:    if (n->awpending) {
+rsim.w~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.w~:	awstart = n->awpending;
+rsim.w~:	for ( p = n->awpending ; p ;  ) {
+rsim.w~:		    n->awpending->nxt = NULL;
+rsim.w~:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.w~:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.w~:	n->n.next = inps[ n->npot ];
+rsim.w~:	inps[ n->npot ] = n;
+rsim.w~:	n->nflags |= VISITED;
+rsim.w~:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.w~:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.w~:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.w~:    if( n->nflags & MERGED )
+rsim.w~:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.w~:	while (n-- > 0) {
+rsim.w~:	while (n-- > 0)
+rsim.w~:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.w~:			  pnode( n ), n->ncap, n->toggles,
+rsim.w~:			  n->toggles*n->ncap*powermult,
+rsim.w~:			  n->toggles*n->ncap / toggled_cap );
+rsim.w~:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.w~:    else if( n->t.cause == inc_cause )
+rsim.w~:    else if( level != 0 and n->c.time > ptime )
+rsim.w~:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.w~:    else if( n->t.cause == n )
+rsim.w~:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.w~:    else if( n->t.cause->nflags & VISITED )
+rsim.w~:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.w~:	n->nflags |= VISITED;
+rsim.w~:	ptime = n->c.time;
+rsim.w~:	cpath( n->t.cause, level + 1 );
+rsim.w~:	n->nflags &= ~VISITED;
+rsim.w~:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.w~:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.w~:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.w~:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.w~:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.w~:    if( n->nflags & (MERGED | ALIAS) )
+rsim.w~:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.w~:   if (n->npot == X) {
+rsim.w~:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.w~:    if (n->nflags & ALIAS)
+rsim.w~:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.w~:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.w~:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.w~:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.w~:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+netupdate.c:    if( n->nflags & DELETED )
+netupdate.c:	n->nlink = nd;
+netupdate.c:	n->nflags |= DELETED;
+netupdate.c:	n->nflags &= ~ALIAS;
+netupdate.c:    for( n = ch_nlist; n != NULL; n = n->n.next )
+netupdate.c:	if( n->hnext == n )
+netupdate.c:	n->nflags &= ~N_CAP_SET;
+netupdate.c:	if( not (n->nflags & CHANGED) )
+netupdate.c:	    double deltac = ABS( n->c.cap - n->ncap );
+netupdate.c:	    if( deltac < CAP_THRESH * n->c.cap )
+netupdate.c:		n->c.time = n->curr->time;
+netupdate.c:	    n->nflags |= CHANGED;
+netupdate.c:	if( n->nflags & MERGED )
+netupdate.c:	    stack = n->t.tran->source;
+netupdate.c:	    stack = n->t.tran->drain;
+netupdate.c:	    n->nflags &= ~CHANGED;
+netupdate.c:	if( n->nflags & POWER_RAIL )
+rsim.y~:    if( not (n->nflags & MERGED) )
+rsim.y~:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.y~:	if (n->nflags & MERGED)
+rsim.y~:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.y~:	if (!(n->nflags & MERGED))
+rsim.y~:			vchars[n->npot], d2ns(cur_delta));
+rsim.y~:    if (!(n->nflags & VISITED))
+rsim.y~:	n->nflags |= VISITED;
+rsim.y~:	n->n.next = NULL;
+rsim.y~:	*ptail = &n->n.next;
+rsim.y~:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.y~:    if( n->nflags & MERGED )
+rsim.y~:	n->nflags |= WATCHED;
+rsim.y~:    else if( n->nflags & WATCHED )
+rsim.y~:	n->nflags &= ~WATCHED;
+rsim.y~:    if( n->nflags & MERGED )
+rsim.y~:	n->nflags |= POWWATCHED;
+rsim.y~:    else if( n->nflags & POWWATCHED )
+rsim.y~:	n->nflags &= ~POWWATCHED;
+rsim.y~:    if( n->nflags & MERGED )
+rsim.y~:	n->nflags &= ~STOPONCHANGE;
+rsim.y~:	n->nflags |= STOPONCHANGE;
+rsim.y~:    if( not (n->nflags & (MERGED | ALIAS)) and !isnan(n->ncap))
+rsim.y~:      *capsum += n->ncap;
+rsim.y~:	    if( n->nflags & MERGED )
+rsim.y~:	if( n->npot != val )
+rsim.y~:    if (n->awpending) {
+rsim.y~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.y~:		n->awpending = p->nxt;
+rsim.y~:    if (n->awpending) {
+rsim.y~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.y~:	awstart = n->awpending;
+rsim.y~:	for ( p = n->awpending ; p ;  ) {
+rsim.y~:		    n->awpending->nxt = NULL;
+rsim.y~:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.y~:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.y~:	n->n.next = inps[ n->npot ];
+rsim.y~:	inps[ n->npot ] = n;
+rsim.y~:	n->nflags |= VISITED;
+rsim.y~:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.y~:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.y~:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.y~:    if( n->nflags & MERGED )
+rsim.y~:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.y~:	while (n-- > 0) {
+rsim.y~:	while (n-- > 0)
+rsim.y~:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.y~:			  pnode( n ), n->ncap, n->toggles,
+rsim.y~:			  n->toggles*n->ncap*powermult,
+rsim.y~:			  n->toggles*n->ncap / toggled_cap );
+rsim.y~:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.y~:    else if( n->t.cause == inc_cause )
+rsim.y~:    else if( level != 0 and n->c.time > ptime )
+rsim.y~:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.y~:    else if( n->t.cause == n )
+rsim.y~:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.y~:    else if( n->t.cause->nflags & VISITED )
+rsim.y~:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.y~:	n->nflags |= VISITED;
+rsim.y~:	ptime = n->c.time;
+rsim.y~:	cpath( n->t.cause, level + 1 );
+rsim.y~:	n->nflags &= ~VISITED;
+rsim.y~:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.y~:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.y~:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.y~:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.y~:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.y~:    if( n->nflags & (MERGED | ALIAS) )
+rsim.y~:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.y~:   if (n->npot == X) {
+rsim.y~:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.y~:    if (n->nflags & ALIAS)
+rsim.y~:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.y~:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.y~:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.y~:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.y~:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+newrstep.c:    if( n->nflags & VISITED )
+newrstep.c:	while( (ev = n->events) != NULL )
+newrstep.c:    while( (n = n->nlink) != NULL );
+newrstep.c:	ev = n->events;
+newrstep.c:	if( (ev == NULL) ? (n->npot != X) : (ev->eval != X) )
+newrstep.c:	n = n->nlink;
+newrstep.c:	next = n->nlink;
+newrstep.c:	n->nlink = NULL;
+newrstep.c:	n->n.thev->link.t = thev_free;
+newrstep.c:	thev_free = n->n.thev;
+newrstep.c:	for( l = n->nterm; l != NULL; l = l->next )
+newrstep.c:    if( n->nflags & INPUT )
+newrstep.c:	*r = input_thev[ n->npot ];
+newrstep.c:    switch( n->npot )
+newrstep.c:	case LOW :   r->Clow.min = r->Clow.max = n->ncap;	break;
+newrstep.c:	case X :     r->Clow.max = r->Chigh.max = n->ncap;	break;
+newrstep.c:	case HIGH :  r->Chigh.min = r->Chigh.max = n->ncap;	break;
+newrstep.c:    for( l = n->nterm; l != NULL; l = l->next )
+newrstep.c:    if( n->nflags & USERDELAY )		/* record user delays, if any */
+newrstep.c:	r->tplh = n->tplh; r->tphl = n->tphl;
+newrstep.c:	r = n->n.thev;
+newrstep.c:    if( n->nflags & INPUT )
+newrstep.c:	if( n->npot == dom )
+newrstep.c:    if( n->n.thev->flags & T_REFNODE )	    /* reference node in pure CS */
+newrstep.c:    r->Cd = n->ncap;
+newrstep.c:	r->Ca = (n->npot == LOW) ? 0.0 : n->ncap;
+newrstep.c:	r->Ca = (n->npot == dom) ? 0.0 : n->ncap;
+newrstep.c:    for( l = n->nterm; l != NULL; l = l->next )
+newrstep.c:    if( n->nflags & INPUT )
+newrstep.c:    r = n->n.thev;
+newrstep.c:    taup = r->tauA * n->ncap;
+newrstep.c:    for( l = n->nterm; l != NULL; l = l->next )
+rsim.x~:    if( not (n->nflags & MERGED) )
+rsim.x~:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.x~:	if (n->nflags & MERGED)
+rsim.x~:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.x~:	if (!(n->nflags & MERGED))
+rsim.x~:			vchars[n->npot], d2ns(cur_delta));
+rsim.x~:    if (!(n->nflags & VISITED))
+rsim.x~:	n->nflags |= VISITED;
+rsim.x~:	n->n.next = NULL;
+rsim.x~:	*ptail = &n->n.next;
+rsim.x~:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.x~:    if( n->nflags & MERGED )
+rsim.x~:	n->nflags |= WATCHED;
+rsim.x~:    else if( n->nflags & WATCHED )
+rsim.x~:	n->nflags &= ~WATCHED;
+rsim.x~:    if( n->nflags & MERGED )
+rsim.x~:	n->nflags |= POWWATCHED;
+rsim.x~:    else if( n->nflags & POWWATCHED )
+rsim.x~:	n->nflags &= ~POWWATCHED;
+rsim.x~:    if( n->nflags & MERGED )
+rsim.x~:	n->nflags &= ~STOPONCHANGE;
+rsim.x~:	n->nflags |= STOPONCHANGE;
+rsim.x~:    if( not (n->nflags & (MERGED | ALIAS)) and !isnan(n->ncap))
+rsim.x~:      *capsum += n->ncap;
+rsim.x~:	    if( n->nflags & MERGED )
+rsim.x~:	if( n->npot != val )
+rsim.x~:    if (n->awpending) {
+rsim.x~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.x~:		n->awpending = p->nxt;
+rsim.x~:    if (n->awpending) {
+rsim.x~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.x~:	awstart = n->awpending;
+rsim.x~:	for ( p = n->awpending ; p ;  ) {
+rsim.x~:		    n->awpending->nxt = NULL;
+rsim.x~:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.x~:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.x~:	n->n.next = inps[ n->npot ];
+rsim.x~:	inps[ n->npot ] = n;
+rsim.x~:	n->nflags |= VISITED;
+rsim.x~:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.x~:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.x~:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.x~:    if( n->nflags & MERGED )
+rsim.x~:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.x~:	while (n-- > 0) {
+rsim.x~:	while (n-- > 0)
+rsim.x~:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.x~:			  pnode( n ), n->ncap, n->toggles,
+rsim.x~:			  n->toggles*n->ncap*powermult,
+rsim.x~:			  n->toggles*n->ncap / toggled_cap );
+rsim.x~:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.x~:    else if( n->t.cause == inc_cause )
+rsim.x~:    else if( level != 0 and n->c.time > ptime )
+rsim.x~:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.x~:    else if( n->t.cause == n )
+rsim.x~:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.x~:    else if( n->t.cause->nflags & VISITED )
+rsim.x~:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.x~:	n->nflags |= VISITED;
+rsim.x~:	ptime = n->c.time;
+rsim.x~:	cpath( n->t.cause, level + 1 );
+rsim.x~:	n->nflags &= ~VISITED;
+rsim.x~:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.x~:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.x~:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.x~:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.x~:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.x~:    if( n->nflags & (MERGED | ALIAS) )
+rsim.x~:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.x~:   if (n->npot == X) {
+rsim.x~:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.x~:    if (n->nflags & ALIAS)
+rsim.x~:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.x~:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.x~:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.x~:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.x~:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+rsim.c~:    if( not (n->nflags & MERGED) )
+rsim.c~:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.c~:	if (n->nflags & MERGED)
+rsim.c~:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.c~:	if (!(n->nflags & MERGED))
+rsim.c~:			vchars[n->npot], d2ns(cur_delta));
+rsim.c~:    if (!(n->nflags & VISITED))
+rsim.c~:	n->nflags |= VISITED;
+rsim.c~:	n->n.next = NULL;
+rsim.c~:	*ptail = &n->n.next;
+rsim.c~:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.c~:    if( n->nflags & MERGED )
+rsim.c~:	n->nflags |= WATCHED;
+rsim.c~:    else if( n->nflags & WATCHED )
+rsim.c~:	n->nflags &= ~WATCHED;
+rsim.c~:    if( n->nflags & MERGED )
+rsim.c~:	n->nflags |= POWWATCHED;
+rsim.c~:    else if( n->nflags & POWWATCHED )
+rsim.c~:	n->nflags &= ~POWWATCHED;
+rsim.c~:    if( n->nflags & MERGED )
+rsim.c~:	n->nflags &= ~STOPONCHANGE;
+rsim.c~:	n->nflags |= STOPONCHANGE;
+rsim.c~:    if( not (n->nflags & (MERGED | ALIAS)) )
+rsim.c~:	lprintf( stdout, "Here is the ncap value: %f\n", n->ncap); 
+rsim.c~:    	   *capsum += n->ncap;
+rsim.c~:	    if( n->nflags & MERGED )
+rsim.c~:	if( n->npot != val )
+rsim.c~:    if (n->awpending) {
+rsim.c~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.c~:		n->awpending = p->nxt;
+rsim.c~:    if (n->awpending) {
+rsim.c~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.c~:	awstart = n->awpending;
+rsim.c~:	for ( p = n->awpending ; p ;  ) {
+rsim.c~:		    n->awpending->nxt = NULL;
+rsim.c~:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.c~:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.c~:	n->n.next = inps[ n->npot ];
+rsim.c~:	inps[ n->npot ] = n;
+rsim.c~:	n->nflags |= VISITED;
+rsim.c~:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c~:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c~:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c~:    if( n->nflags & MERGED )
+rsim.c~:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.c~:	while (n-- > 0) {
+rsim.c~:	while (n-- > 0)
+rsim.c~:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.c~:			  pnode( n ), n->ncap, n->toggles,
+rsim.c~:			  n->toggles*n->ncap*powermult,
+rsim.c~:			  n->toggles*n->ncap / toggled_cap );
+rsim.c~:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.c~:    else if( n->t.cause == inc_cause )
+rsim.c~:    else if( level != 0 and n->c.time > ptime )
+rsim.c~:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.c~:    else if( n->t.cause == n )
+rsim.c~:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.c~:    else if( n->t.cause->nflags & VISITED )
+rsim.c~:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.c~:	n->nflags |= VISITED;
+rsim.c~:	ptime = n->c.time;
+rsim.c~:	cpath( n->t.cause, level + 1 );
+rsim.c~:	n->nflags &= ~VISITED;
+rsim.c~:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.c~:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.c~:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.c~:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.c~:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.c~:    if( n->nflags & (MERGED | ALIAS) )
+rsim.c~:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.c~:   if (n->npot == X) {
+rsim.c~:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.c~:    if (n->nflags & ALIAS)
+rsim.c~:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.c~:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.c~:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.c~:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.c~:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+stack.c:    if( (l = n->nterm) == NULL or l->next == NULL )
+stack.c:	cap += n->ncap;
+stack.c:	n->nflags &= ~VISITED;					\
+stack.c:	SHARECAP += n->ncap;					\
+stack.c:    n->nflags &= ~VISITED;					\
+stack.c:    REPLACE( n->nterm, stack, t );
+stack.c:	    n->nflags &= ~MERGED;
+stack.c:	    n->t.cause = NULL;
+stack.c:	    cap += n->ncap;
+stack.c:	    CONNECT( n->nterm, t );
+stack.c:	n->nflags &= ~MERGED;
+stack.c:	n->t.cause = NULL;
+stack.c:	CONNECT( n->nterm, t );
+stack.c:    REPLACE( n->nterm, stack, t );
+rsim.z~:    if( not (n->nflags & MERGED) )
+rsim.z~:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.z~:	if (n->nflags & MERGED)
+rsim.z~:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.z~:	if (!(n->nflags & MERGED))
+rsim.z~:			vchars[n->npot], d2ns(cur_delta));
+rsim.z~:    if (!(n->nflags & VISITED))
+rsim.z~:	n->nflags |= VISITED;
+rsim.z~:	n->n.next = NULL;
+rsim.z~:	*ptail = &n->n.next;
+rsim.z~:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.z~:    if( n->nflags & MERGED )
+rsim.z~:	n->nflags |= WATCHED;
+rsim.z~:    else if( n->nflags & WATCHED )
+rsim.z~:	n->nflags &= ~WATCHED;
+rsim.z~:    if( n->nflags & MERGED )
+rsim.z~:	n->nflags |= POWWATCHED;
+rsim.z~:    else if( n->nflags & POWWATCHED )
+rsim.z~:	n->nflags &= ~POWWATCHED;
+rsim.z~:    if( n->nflags & MERGED )
+rsim.z~:	n->nflags &= ~STOPONCHANGE;
+rsim.z~:	n->nflags |= STOPONCHANGE;
+rsim.z~:    if( not (n->nflags & (MERGED | ALIAS)) )
+rsim.z~:	lprintf( stdout, "Here is the ncap value: %f\n", n->ncap); 
+rsim.z~:    	   *capsum += n->ncap;
+rsim.z~:	    if( n->nflags & MERGED )
+rsim.z~:	if( n->npot != val )
+rsim.z~:    if (n->awpending) {
+rsim.z~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.z~:		n->awpending = p->nxt;
+rsim.z~:    if (n->awpending) {
+rsim.z~:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.z~:	awstart = n->awpending;
+rsim.z~:	for ( p = n->awpending ; p ;  ) {
+rsim.z~:		    n->awpending->nxt = NULL;
+rsim.z~:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.z~:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.z~:	n->n.next = inps[ n->npot ];
+rsim.z~:	inps[ n->npot ] = n;
+rsim.z~:	n->nflags |= VISITED;
+rsim.z~:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.z~:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.z~:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.z~:    if( n->nflags & MERGED )
+rsim.z~:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.z~:	while (n-- > 0) {
+rsim.z~:	while (n-- > 0)
+rsim.z~:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.z~:			  pnode( n ), n->ncap, n->toggles,
+rsim.z~:			  n->toggles*n->ncap*powermult,
+rsim.z~:			  n->toggles*n->ncap / toggled_cap );
+rsim.z~:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.z~:    else if( n->t.cause == inc_cause )
+rsim.z~:    else if( level != 0 and n->c.time > ptime )
+rsim.z~:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.z~:    else if( n->t.cause == n )
+rsim.z~:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.z~:    else if( n->t.cause->nflags & VISITED )
+rsim.z~:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.z~:	n->nflags |= VISITED;
+rsim.z~:	ptime = n->c.time;
+rsim.z~:	cpath( n->t.cause, level + 1 );
+rsim.z~:	n->nflags &= ~VISITED;
+rsim.z~:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.z~:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.z~:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.z~:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.z~:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.z~:    if( n->nflags & (MERGED | ALIAS) )
+rsim.z~:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.z~:   if (n->npot == X) {
+rsim.z~:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.z~:    if (n->nflags & ALIAS)
+rsim.z~:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.z~:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.z~:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.z~:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.z~:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+sim.c:    n->ncap += 	atof( targv[4] ) * (CMA * LAMBDA2) +
+sim.c:    n->ncap +=	atof( targv[4] ) * (CM2A * LAMBDA2) +
+sim.c:	n->ncap += m->ncap;
+sim.c:    n->vlow = atof( targv[2] );
+sim.c:    n->vhigh = atof( targv[3] );
+sim.c:    n->nflags |= USERDELAY;
+sim.c:    n->tplh = ns2d( atof( targv[2] ) );
+sim.c:    n->tphl = ns2d( atof( targv[3] ) );
+sim.c:	n->ncap += cconvert( targv[2] );
+sim.c:	    if( n != GND_node )	n->ncap += cap;
+sim.c:	    n->ncap += cap;
+rsim.c:    if( not (n->nflags & MERGED) )
+rsim.c:	i = strlen(name) + ((n->nflags & MERGED) ? 23 : 3);
+rsim.c:	if (n->nflags & MERGED)
+rsim.c:	    lprintf(stdout, "%s=%c ", name, vchars[n->npot]);
+rsim.c:	if (!(n->nflags & MERGED))
+rsim.c:			vchars[n->npot], d2ns(cur_delta));
+rsim.c:    if (!(n->nflags & VISITED))
+rsim.c:	n->nflags |= VISITED;
+rsim.c:	n->n.next = NULL;
+rsim.c:	*ptail = &n->n.next;
+rsim.c:	for (; n != NULL; n->nflags &= ~VISITED, n = n->n.next)
+rsim.c:    if( n->nflags & MERGED )
+rsim.c:	n->nflags |= WATCHED;
+rsim.c:    else if( n->nflags & WATCHED )
+rsim.c:	n->nflags &= ~WATCHED;
+rsim.c:    if( n->nflags & MERGED )
+rsim.c:	n->nflags |= POWWATCHED;
+rsim.c:    else if( n->nflags & POWWATCHED )
+rsim.c:	n->nflags &= ~POWWATCHED;
+rsim.c:    if( n->nflags & MERGED )
+rsim.c:	n->nflags &= ~STOPONCHANGE;
+rsim.c:	n->nflags |= STOPONCHANGE;
+rsim.c:    if( not (n->nflags & (MERGED | ALIAS)) and !isnan(n->ncap))
+rsim.c:      *capsum += n->ncap;
+rsim.c:    n->nflags &= ~VISITED;
+rsim.c:    if ( (n->nflags & VISITED) or (n == GND_node) ) 
+rsim.c:    n->vsupply = vsupply;
+rsim.c:    n->vsupply2 = vsupply * vsupply;
+rsim.c:    n->nflags |= VISITED;
+rsim.c:    lptr l = n->nterm;
+rsim.c:	    if( n->nflags & MERGED )
+rsim.c:	if( n->npot != val )
+rsim.c:    if (n->awpending) {
+rsim.c:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.c:		n->awpending = p->nxt;
+rsim.c:    if (n->awpending) {
+rsim.c:       for (p = n->awpending; p != NULL; p = p->nxt) {
+rsim.c:	awstart = n->awpending;
+rsim.c:	for ( p = n->awpending ; p ;  ) {
+rsim.c:		    n->awpending->nxt = NULL;
+rsim.c:	if (awstart == n->awpending) n->awpending = NULL ;
+rsim.c:    if( (n->nflags & (INPUT|ALIAS|POWER_RAIL|VISITED|INPUT_MASK) ) == INPUT )
+rsim.c:	n->n.next = inps[ n->npot ];
+rsim.c:	inps[ n->npot ] = n;
+rsim.c:	n->nflags |= VISITED;
+rsim.c:    for( n = inptbl[ HIGH ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c:    for( n = inptbl[ LOW ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c:    for( n = inptbl[ X ]; n != NULL; n->nflags &= ~VISITED, n = n->n.next )
+rsim.c:    if( n->nflags & MERGED )
+rsim.c:	if( ((s->which) ? s->ptr.b->traced : s->ptr.n->nflags) & DELETED )
+rsim.c:	while (n-- > 0) {
+rsim.c:	while (n-- > 0)
+rsim.c:    if( (not (n->nflags & (MERGED | ALIAS))) && (n->nflags & POWWATCHED) )
+rsim.c:			  pnode( n ), n->ncap, n->toggles,
+rsim.c:			  n->toggles*n->ncap*powermult,
+rsim.c:			  n->toggles*n->ncap / toggled_cap );
+rsim.c:    if( (n->nflags & MERGED) or n->t.cause == NULL )
+rsim.c:    else if( n->t.cause == inc_cause )
+rsim.c:    else if( level != 0 and n->c.time > ptime )
+rsim.c:	 * If the node appears to have 'caused' its own transition (n->t.cause
+rsim.c:    else if( n->t.cause == n )
+rsim.c:	  pnode( n ), vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.c:    else if( n->t.cause->nflags & VISITED )
+rsim.c:	long  delta_t = n->c.time - n->t.cause->c.time;
+rsim.c:	n->nflags |= VISITED;
+rsim.c:	ptime = n->c.time;
+rsim.c:	cpath( n->t.cause, level + 1 );
+rsim.c:	n->nflags &= ~VISITED;
+rsim.c:		vchars[ n->npot ], d2ns( n->c.time ) );
+rsim.c:		vchars[ n->npot ], d2ns( n->c.time ), d2ns( delta_t ) );
+rsim.c:    if( not (n->nflags & (ALIAS | MERGED | POWER_RAIL)) )
+rsim.c:	if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.c:	    ac->table[ (n->c.time - ac->begin) / ac->size ] += 1;
+rsim.c:    if( n->nflags & (MERGED | ALIAS) )
+rsim.c:    if( n->c.time >= ac->begin and n->c.time <= ac->end )
+rsim.c:   if (n->npot == X) {
+rsim.c:    if( not (n->nflags & (MERGED | ALIAS)) and n->npot == X )
+rsim.c:    if (n->nflags & ALIAS)
+rsim.c:	is_merge = (n->nflags & MERGED) ? " (part of a stack)" : "";
+rsim.c:    for( eolist = eolist->flink; l != eolist and n != 0; l = l->flink, n-- )
+rsim.c:    if( (n->nflags & (ALIAS | POWER_RAIL)) == 0 )
+rsim.c:	for( i = 0, l = n->ngate; l != NULL; l = l->next, i++ );
+rsim.c:	for( i = 0, l = n->nterm; l != NULL; l = l->next, i++ );
+hist.c:    for( n = GetNodeList(); n != NULL; n = n->n.next )
+hist.c:	head = &(n->head);
+hist.c:	if( head->next == last_hist or (n->nflags & ALIAS) )
+hist.c:	if( n->curr->time < ftime )
+hist.c:	    n->curr = head;
+network.c:    if( not( n->nflags & POWER_RAIL ) )
+network.c:	n->nflags &= ~INPUT;
+network.c:	    if( not( n->nflags & POWER_RAIL ) )
+network.c:		n->nflags &= ~(INPUT_MASK | INPUT);
+network.c:	if (n->npot == HIGH)
+network.c:	else if (n->npot == LOW)
+network.c:    while( n->nflags & ALIAS )
+network.c:	n = n->nlink;
+network.c:    if( n->nflags & (POWER_RAIL | MERGED) )	/* Gnd, Vdd, or merged node */
+network.c:	if( (n->nflags & MERGED) or "lxuh"[ n->npot ] != locwhich )
+network.c:	iptr  *list = listTbl[ INPUT_NUM( n->nflags ) ];
+network.c:		    n->nflags = n->nflags & ~INPUT_MASK;
+network.c:		    n->nflags = (n->nflags & ~INPUT_MASK) | H_INPUT;
+network.c:		    n->nflags = n->nflags & ~INPUT_MASK;
+network.c:		    n->nflags = (n->nflags & ~INPUT_MASK) | L_INPUT;
+network.c:		    n->nflags = n->nflags & ~INPUT_MASK;
+network.c:		    n->nflags = (n->nflags & ~INPUT_MASK) | U_INPUT;
+network.c:		    n->nflags = n->nflags & ~INPUT_MASK;
+network.c:		if( n->nflags & INPUT )
+network.c:		    n->nflags = (n->nflags & ~INPUT_MASK) | X_INPUT;
+network.c:    if( not (n->nflags & (ALIAS | POWER_RAIL)) )
+network.c:	int ch = ((n->nflags & INPUT) ? '4' : '0') + n->npot;
+network.c:    if( n->nflags & (ALIAS | POWER_RAIL) )
+network.c:    while( n->events != NULL )		/* remove any pending events */
+network.c:	free_event( n->events );
+network.c:    if( n->nflags & MERGED )
+network.c:	n->nflags |= INPUT;
+network.c:    n->head.val = ch;
+network.c:    n->head.inp = inp;
+network.c:    if( ch != n->npot )
+network.c:	n->npot = ch;
+network.c:	for( l = n->ngate; l != NULL; l = l->next )
+network.c:    while( n->nflags & ALIAS )
+network.c:	n = n->nlink;
+network.c:    if( n->nflags & MERGED )
+network.c:    if( n->nflags & INPUT )
+network.c:    lprintf( stdout, "(vl=%.2f vh=%.2f) ", n->vlow, n->vhigh );
+network.c:    if( n->nflags & USERDELAY )
+network.c:	lprintf( stdout, "(tplh=%d, tphl=%d) ", n->tplh, n->tphl );
+network.c:    lprintf( stdout, "(%5.4f pf) ", n->ncap );
+network.c:	for( l = n->nterm; l != NULL and int_received == 0; l = l->next )
+network.c:	for( l = n->ngate; l != NULL and int_received == 0; l = l->next )
+network.c:    if( n->events != NULL )
+network.c:	for( e = n->events; e != NULL; e = e->nlink )

@@ -26,6 +26,7 @@ extern Fstat *FileStatus( /*  name */ );
 extern void wr_netfile( /*  fname */ );
 extern int rd_netfile( /*  f, line */ );
 extern nptr bin_connect_txtors( /* */ );
+extern int VDD_node_size;
 
 	/* EXPORTS FROM cad_dir.c */
 
@@ -65,11 +66,14 @@ extern int	config_flags ;
 #define	TDIFFCAP	0x01	/* set if DIFFPERIM or DIFFEXTF are true     */
 #define CONFIG_LOADED	0x20	/* set if configuration file has been loaded */
 
+extern long     nttypes;        /* number of transistor types */      
+
 typedef struct
   {
     char *devname;	/* Name of subcircuit device */
     int	  devtype;	/* Type of subcircuit device (e.g., NFET) */
     float devvalue;	/* Value associated with device (e.g., resistance) */
+    int   fettype;	/* Number of transistor types */
   } DevRec;
 
 extern DevRec	**device_names;
@@ -102,9 +106,9 @@ extern void ReInit( /* */ );
 extern int step( /*  stop_time */ );
 extern char  switch_state[ /*NTTYPES*/ ][ 4 ] ;
 #define	 compute_trans_state( TRANS )					\
-    ( ((TRANS)->ttype & GATELIST) ?					\
+    ( ((TRANS)->flags & GATELIST) ?					\
 	ComputeTransState( TRANS ):					\
-	switch_state[ BASETYPE( (TRANS)->ttype ) ][ (TRANS)->gate->npot ] )
+	switch_state[ (TRANS)->ttype ][ (TRANS)->gate->npot ] )
 extern int ComputeTransState( /*  t */ );
 
 	/* EXPORTS FROM fio.c */
@@ -227,6 +231,7 @@ extern pointertype Node2index( /*  nd */ );
 extern int match_net( /*  pattern, fun, arg */ );
 #define	pnode( NODE )	( (NODE)->nname )
 extern void init_hash( /* */ );
+extern int power_net_name_size;
 
 	/* EXPORTS FROM parallel.c */
 
@@ -248,7 +253,7 @@ extern void rsimerror( /* int max, ...*/ );
 
 	/* EXPORTS FROM rsim.c */
 
-extern char	*power_net_name ;
+extern char	**power_net_name ;
 extern char	*ground_net_name ;
 extern int      contline ;
 extern int	analyzerON ;
@@ -264,6 +269,7 @@ extern  float	captime ;
 extern  float	powermult ;
 extern  int	pstep ;
 extern  float   step_cap_x_trans ;
+extern  float   step_pow_x_trans ;
 extern int doAssert( /* */ );
 extern void	evalAssertWhen( /* n*/ );
 extern void disp_watch_vec( /*  which */ );
@@ -325,7 +331,7 @@ extern void rm_inc_events( /*  all */ );
 
 	/* EXPORTS FROM sim.c */
 
-extern nptr   VDD_node;
+extern nptr   *VDD_node;
 extern nptr   GND_node;
 extern char  *simprefix;
 extern lptr   on_trans;

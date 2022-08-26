@@ -431,8 +431,10 @@ private void fix_transistors( nd )
 	    l->xtor->state = compute_trans_state( l->xtor );
 	nd = nd->n.next;
       }
-    for( l = VDD_node->ngate; l != NULL; l = l->next )
-	l->xtor->state = compute_trans_state( l->xtor );
+    for (int i = 0; i < VDD_node_size; i++) {
+	for( l = (*(VDD_node+i))->ngate; l != NULL; l = l->next )
+		l->xtor->state = compute_trans_state( l->xtor );
+    }
     for( l = GND_node->ngate; l != NULL; l = l->next )
 	l->xtor->state = compute_trans_state( l->xtor );
   }

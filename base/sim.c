@@ -39,7 +39,7 @@
 
 #define DEFAULT_OUTPUT_RESISTANCE 500	/* output resistance used if no info given */
 
-public	nptr   VDD_node;		/* power supply nodes */
+public	nptr   *VDD_node;		/* power supply nodes */
 public	nptr   GND_node;
 public  char   *simprefix = NULL;	/* if non-NULL, prefix nodes with this */
 
@@ -139,20 +139,21 @@ private nptr connect_txtors()
 	t->source = src;
 	t->drain = drn;
 
-	type = t->ttype;
-	t->state = ( type & ALWAYSON ) ? WEAK : UNKNOWN;
+	type = device_names[t->ttype]->devtype;
+	t->state = ( (type == DEP) || (type == RESIST) ) ? WEAK : UNKNOWN;
 	t->tflags = 0;
 
-	ntrans[ type ]++;
+	ntrans[ t->ttype ]++;
 	if( src == drn or (src->nflags & drn->nflags & POWER_RAIL) )
 	  {
-	    t->ttype |= TCAP;		/* transistor is just a capacitor */
+	    t->flags |= TCAP;		/* transistor is just a capacitor */
 	    LINK_TCAP( t );
 	  }
 	else
 	  {
 	    /* do not connect gate if ALWAYSON since they do not matter. */
-	    if( t->ttype & ALWAYSON )
+	    type = device_names[t->ttype]->devtype;
+	    if( (type == DEP) || (type == RESIST) )
 	      {
 		CONNECT( on_trans, t );
 	      }
@@ -361,7 +362,7 @@ private void newtrans( implant, targc, targv )
 	if( targc != 4 )
 	    BAD_ARGC( 'r', targc, targv );
 
-	gate = VDD_node;
+	gate = *VDD_node;
 	src = RsimGetNode( targv[1] );
 	drn = RsimGetNode( targv[2] );
 
@@ -1085,19 +1086,24 @@ public int rd_network( simfile, prefix, has_param_file )
 	if (power_net_name == NULL)
 	  {
 	    lprintf(stdout, "Using default name \"Vdd\" for power net.\n");
-	    power_net_name = strdup( "Vdd" );
+	    power_net_name = (char**)malloc(sizeof(char*) * power_net_name_size);
+	    *power_net_name = strdup( "Vdd" );
+	    *(power_net_name+1) = NULL;
 	  }
-
-	VDD_node = RsimGetNode( power_net_name );
-	VDD_node->npot = HIGH;
-	VDD_node->nflags |= (INPUT | POWER_RAIL);
-	VDD_node->head.inp = 1;
-	VDD_node->head.val = HIGH;
-	VDD_node->head.punt = 0;
-	VDD_node->head.time = 0;
-	VDD_node->head.t.r.rtime = VDD_node->head.t.r.delay = 0;
-	VDD_node->head.next = last_hist;
-	VDD_node->curr = &(VDD_node->head);
+	if (VDD_node == NULL) {
+	    VDD_node = (nptr*)malloc(2*sizeof(nptr));
+	    *(VDD_node+1) = NULL;
+	}
+	*VDD_node = RsimGetNode( power_net_name );
+	(*VDD_node)->npot = HIGH;
+	(*VDD_node)->nflags |= (INPUT | POWER_RAIL);
+	(*VDD_node)->head.inp = 1;
+	(*VDD_node)->head.val = HIGH;
+	(*VDD_node)->head.punt = 0;
+	(*VDD_node)->head.time = 0;
+	(*VDD_node)->head.t.r.rtime = (*VDD_node)->head.t.r.delay = 0;
+	(*VDD_node)->head.next = last_hist;
+	(*VDD_node)->curr = &((*VDD_node)->head);
 
 	if (ground_net_name == NULL)
 	  {

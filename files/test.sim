@@ -1,0 +1,4 @@
+p in1 vdd1 out1 2 4
+p in2 vdd2 out2 2 4
+n in1 gnd out1 2 4
+n in2 gnd out2 2 4

@@ -592,6 +592,7 @@ private void add_new_trans( ac, av )
     tptr          t;
     int           length, width;
     double        cap;
+    int 	  type;
 
     if( ac != 9 )	Error( (bad_arg_msg, av[0], "9") );
 
@@ -614,8 +615,8 @@ private void add_new_trans( ac, av )
     FindNode( tran.source, av[7] );
     FindNode( tran.drain, av[8] );
 
-    tran.tflags = tran.n_par = 0;
-    tran.state = (tran.ttype & ALWAYSON) ? WEAK : UNKNOWN;
+    tran.tflags = tran.n_par = tran.flags = 0;
+    tran.state = (tran.ttype == DEP) ? WEAK : UNKNOWN;
 
     ntrans[ tran.ttype ]++;
 
@@ -662,17 +663,18 @@ private void delete_trans( ac, av )
     tptr    t;
     long    x, y;
     double  cap, gcap;
+    int     type;
 
     if( ac != 3 )	Error( (bad_arg_msg, av[0], "3") );
 
     FindTxtor( t, av[1], av[2], x, y );
-
+    type = device_names[t->ttype]->devtype;
     DeleteTxtorPos( t );
 
     gcap = -(t->r->width * t->r->length * CTGA);
     cap = (config_flags & TDIFFCAP) ? -(CTDW * t->r->width + CTDE) : 0.0;
 
-    if( t->ttype & TCAP )
+    if( t->flags & TCAP )
       {
 	if( cap != 0.0 )
 	  {
@@ -683,10 +685,10 @@ private void delete_trans( ac, av )
       }
     else
       {
-	if( t->ttype & STACKED ) DestroyStack( t->dcache.t );
-	if( t->ttype & ORLIST ) UnParallelTrans( t );
+	if( t->flags & STACKED ) DestroyStack( t->dcache.t );
+	if( t->flags & ORLIST ) UnParallelTrans( t );
 
-	if( t->ttype & ALWAYSON )
+	if( (type == DEP) || (type == RESIST) )
 	  {
 	    DISCONNECT( on_trans, t );
 	  }
@@ -711,7 +713,7 @@ private void delete_trans( ac, av )
 	  }
       }
     CAP_CHANGE( t->gate, ch_nlist, gcap );
-    ntrans[ BASETYPE( t->ttype ) ] -= 1;
+    ntrans[ t->ttype ] -= 1;
     FREE_TRANS( t );
   }
 
@@ -811,9 +813,9 @@ private void move_trans_terms( ac, av )
     if( gate == t->gate and src == t->source and drn == t->drain )
 	return;
 
-    if( t->ttype & STACKED )	DestroyStack( t->dcache.t );
-    if( t->ttype & ORLIST )	UnParallelTrans( t );
-    if( t->ttype & TCAP )
+    if( t->flags & STACKED )	DestroyStack( t->dcache.t );
+    if( t->flags & ORLIST )	UnParallelTrans( t );
+    if( t->flags & TCAP )
       {
 	UNLINK_TCAP( t );
 	was_tcap = TRUE;
@@ -829,8 +831,9 @@ private void move_trans_terms( ac, av )
 	cap = (t->r->width * t->r->length) * CTGA;
 	CAP_CHANGE( gate, ch_nlist, cap );
 	CAP_CHANGE( t->gate, ch_nlist, -cap );
-
-	if( not (t->ttype & ALWAYSON) )
+	
+	int type = device_names[t->ttype]->devtype;
+	if( not (type == DEP || type == RESIST) )
 	  {
 	    DISCONNECT( t->gate->ngate, t );
 	    TRAN_CHANGE( t, T_MOV_GATE );
@@ -908,6 +911,9 @@ private void move_trans_to_node( ac, av )
     nptr    nd, gate, src, drn;
     char    *s;
     double  cap;
+    int     type;
+
+    type = device_names[t->ttype]->devtype;
 
     SwitchContext();
 
@@ -931,9 +937,9 @@ private void move_trans_to_node( ac, av )
     if( gate == t->gate and src == t->source and drn == t->drain )
 	return;
 
-    if( t->ttype & STACKED )	DestroyStack( t->dcache.t );
-    if( t->ttype & ORLIST )	UnParallelTrans( t );
-    if( t->ttype & TCAP )
+    if( t->flags & STACKED )	DestroyStack( t->dcache.t );
+    if( t->flags & ORLIST )	UnParallelTrans( t );
+    if( t->flags & TCAP )
       {
 	UNLINK_TCAP( t );
 	was_tcap = TRUE;
@@ -941,7 +947,7 @@ private void move_trans_to_node( ac, av )
 
     if( gate != t->gate )
       {
-	if( t->ttype & ALWAYSON  )
+	if( (type == DEP) || (type == RESIST) )
 	  {
 	    DISCONNECT( on_trans, t );
 	  }
@@ -1057,8 +1063,8 @@ private void input_changes( fin )
     char  line[ LSIZE ];
     char  *targv[ MAXARGS ];
     int   targc;
-
-    VDD_node->nflags |= VISITED;	/* never add these to 'change' list */
+    for (int i = 0; i < VDD_node_size; i++) 
+    	(*(VDD_node+i))->nflags |= VISITED;	/* never add these to 'change' list */
     GND_node->nflags |= VISITED;
     new_GND = new_VDD = NULL;
     chg_GND = chg_VDD = 0;
@@ -1105,8 +1111,8 @@ private void input_changes( fin )
 	(void) fclose( nu_logf );
 
     FreeAliasTbl();
-
-    VDD_node->nflags &= ~(VISITED | CHANGED);	/* restore flag */
+    for (int i = 0; i < VDD_node_size; i++) 
+    	(*(VDD_node+i))->nflags &= ~(VISITED | CHANGED);	/* restore flag */
     GND_node->nflags &= ~(VISITED | CHANGED);
   }
 
@@ -1191,6 +1197,7 @@ private void conn_ch_trans( tlist )
   {
     register tptr  t;
     tptr           tnext;
+    int		   type;
 
     for( t = tlist->scache.t; t != tlist; t = tnext )
       {
@@ -1199,29 +1206,29 @@ private void conn_ch_trans( tlist )
 	if( t->tflags & T_CH_POS )
 	    EnterPos( t, TRUE );
 
+	type = device_names[t->ttype]->devtype;
 	if( t->tflags & (T_MOV_GATE | T_MOV_SRC | T_MOV_DRN) )
 	  {
 	    nptr  src = t->source, drn = t->drain;
-
 	    if( src == drn or (src->nflags & drn->nflags & POWER_RAIL) )
 	      {
 		if( not (t->tflags & T_MOV_SRC) )
 		    DISCONNECT( src->nterm, t );
 		if( not (t->tflags & T_MOV_DRN) )
 		    DISCONNECT( drn->nterm, t );
-		if( t->ttype & ALWAYSON )
+		if( (type == DEP) || (type == RESIST) )
 		    DISCONNECT( on_trans, t )
 		else if( t->tflags & T_MOV_GATE )
 		    DISCONNECT( t->gate->ngate, t );
 
-		t->ttype |= TCAP;
+		t->flags |= TCAP;
 		LINK_TCAP( t );
 	      }
 	    else
 	      {
 		if( t->tflags & T_MOV_GATE )
 		  {
-		    if( t->ttype & ALWAYSON )
+		    if( type == DEP || type == RESIST )
 			CONNECT( on_trans, t )
 		    else
 			CONNECT( t->gate->ngate, t );
@@ -1240,12 +1247,12 @@ private void conn_ch_trans( tlist )
 	      {
 		DISCONNECT( src->nterm, t );
 		DISCONNECT( drn->nterm, t );
-		if( t->ttype & ALWAYSON )
-		    DISCONNECT( on_trans, t )
+		if( (type == DEP) || (type == RESIST) )
+		    DISCONNECT( on_trans, t );
 		else
 		    DISCONNECT( t->gate->ngate, t );
 
-		t->ttype |= TCAP;
+		t->flags |= TCAP;
 		LINK_TCAP( t );
 	      }
 	  }

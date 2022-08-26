@@ -69,9 +69,9 @@ private int CanMerge( n )
 
     if( (l = n->nterm) == NULL or l->next == NULL )
 	return( FALSE );
-    type = l->xtor->ttype & ~(GATELIST | ORED);
+    type = l->xtor->flags & ~(GATELIST | ORED);
     l = l->next;
-    if( l->next == NULL and type == (l->xtor->ttype & ~(GATELIST | ORED)) )
+    if( l->next == NULL and type == (l->xtor->flags & ~(GATELIST | ORED)) )
 	return( TRUE );
     return( FALSE );
   }
@@ -161,13 +161,13 @@ public void make_stacks( nlist )
 	GetAnchor( t1, n1, Cshare );
 	GetAnchor( t2, n2, Cshare );
 
-	if( t1->ttype & GATELIST )
+	if( t1->flags & GATELIST )
 	  {
 	    C1 = StackCap( t1 ) / 2.0;
 	    Cshare += C1;
 	  }
 
-	if( t2->ttype & GATELIST )
+	if( t2->flags & GATELIST )
 	  {
 	    C2 = StackCap( t2 ) / 2.0;
 	    Cshare += C2;
@@ -185,10 +185,12 @@ public void make_stacks( nlist )
 
 	NEW_TRANS( stack );
 	stack->r = (Resists *) Falloc( sizeof( TranResist ), 1 );
-	stack->gate = (t1->ttype & GATELIST) ? t1->gate : (nptr) t1;
+	stack->gate = (t1->flags & GATELIST) ? t1->gate : (nptr) t1;
 	stack->r->rstatic = stack->r->dynhigh = stack->r->dynlow = 0.0;
-	stack->ttype = (t1->ttype & ~ORED) | GATELIST;
-	stack->state = (t1->ttype & ALWAYSON) ? WEAK : UNKNOWN;
+	stack->ttype = t1->ttype;
+	stack->flags = (t1->flags & ~ORED) | GATELIST;
+	int type = device_names[t1->ttype]->devtype;
+	stack->state = (t1->flags & ((type == NCHAN) || (type == PCHAN))) ? WEAK : UNKNOWN;
 	stack->tflags = 0;
 	stack->source = n1;
 	stack->drain = n2;
@@ -207,7 +209,7 @@ public void make_stacks( nlist )
 	    stack->r->dynhigh += t1->r->dynhigh;
 	    stack->r->dynlow += t1->r->dynlow;
 
-	    if( t1->ttype & GATELIST )
+	    if( t1->flags & GATELIST )
 	      {
 		t2 = (tptr) t1->gate;
 		do
@@ -230,7 +232,7 @@ public void make_stacks( nlist )
 	    else
 	      {
 		tcount++;
-		t1->ttype |= STACKED;
+		t1->flags |= STACKED;
 		t1->dcache.t = stack;
 		REPLACE( t1->gate->ngate, t1, stack );
 		t2 = t1;
@@ -240,7 +242,7 @@ public void make_stacks( nlist )
 		break;
 
 	    other_tran( t1, n1 );
-	    t2->scache.t = (t1->ttype & GATELIST) ? (tptr) t1->gate : t1;
+	    t2->scache.t = (t1->flags & GATELIST) ? (tptr) t1->gate : t1;
 
 	    n1->nterm->next->next = freeLinks;
 	    freeLinks = n1->nterm;
@@ -251,7 +253,7 @@ public void make_stacks( nlist )
 		FreeHistList( n1 );
 	  }
 	t2->scache.t = NULL;
-	nmerged[ BASETYPE( t2->ttype ) ] += tcount;
+	nmerged[ t2->ttype ] += tcount;
       }
   }
 
@@ -282,7 +284,7 @@ public void DestroyStack( stack )
 	    CONNECT( n->nterm, t );
 	  }
 	REPLACE( t->gate->ngate, stack, t );
-	t->ttype &= ~STACKED;
+	t->flags &= ~STACKED;
 	tcount++;
 
 	n = other_node( t, n );
@@ -303,7 +305,7 @@ public void DestroyStack( stack )
     stack->source->ncap -= cap;		/* re-adjust capacitance */
     stack->drain->ncap -= cap;
 
-    nmerged[ BASETYPE( stack->ttype ) ] -= tcount;
+    nmerged[ stack->ttype ] -= tcount;
 
     Ffree( stack->r, sizeof( TranResist ) );
     FREE_TRANS( stack );

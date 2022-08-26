@@ -17,6 +17,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
+#include <math.h>
 
 #ifdef TCL_IRSIM
 #include <tk.h>
@@ -80,8 +81,10 @@ public	int	analyzerON = FALSE;	/* set when analyzer is running */
 public	Ulong	sim_time0 = 0;		/* starting time (see flush_hist) */
 public	FILE	*logfile = NULL;	/* log file of transactions */
 
-public char	*power_net_name = NULL;    /* Net name for power */
+public char	**power_net_name = NULL;   /* Net names for power */
 public char	*ground_net_name = NULL;   /* Net name for ground */
+
+public int      power_net_name_size = 0;   /* Number of power net names */
 
 #ifdef	POWER_EST
 public	FILE	*caplogfile = NULL;	/* log file of cap transitions */
@@ -93,7 +96,10 @@ public  float	captime = 0.0;
 public  float	powermult = 0.0;	/* to do power estimate in milliWatts */
 public  float   power = 0.0; 		/* power estimate logged after powquery */
 public  int	pstep = 0;		/* Bool - end of step power display */
+public  int	phist = 0;		/* Bool - create the histogram */
 public  float   step_cap_x_trans = 0;	/* Stepwise C*trans count */
+public  float   step_pow_x_trans = 0;	/* Stepwise total power */
+
 #endif /* POWER_EST */
 
 private int undefseq( /* p, list, lmax */ );
@@ -235,6 +241,7 @@ int expand( string, buffer, bufsize, wc )
     nstep = 0;
     for( string += 1; *string >= '0' and *string <= '9'; string += 1 )
 	start = start * 10 + *string - '0';
+    if( *string != ':' )
     if( *string != ':' )
 	goto err;
     for( string += 1; *string >= '0' and *string <= '9'; string += 1 )
@@ -937,8 +944,6 @@ private int xpowtrace( n, flag )
   nptr  n;
   char  *flag;
   {
-    UnAlias( n );
-
     if( n->nflags & MERGED )
       {
 	lprintf( stdout, "can't trace %s\n", pnode( n ) );
@@ -1089,8 +1094,8 @@ private int sumcapdoit( n, capsum )
   {
     UnAlias( n );
 
-    if( not (n->nflags & (MERGED | ALIAS)) )
-	*capsum += n->ncap;
+    if( not (n->nflags & (MERGED | ALIAS)) and !isnan(n->ncap))
+      *capsum += n->ncap;
 
     return( 0 );
   }
@@ -1109,15 +1114,59 @@ private int sumcap()
     return( 0 );
   }
 
+/*
+ * Helper function for clearing the VISITED flag of the node 
+ */
+private int clear_visited( nptr n )
+{
+    n->nflags &= ~VISITED;
+    return( 0 );
+}
+
+/*
+ * Helper function for walking through the current path of the power supply
+ */
+private int walk_path( nptr n, float vsupply )
+{
+    if ( (n->nflags & VISITED) or (n == GND_node) ) 
+        return( 0 );
+    n->vsupply = vsupply;
+    n->vsupply2 = vsupply * vsupply;
+    n->nflags |= VISITED;
+    lptr l = n->nterm;
+    while (l != NULL)
+    {
+	tptr t = l->xtor;
+	if ( t->source == n )
+	    walk_path( t->drain, vsupply );
+        else if ( t->drain == n )
+	    walk_path( t->source, vsupply );
+        l = l->next; 
+    }
+    return( 0 );
+}
+
 
 /*
  * Set the supply voltage to a known value -- used in calculating power
  */
 private int setvsupply()
   {
+    float vsupply;
+    nptr v_node;
     if( targc == 2 )
-	vsupply = atof( targv[1] );
-    lprintf( stdout, "Supply Voltage = %4.2f Volts\n", vsupply );
+      {
+        vsupply = atof( targv[1] );
+        lprintf( stdout, "Supply Voltage = %4.2f Volts\n", vsupply );
+      }
+    else if( targc == 3 )
+      { 
+	v_node = RsimGetNode( targv[1] );
+	vsupply = atof(targv[2]);
+	walk_path( v_node, vsupply );
+        walk_net( clear_visited, (char*)0 );
+	lprintf( stdout, "Supply Voltage = %4.2f Volts at %s\n", vsupply, targv[1] );
+      }
     return(0);
   }
 
@@ -1131,7 +1180,7 @@ private int togglepstep()
     if (pstep)
 	lprintf(stdout,"Power display enabled\n");
     else
-	lprintf(stdout,"Power display disbled\n");
+	lprintf(stdout,"Power display disabled\n");
     return(0);
   }
 #endif /* POWER_EST */
@@ -2225,6 +2274,17 @@ private int relax( stoptime )
 	return( 0 ); \
    }
 
+/*
+ * store data for histogramming
+ */
+struct _buckets
+{
+    float range;
+    int bins;
+};
+
+typedef struct _buckets *Buckets;
+Buckets hist = NULL;
 
 /*
  * relax network, optionally set stepsize
@@ -2250,8 +2310,11 @@ private int dostep()
 	newsize = stepsize;
 
 #ifdef POWER_EST
-    pstepstart = cur_delta;
-    step_cap_x_trans = 0;
+    if ( hist == NULL ) 
+    {
+        pstepstart = cur_delta;
+        step_cap_x_trans = 0;
+    }
 #endif /* POWER_EST */
 
     (void) relax( cur_delta + newsize );
@@ -2260,15 +2323,18 @@ private int dostep()
 #endif
     if( ddisplay )
 	pnwatchlist();
-
+    power = step_pow_x_trans/(2*(d2ns(cur_delta-pstepstart)));	
 #ifdef POWER_EST
-    if( pstep ) 
-      {
-	power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart)));
-	lprintf(stdout,
-	   "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
-	   step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-pstepstart)))); 
-      }
+    if ( hist == NULL )
+    {
+	 if( pstep ) 
+         {
+            lprintf(stdout, "total power is %f\n", step_pow_x_trans);
+	    lprintf(stdout,
+	        "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
+	        step_pow_x_trans/(2*(d2ns(cur_delta-pstepstart)))); 
+         }
+    }
 #endif /* POWER_EST */
 
     return( 0 );
@@ -2282,10 +2348,9 @@ private int getpow()
 #ifdef TCL_IRSIM 
     Tcl_SetObjResult(irsiminterp, Tcl_NewDoubleObj((double)power));
 #else
-    lprintf(stdout, 
-    	"Dynamic power estimate retrieved was = %f mW\n", power);
+    lprintf(stdout, "Dynamic power estimate retrieved was = %f mW\n", power);
 #endif 
-    return 0;
+    return( 0 );
   }
 
 
@@ -3029,19 +3094,38 @@ private int dopower()
   {
     if( targc == 2 )
       {
-	if (*(targv[1]) == '\0')
-	    power_net_name = NULL;
-	else
-	    power_net_name = strdup(targv[1]);
+	if (*(targv[1]) == '\0') 
+	    *power_net_name = NULL;
+	else 
+	  {
+            power_net_name_size++;
+	    VDD_node_size++;
+	    if ( power_net_name == NULL )
+	        power_net_name = (char**)malloc(sizeof(char*));
+	    else 
+	      {	
+	        power_net_name = (char**)realloc(power_net_name, power_net_name_size * 
+		    sizeof(char*));
+              }
+	    *(power_net_name+power_net_name_size-1) = strdup(targv[1]);
+	    if ( VDD_node == NULL )
+	        VDD_node = (nptr*)malloc(sizeof(nptr));
+	    else 
+	      {	
+	        VDD_node = (nptr*)realloc(VDD_node, VDD_node_size * 
+		    sizeof(nptr));
+              }
+	    *(VDD_node+VDD_node_size-1) = RsimGetNode( targv[1] );
+ 	  }
       }
     else
       {
-	if (power_net_name != NULL)
+	if (power_net_name != NULL) 
 	    lprintf( stdout, "Power net = \"%s\"\n", power_net_name );
-	else
+	else 
 	    lprintf( stdout, "Power net name is not set, default is Vdd\n" );
       }
-
+    
     return( 0 );
   }
 
@@ -3057,6 +3141,7 @@ private int doground()
 	    ground_net_name = NULL;
 	else
 	    ground_net_name = strdup(targv[1]);
+	GND_node = RsimGetNode( ground_net_name );
       }
     else
       {
@@ -3193,7 +3278,6 @@ private void cpath( n, level )
       }
   }
 
-
 private int do_cpath( n )
   nptr  n;
   {
@@ -3289,6 +3373,135 @@ private int doactivity()
     return( 0 );
   }
 
+
+float min = -1;
+float max = -1;
+int size = -1;
+long histpstepstart = -1;
+  
+// may not need phist bool variable
+
+/*
+ * obtain histogram data for various power ranges over simulation time 
+ */
+private int dopowhist()
+{
+    register   int i;
+    float     hist_power;
+    Ulong      time = 0;			/* store the current time from histogramming */
+
+    if( targc == 2 )
+    {
+	if ( str_eql( "capture", targv[1] ) == 0 ) 
+	{
+            if ( hist == NULL )	 
+	    {	    
+                lprintf( stdout, "Histogram has not been initialized" );
+	        return( -1 );
+	    }
+            else
+	    {
+		if ( histpstepstart == -1 )
+		{
+		    histpstepstart = cur_delta;
+		    return 0;
+		}
+		hist_power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-histpstepstart)));	    
+	        
+		i = (int)( (hist_power-hist[0].range) / (hist[1].range - hist[0].range));
+		if (i >= 0 and i < size) {
+			hist[i].bins++;
+		}
+		histpstepstart = cur_delta;
+		step_cap_x_trans = 0;
+	
+		/*for( i = 0; i < size; i++ )
+		{
+		    float values;
+		    if ( i == size-1 ) 
+		    	values = max;
+		    else 
+			values = hist[i+1].range;
+	            lprintf( stdout, "Index: %d, Min: %f, Max: %f, power is %f\n", i, hist[i].range, values, hist_power);
+
+		    
+		    if( ( i == size-1 and hist[i].range <= hist_power ) 
+			or ( hist[i].range <=  ) ) {
+			hist[i].bins += 1;
+			histpstepstart = cur_delta;
+		    	step_cap_x_trans = 0;
+		    }
+		    histpstepstart = cur_delta;
+		    step_cap_x_trans = 0;
+		    //lprintf( stdout, "Min range is %f, Max is %f, The power is %f\n", hist_power);
+		} */
+	    }
+	}
+	else if ( str_eql( "print", targv[1] ) == 0 )
+	{
+            if ( hist == NULL )
+ 		return -1;			
+	    lprintf( stdout,
+      	      "Histogram of power: %.2f -> %.3fns (bucket size = %.2f)\n",
+      	      d2ns( time ), d2ns( cur_delta ), (max - min) / size );
+
+    	    for( i = 0; i < size; i++ ) {
+		lprintf( stdout, " %10.2f -%10.2f%6d\n",
+	  	  hist[i].range, hist[i].range + ((max - min) / size),
+	  	  hist[i].bins );
+	    }
+	}
+        else if ( str_eql( "reset", targv[1] ) == 0 ) 
+	{
+            if ( hist == NULL )
+            	return( -1 );
+	    min = -1;
+	    max = -1;
+	    size = -1;
+	    free(hist);
+	    time = cur_delta;
+	    hist = NULL;
+	    lprintf( stdout, "Histogram has been reset" );
+	}
+	else
+	    rsimerror( filename, lineno, "don't know what '%s' means\n", targv[1] );
+    }    
+    else if( str_eql( "init", targv[1] ) == 0 ) 
+    {
+	if( targc == 4 ) 
+            size = NBUCKETS;
+	else if( targc == 5 )
+	    size = atoi( targv[4] );
+	
+	min = (float)atof(targv[2]);
+	max = (float)atof(targv[3]);
+        if( min >= max ) 
+	{
+	    lprintf( stdout, "min greater than max" );
+	    return( -1 );	/* this is an error */	
+	}
+	hist = malloc( size * sizeof(struct _buckets) );	
+	for( i = 0; i < size; i++ )
+	{
+	    hist[i].range = min + ((max - min) / size) * i;
+	    hist[i].bins = 0;
+	    lprintf( stdout, "Index: %d, range: %f\n", i, hist[i].range );
+	} 
+	time = cur_delta;
+	phist = 1;	
+    }        
+    return( 0 );
+}
+
+/*
+ * Show the histogram in a separate window
+ */
+/*private int showhist()
+{
+    Tk_window window;
+    
+    return 0;
+}*/
 
 /*
  * Helper routine for "changes" command.
@@ -3432,7 +3645,6 @@ private int doprintX()
 	lprintf( stdout, "\n" );
     return( 0 );
   }
-
 
 /*
  * Helper routine for printing aliases
@@ -3624,7 +3836,7 @@ private int print_tcap()
     for( t = tcap->scache.t; t != tcap; t = t->scache.t )
       {
 	lprintf( stdout, " %s g=%s s=%s d=%s (%gx%g)\n",
-	  ttype[BASETYPE( t->ttype )], 
+	  device_names[t->ttype]->devname, 
 	  pnode( t->gate ), pnode( t->source ), pnode( t->drain ),
 	  t->r->length / (double) LAMBDACM, t->r->width / (double) LAMBDACM );
       }
@@ -4679,6 +4891,8 @@ public Command  cmds[] =
 #endif
     { "activity",	doactivity,	2,	3,
       "from [to] -> circuit activity in time interval"			},
+    { "powhist",	dopowhist,	2,	5,
+      "[init <min> <max> <buckets>|print|capture|reset] -> power histogram data"},
     { "alias",		doprintAlias,	1,	MAXARGS,
       " ->  print node aliases"						},
     { "ana",		analyzer,	1,	MAXARGS,
@@ -4821,12 +5035,6 @@ public Command  cmds[] =
     { "V",		setseq,		1,	MAXARGS,
       "[node/vector [val...]] -> define input sequence for node/vector"	},
     { "vector",		dovector,	3,	MAXARGS,
-      "name node... -> (re)define vector 'name' composed of node(s)"	},
-    { "w",		display,	2,	MAXARGS,
-      "[-]node/vector... -> add/delete node/vector(s) to display-list"	},
-    { "when",		doWhen,		4,	4,
-      "nodeT valT proc -> schedule procedure when nodeT switches to valT"},
-    { "whenever",	doWhenever,	3,	4,
       "nodeT valT proc -> schedule procedure whenever nodeT switches to valT"},
     { "wnet",		wr_net,		1,	MAXARGS,
       "[file] -> write network to file (smaller/faster than sim file)"	},
@@ -4845,7 +5053,7 @@ public Command  cmds[] =
       "[-]node/vector... -> start/stop power tracing specified node/vector(s)"},
     { "sumcap",		sumcap,		1,	2,
       " -> print out sum of capacitances of all nodes"			},
-    { "vsupply",	setvsupply,	1,	2,
+    { "vsupply",	setvsupply,	1,	3,
       "[v] Set supply voltage = v Volts (no arguments displays value)"	},
     { "powstep",	togglepstep,	1,	1,			
        " -> Toggle display of power estimate for each step"		},

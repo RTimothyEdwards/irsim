@@ -900,8 +900,8 @@ private void UpdateTransistors()
 	      }
 	  }
       }
-
-    VDD_node->nflags &= ~VISITED;
+    for (int i = 0; i< VDD_node_size; i++) 
+	    (*(VDD_node+i))->nflags &= ~VISITED;
     GND_node->nflags &= ~VISITED;
   }
 

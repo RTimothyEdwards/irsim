@@ -58,6 +58,8 @@ public	int	config_flags = 0;
 
 public  DevRec	**device_names;    /* Subcircuit-to-device naming */
 
+public  long    nttypes = 0;       /* Number of transistor types */
+
 /* values of config_flags */
 
 public
@@ -429,8 +431,6 @@ public Resists *requiv( type, width, length )
     register resptr  r;
     unsigned         n;
 
-    type = BASETYPE( type );
-
     rtab = res_htab[ type ];
     if( rtab == NULL )
       {
@@ -604,21 +604,16 @@ private void makedevice( type, name, value )
 	nerrs++;
 	return;
     }
-
+    
     newdev = (DevRec *)malloc(sizeof(DevRec));
     newdev->devname = strdup(name);
     newdev->devtype = typeidx;
     newdev->devvalue = value;
+    newdev->fettype = ++nttypes;
 
     /* This is inefficient but there will only be a small number of devices
      * so it doesn't really matter how efficient it is.
      */
-    for (i = 0; device_names[i] != NULL; i++);
-    devlist = (DevRec **)malloc((i + 2) * sizeof(DevRec *));
-    for (j = 0; j < i; j++)
-	devlist[j] = device_names[j];
-    devlist[j] = newdev;
-    devlist[j + 1] = NULL;
-    free(device_names);
-    device_names = devlist;
+    devlist = (DevRec **)realloc(devlist, nttypes * sizeof(DevRec *));
+    devlist[nttypes - 1] = newdev;
   }
