@@ -614,6 +614,10 @@ private void makedevice( type, name, value )
     /* This is inefficient but there will only be a small number of devices
      * so it doesn't really matter how efficient it is.
      */
-    devlist = (DevRec **)realloc(devlist, nttypes * sizeof(DevRec *));
-    devlist[nttypes - 1] = newdev;
+    /*if( devlist == NULL )
+        devlist = (DevRec **)malloc(sizeof(DevRec *));
+    else*/
+        device_names = (DevRec **)realloc(device_names, nttypes * sizeof(DevRec *));
+    device_names[nttypes - 1] = newdev;
+    //device_names = devlist;
   }

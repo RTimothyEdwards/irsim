@@ -1248,7 +1248,7 @@ private void conn_ch_trans( tlist )
 		DISCONNECT( src->nterm, t );
 		DISCONNECT( drn->nterm, t );
 		if( (type == DEP) || (type == RESIST) )
-		    DISCONNECT( on_trans, t );
+		    DISCONNECT( on_trans, t )
 		else
 		    DISCONNECT( t->gate->ngate, t );
 

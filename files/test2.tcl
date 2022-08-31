@@ -7,5 +7,5 @@ vsupply VPWR 1.8
 powlogfile /dev/null
 powtrace *
 powstep
-s 30
+s 10
 

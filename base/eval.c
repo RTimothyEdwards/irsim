@@ -172,9 +172,7 @@ private void acc_step_power( n )
      if ( not (n->nflags & INPUT) ) 
        {
 	  step_cap_x_trans += n->ncap;
-	  step_pow_x_trans += n->vsupply2 * step_cap_x_trans;
-	  lprintf( stdout, "Vsupply2: %f, step_cap_x_trans: %f\n", n->vsupply2, step_cap_x_trans );
-	  lprintf( stdout, "step_pow_x_trans is: %f\n", step_pow_x_trans ); 
+	  step_pow_x_trans += n->vsupply2 * n->ncap;
        }
   }
 #endif /* POWER_EST */

@@ -184,7 +184,6 @@ public nptr RsimGetNode( name_in )
 	    if (strcasecmp(name, *(power_net_name+i)) == 0) 
 		    ispwrname = 1;
     }
-    //if (power_net_name && (strcasecmp(name, power_net_name) == 0)) ispwrname = 1;
     if (ground_net_name && (strcasecmp(name, ground_net_name) == 0)) ispwrname = 1;
 
     if ((simprefix != NULL) && (ispwrname == 0)) {

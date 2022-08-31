@@ -81,7 +81,7 @@ public	int	analyzerON = FALSE;	/* set when analyzer is running */
 public	Ulong	sim_time0 = 0;		/* starting time (see flush_hist) */
 public	FILE	*logfile = NULL;	/* log file of transactions */
 
-public char	**power_net_name = NULL;   /* Net names for power */
+public char	**power_net_name = NULL;    /* Net name for power */
 public char	*ground_net_name = NULL;   /* Net name for ground */
 
 public int      power_net_name_size = 0;   /* Number of power net names */
@@ -2314,6 +2314,7 @@ private int dostep()
     {
         pstepstart = cur_delta;
         step_cap_x_trans = 0;
+	step_pow_x_trans = 0;
     }
 #endif /* POWER_EST */
 
@@ -2329,7 +2330,6 @@ private int dostep()
     {
 	 if( pstep ) 
          {
-            lprintf(stdout, "total power is %f\n", step_pow_x_trans);
 	    lprintf(stdout,
 	        "Dynamic power estimate for powtrace'd nodes on last step = %f mW\n",
 	        step_pow_x_trans/(2*(d2ns(cur_delta-pstepstart)))); 
@@ -3086,6 +3086,7 @@ private int do_wrstate()
     return( 0 );
   }
 
+
 /*
  * declare a power net name
  */
@@ -3094,25 +3095,25 @@ private int dopower()
   {
     if( targc == 2 )
       {
-	if (*(targv[1]) == '\0') 
+	if (*(targv[1]) == '\0')
 	    *power_net_name = NULL;
-	else 
+	else
 	  {
             power_net_name_size++;
 	    VDD_node_size++;
 	    if ( power_net_name == NULL )
 	        power_net_name = (char**)malloc(sizeof(char*));
-	    else 
-	      {	
-	        power_net_name = (char**)realloc(power_net_name, power_net_name_size * 
+	    else
+	      {
+	        power_net_name = (char**)realloc(power_net_name, power_net_name_size *
 		    sizeof(char*));
               }
 	    *(power_net_name+power_net_name_size-1) = strdup(targv[1]);
 	    if ( VDD_node == NULL )
 	        VDD_node = (nptr*)malloc(sizeof(nptr));
-	    else 
-	      {	
-	        VDD_node = (nptr*)realloc(VDD_node, VDD_node_size * 
+	    else
+	      {
+	        VDD_node = (nptr*)realloc(VDD_node, VDD_node_size *
 		    sizeof(nptr));
               }
 	    *(VDD_node+VDD_node_size-1) = RsimGetNode( targv[1] );
@@ -3120,12 +3121,12 @@ private int dopower()
       }
     else
       {
-	if (power_net_name != NULL) 
+	if (power_net_name != NULL)
 	    lprintf( stdout, "Power net = \"%s\"\n", power_net_name );
-	else 
+	else
 	    lprintf( stdout, "Power net name is not set, default is Vdd\n" );
       }
-    
+
     return( 0 );
   }
 
@@ -3141,7 +3142,6 @@ private int doground()
 	    ground_net_name = NULL;
 	else
 	    ground_net_name = strdup(targv[1]);
-	GND_node = RsimGetNode( ground_net_name );
       }
     else
       {
@@ -3214,7 +3214,6 @@ private int setunit()
       }
     return( 0 );
   }
-
 
 /*
  * print traceback of node's activity and that of its ancestors
@@ -3373,14 +3372,11 @@ private int doactivity()
     return( 0 );
   }
 
-
 float min = -1;
 float max = -1;
 int size = -1;
 long histpstepstart = -1;
   
-// may not need phist bool variable
-
 /*
  * obtain histogram data for various power ranges over simulation time 
  */
@@ -3409,32 +3405,10 @@ private int dopowhist()
 		hist_power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-histpstepstart)));	    
 	        
 		i = (int)( (hist_power-hist[0].range) / (hist[1].range - hist[0].range));
-		if (i >= 0 and i < size) {
-			hist[i].bins++;
-		}
+		if (i >= 0 and i < size) 
+	            hist[i].bins++;
 		histpstepstart = cur_delta;
 		step_cap_x_trans = 0;
-	
-		/*for( i = 0; i < size; i++ )
-		{
-		    float values;
-		    if ( i == size-1 ) 
-		    	values = max;
-		    else 
-			values = hist[i+1].range;
-	            lprintf( stdout, "Index: %d, Min: %f, Max: %f, power is %f\n", i, hist[i].range, values, hist_power);
-
-		    
-		    if( ( i == size-1 and hist[i].range <= hist_power ) 
-			or ( hist[i].range <=  ) ) {
-			hist[i].bins += 1;
-			histpstepstart = cur_delta;
-		    	step_cap_x_trans = 0;
-		    }
-		    histpstepstart = cur_delta;
-		    step_cap_x_trans = 0;
-		    //lprintf( stdout, "Min range is %f, Max is %f, The power is %f\n", hist_power);
-		} */
 	    }
 	}
 	else if ( str_eql( "print", targv[1] ) == 0 )
@@ -3445,7 +3419,8 @@ private int dopowhist()
       	      "Histogram of power: %.2f -> %.3fns (bucket size = %.2f)\n",
       	      d2ns( time ), d2ns( cur_delta ), (max - min) / size );
 
-    	    for( i = 0; i < size; i++ ) {
+    	    for( i = 0; i < size; i++ ) 
+	    {
 		lprintf( stdout, " %10.2f -%10.2f%6d\n",
 	  	  hist[i].range, hist[i].range + ((max - min) / size),
 	  	  hist[i].bins );
@@ -5088,7 +5063,6 @@ public void init_commands()
 
 #endif /* TCL_IRSIM */
 
-
 private int do_help()
   {
     Command  *c;
@@ -5133,4 +5107,3 @@ private int do_help()
       }
     return( 0 );
   }
-
