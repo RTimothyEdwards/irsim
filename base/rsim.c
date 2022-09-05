@@ -3403,12 +3403,13 @@ private int dopowhist()
 		    histpstepstart = cur_delta;
 		    return 0;
 		  }
-		hist_power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-histpstepstart)));	    	        
+		hist_power = step_pow_x_trans/(2*(d2ns(cur_delta-histpstepstart)));	    	        
 		i = (int)( (hist_power-hist[0].range) / (hist[1].range - hist[0].range));
 		if (i >= 0 and i < size) 
 	            hist[i].bins++;
 		histpstepstart = cur_delta;
 		step_cap_x_trans = 0;
+		step_pow_x_trans = 0;
 	      }
 	  }
 	else if ( str_eql( "print", targv[1] ) == 0 )
@@ -3460,23 +3461,12 @@ private int dopowhist()
 	  {
 	    hist[i].range = min + ((max - min) / size) * i;
 	    hist[i].bins = 0;
-	    lprintf( stdout, "Index: %d, range: %f\n", i, hist[i].range );
 	  } 
 	time = cur_delta;
 	phist = 1;	
       }        
     return( 0 );
   }
-
-/*
- * Show the histogram in a separate window
- */
-/*private int showhist()
-{
-    Tk_window window;
-    
-    return 0;
-}*/
 
 /*
  * Helper routine for "changes" command.

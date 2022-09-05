@@ -7,5 +7,8 @@ vsupply VPWR 1.8
 powlogfile /dev/null
 powtrace *
 powstep
-s 10
+powhist init 0 1
+every 10 {powhist capture}
+s 10000
+powhist print
 

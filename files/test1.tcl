@@ -13,4 +13,7 @@ vsupply vdd2 2
 powlogfile /dev/null
 powtrace *
 powstep
-s 30
+powhist init 0 1
+every 10 {powhist capture}
+s 10000
+powhist print
