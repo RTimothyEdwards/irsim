@@ -516,17 +516,19 @@ public int info( n, which )
 		rail = (t->drain->nflags & POWER_RAIL) ? t->drain : t->source;
 		if( device_names[t->ttype]->devtype == NCHAN and rail == GND_node )
 		    drive = "pulled down by ";
-		else {
-			for (int i = 0; i < VDD_node_size; i++ ) {
-				if( device_names[t->ttype]->devtype == PCHAN and rail == *(VDD_node+i) )
-		    			drive = "pulled up by ";		
-				else if( device_names[t->ttype]->devtype == DEP and rail == *(VDD_node+i) and
-		 		 	other_node( t, rail ) == t->gate )
-		    			drive = "pullup ";
-			}
-		}
+		else 
+		  {
+		    for (int i = 0; i < VDD_node_size; i++ ) 
+		      {
+		        if( device_names[t->ttype]->devtype == PCHAN and rail == *(VDD_node+i) )
+		    	    drive = "pulled up by ";		
+			else if( device_names[t->ttype]->devtype == DEP and rail == *(VDD_node+i) and
+		 	  other_node( t, rail ) == t->gate )
+		    	    drive = "pullup ";
+		      }
+		  }
 		if (drive == NULL)
-			ptrans( t );
+		    ptrans( t );
 		if( drive != NULL )
 		  {
 		    lprintf( stdout, drive );

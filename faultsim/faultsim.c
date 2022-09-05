@@ -201,13 +201,17 @@ private void StuckNode( nd, val )
     t = stuckTrans;
     if( val == LOW )
       {
-	t->ttype = NCHAN;	t->gate = VDD_node;	t->source = GND_node;
+	t->ttype = NCHAN;	
+	t->gate = *(VDD_node + VDD_node_size - 1);	
+	t->source = GND_node;
       }
     else	/* val == HIGH */
       {
-	t->ttype = PCHAN;	t->gate = GND_node;	t->source = VDD_node;
+	t->ttype = PCHAN;	
+	t->gate = GND_node;	
+	t->source = *(VDD_node + VDD_node_size - 1);
       }
-
+    VDD_node++;
     t->drain = nd;
     CONNECT( t->gate->ngate, t );
     CONNECT( nd->nterm, t );

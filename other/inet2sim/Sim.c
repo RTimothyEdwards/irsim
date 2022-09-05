@@ -19,7 +19,7 @@
 #include "net_macros.h"
 
 
-public	nptr   VDD_node;		/* power supply nodes */
+public	nptr   *VDD_node;		/* power supply nodes */
 public	nptr   GND_node;
 
 public	lptr   on_trans;		/* always on transistors */
@@ -61,16 +61,22 @@ public int rd_network( simfile )
 	init_counts();
 	init_listTbl();
 
-	VDD_node = GetNode( "Vdd" );
-	VDD_node->npot = HIGH;
-	VDD_node->nflags |= (INPUT | POWER_RAIL);
-	VDD_node->head.inp = 1;
-	VDD_node->head.val = HIGH;
-	VDD_node->head.punt = 0;
-	VDD_node->head.time = 0;
-	VDD_node->head.t.r.rtime = VDD_node->head.t.r.delay = 0;
-	VDD_node->head.next = last_hist;
-	VDD_node->curr = &(VDD_node->head);
+	if( VDD_node == NULL ) 
+	  {
+	    VDD_node = (nptr*)malloc( 2 * sizeof(nptr) );
+	    *( VDD_node + 1 ) = NULL;
+	  }
+
+	*VDD_node = GetNode( "Vdd" );
+	(*VDD_node)->npot = HIGH;
+	(*VDD_node)->nflags |= (INPUT | POWER_RAIL);
+	(*VDD_node)->head.inp = 1;
+	(*VDD_node)->head.val = HIGH;
+	(*VDD_node)->head.punt = 0;
+	(*VDD_node)->head.time = 0;
+	(*VDD_node)->head.t.r.rtime = (*VDD_node)->head.t.r.delay = 0;
+	(*VDD_node)->head.next = last_hist;
+	(*VDD_node)->curr = &((*VDD_node)->head);
 
 	GND_node = GetNode( "Gnd" );
 	GND_node->npot = LOW;
@@ -166,7 +172,7 @@ public void wr_sim( fout )
       {
 	int  type;
 
-	type = BASETYPE( t->ttype );
+	type = t->ttype;
 
 	if( type == RESIST )
 	  {

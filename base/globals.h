@@ -74,6 +74,7 @@ typedef struct
     int	  devtype;	/* Type of subcircuit device (e.g., NFET) */
     float devvalue;	/* Value associated with device (e.g., resistance) */
     int   fettype;	/* Number of transistor types */
+    int   devinit;      /* Indicates if device has been resistance values at config */
   } DevRec;
 
 extern DevRec	**device_names;

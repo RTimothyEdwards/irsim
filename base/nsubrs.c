@@ -270,10 +270,11 @@ public nptr GetNewNode( name )
   {
     register nptr  n;
     int            i;
-    for ( i = 0; i < VDD_node_size; i++ ) {
-	    if( str_eql( name, pnode( *(VDD_node+i) ) ) == 0 )
-		return( VDD_node );
-    }
+    for( i = 0; i < VDD_node_size; i++ ) 
+      {
+        if( str_eql( name, pnode( *(VDD_node + i) ) ) == 0 )
+	    return( *(VDD_node + i) );
+      }
     if( GND_node != NULL and str_eql( name, pnode( GND_node ) ) == 0 )
 	return( GND_node );
 

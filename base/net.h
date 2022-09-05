@@ -305,6 +305,12 @@ struct Input
 #define	POWER		3	/* resist. for power calculation (unused) */
 #define	R_TYPES		3	/* number of resistance contexts */
 
+#define STATIC_MASK	1	/* bit field for devinit in DevRec structure */
+#define DYNHIGH_MASK	2	/* bit field for devinit in DevRec structure */
+#define DYNLOW_MASK	4	/* bit field for devinit in DevRec structure */
+
+#define R_SET		0x7     /* set if all resistances are defined for device */
+
 	/* device types when translating from "x" subcircuits */
 #define NFET		0	/* 4-terminal nFET transitor */
 #define PFET		1	/* 4-terminal pFET transitor */

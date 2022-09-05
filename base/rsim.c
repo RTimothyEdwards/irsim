@@ -110,6 +110,12 @@ extern Tcl_Interp *irsiminterp;
 extern int check_interrupt();
 #endif
 
+/* Histogram storage variables */
+private float min = -1;
+private float max = -1;
+private int size = -1;
+private long histpstepstart = -1;
+ 
 #define	HashCmd( NM )	( ((NM)[0] + (((NM)[1]) << 1) ) & (CMDTBLSIZE - 1) )
 
 /* 
@@ -3101,22 +3107,22 @@ private int dopower()
 	  {
             power_net_name_size++;
 	    VDD_node_size++;
-	    if ( power_net_name == NULL )
+	    if( power_net_name == NULL )
 	        power_net_name = (char**)malloc(sizeof(char*));
 	    else
 	      {
 	        power_net_name = (char**)realloc(power_net_name, power_net_name_size *
-		    sizeof(char*));
+		  sizeof(char*));
               }
-	    *(power_net_name+power_net_name_size-1) = strdup(targv[1]);
-	    if ( VDD_node == NULL )
+	    *(power_net_name + power_net_name_size - 1) = strdup(targv[1]);
+	    if( VDD_node == NULL )
 	        VDD_node = (nptr*)malloc(sizeof(nptr));
 	    else
 	      {
 	        VDD_node = (nptr*)realloc(VDD_node, VDD_node_size *
-		    sizeof(nptr));
+		  sizeof(nptr));
               }
-	    *(VDD_node+VDD_node_size-1) = RsimGetNode( targv[1] );
+	    *(VDD_node + VDD_node_size - 1) = RsimGetNode( targv[1] );
  	  }
       }
     else
@@ -3372,47 +3378,41 @@ private int doactivity()
     return( 0 );
   }
 
-float min = -1;
-float max = -1;
-int size = -1;
-long histpstepstart = -1;
-  
 /*
  * obtain histogram data for various power ranges over simulation time 
  */
 private int dopowhist()
-{
+  {
     register   int i;
-    float     hist_power;
-    Ulong      time = 0;			/* store the current time from histogramming */
+    float      hist_power;
+    Ulong      time = 0;	/* store the current time from histogramming */
 
     if( targc == 2 )
-    {
-	if ( str_eql( "capture", targv[1] ) == 0 ) 
-	{
-            if ( hist == NULL )	 
-	    {	    
+      {
+	if( str_eql( "capture", targv[1] ) == 0 ) 
+	  {
+            if( hist == NULL )	 
+	      {	    
                 lprintf( stdout, "Histogram has not been initialized" );
 	        return( -1 );
-	    }
+	      }
             else
-	    {
+	      {
 		if ( histpstepstart == -1 )
-		{
+		  {
 		    histpstepstart = cur_delta;
 		    return 0;
-		}
-		hist_power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-histpstepstart)));	    
-	        
+		  }
+		hist_power = step_cap_x_trans*vsupply*vsupply/(2*(d2ns(cur_delta-histpstepstart)));	    	        
 		i = (int)( (hist_power-hist[0].range) / (hist[1].range - hist[0].range));
 		if (i >= 0 and i < size) 
 	            hist[i].bins++;
 		histpstepstart = cur_delta;
 		step_cap_x_trans = 0;
-	    }
-	}
+	      }
+	  }
 	else if ( str_eql( "print", targv[1] ) == 0 )
-	{
+	  {
             if ( hist == NULL )
  		return -1;			
 	    lprintf( stdout,
@@ -3420,14 +3420,14 @@ private int dopowhist()
       	      d2ns( time ), d2ns( cur_delta ), (max - min) / size );
 
     	    for( i = 0; i < size; i++ ) 
-	    {
+	      {
 		lprintf( stdout, " %10.2f -%10.2f%6d\n",
 	  	  hist[i].range, hist[i].range + ((max - min) / size),
 	  	  hist[i].bins );
-	    }
-	}
+	      }
+	  }
         else if ( str_eql( "reset", targv[1] ) == 0 ) 
-	{
+	  {
             if ( hist == NULL )
             	return( -1 );
 	    min = -1;
@@ -3437,12 +3437,12 @@ private int dopowhist()
 	    time = cur_delta;
 	    hist = NULL;
 	    lprintf( stdout, "Histogram has been reset" );
-	}
+	  }
 	else
 	    rsimerror( filename, lineno, "don't know what '%s' means\n", targv[1] );
-    }    
+      }    
     else if( str_eql( "init", targv[1] ) == 0 ) 
-    {
+      {
 	if( targc == 4 ) 
             size = NBUCKETS;
 	else if( targc == 5 )
@@ -3451,22 +3451,22 @@ private int dopowhist()
 	min = (float)atof(targv[2]);
 	max = (float)atof(targv[3]);
         if( min >= max ) 
-	{
+	  {
 	    lprintf( stdout, "min greater than max" );
 	    return( -1 );	/* this is an error */	
-	}
+	  }
 	hist = malloc( size * sizeof(struct _buckets) );	
 	for( i = 0; i < size; i++ )
-	{
+	  {
 	    hist[i].range = min + ((max - min) / size) * i;
 	    hist[i].bins = 0;
 	    lprintf( stdout, "Index: %d, range: %f\n", i, hist[i].range );
-	} 
+	  } 
 	time = cur_delta;
 	phist = 1;	
-    }        
+      }        
     return( 0 );
-}
+  }
 
 /*
  * Show the histogram in a separate window

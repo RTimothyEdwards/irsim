@@ -138,8 +138,16 @@ private nptr connect_txtors()
 	t->gate = gate;
 	t->source = src;
 	t->drain = drn;
-
-	type = device_names[t->ttype]->devtype;
+	
+	/* if there are no devices in the design, connect by ttype instead */
+	if( device_names == NULL )
+          {
+	    type = t->ttype;
+	  }
+	else
+	  {	
+	    type = device_names[t->ttype]->devtype;
+	  }
 	t->state = ( (type == DEP) || (type == RESIST) ) ? WEAK : UNKNOWN;
 	t->tflags = 0;
 
@@ -152,7 +160,6 @@ private nptr connect_txtors()
 	else
 	  {
 	    /* do not connect gate if ALWAYSON since they do not matter. */
-	    type = device_names[t->ttype]->devtype;
 	    if( (type == DEP) || (type == RESIST) )
 	      {
 		CONNECT( on_trans, t );
@@ -1083,17 +1090,18 @@ public int rd_network( simfile, prefix, has_param_file )
 	init_counts();
 	init_listTbl();
 
-	if (power_net_name == NULL)
+	if( power_net_name == NULL )
 	  {
-	    lprintf(stdout, "Using default name \"Vdd\" for power net.\n");
-	    power_net_name = (char**)malloc(sizeof(char*) * power_net_name_size);
+	    lprintf( stdout, "Using default name \"Vdd\" for power net.\n" );
+	    power_net_name = (char **)malloc( sizeof(char*) * power_net_name_size );
 	    *power_net_name = strdup( "Vdd" );
-	    *(power_net_name+1) = NULL;
+	    *( power_net_name + 1 ) = NULL;
 	  }
-	if (VDD_node == NULL) {
-	    VDD_node = (nptr*)malloc(2*sizeof(nptr));
-	    *(VDD_node+1) = NULL;
-	}
+	if( VDD_node == NULL ) 
+	  {
+	    VDD_node = (nptr*)malloc( 2 * sizeof(nptr) );
+	    *( VDD_node + 1 ) = NULL;
+	  }
 	*VDD_node = RsimGetNode( power_net_name );
 	(*VDD_node)->npot = HIGH;
 	(*VDD_node)->nflags |= (INPUT | POWER_RAIL);

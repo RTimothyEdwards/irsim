@@ -1,0 +1,837 @@
+other/inet2sim/Sim.c:    for( t = tlist; t != NULL; t = t->scache.t )
+other/inet2sim/Sim.c:	type = t->ttype;
+other/inet2sim/Sim.c:	      pnode( t->source ), pnode( t->drain ), t->r->rstatic );
+other/inet2sim/Sim.c:	      pnode( t->gate ), pnode( t->source ), pnode( t->drain ),
+other/inet2sim/Sim.c:	      SIZE2LAMBDA( t->r->length ), SIZE2LAMBDA( t->r->width ) );
+other/inet2sim/Sim.c:	    if( t->tlink != t )
+other/inet2sim/Sim.c:		(void) fprintf( fout, " %ld %ld", t->x, t->y );
+other/inet2sim/Sim.c:	t->gate->nflags |= VISITED;
+other/inet2sim/Sim.c:	t->source->nflags |= VISITED;
+other/inet2sim/Sim.c:	t->drain->nflags |= VISITED;
+base/binsim.c:	    if( not (t->tflags & ACTIVE_T) )
+base/binsim.c:		t->scache.t = txlist;
+base/binsim.c:		t->tflags |= ACTIVE_T;
+base/binsim.c:	    if( t->flags & GATELIST )
+base/binsim.c:    if( t->flags & ORED )
+base/binsim.c:	for( t = t->tlink; t != NULL; t = t->scache.t ) wr_trans( t );
+base/binsim.c:    ndindx = Node2index( t->gate );
+base/binsim.c:    ndindx = Node2index( t->source );
+base/binsim.c:    ndindx = Node2index( t->drain );
+base/binsim.c:    PackBytes( trans.length, t->r->length, NB_TSIZE );
+base/binsim.c:    PackBytes( trans.width, t->r->width, NB_TSIZE );
+base/binsim.c:    trans.ttype[0] = t->flags & ~(ORED | ORLIST | STACKED | GATELIST);
+base/binsim.c:    if( t->tlink != t )
+base/binsim.c:	PackBytes( trans.x, t->x.pos, NB_COORD );
+base/binsim.c:	PackBytes( trans.y, t->y.pos, NB_COORD );
+base/binsim.c:	next = t->scache.t;
+base/binsim.c:	t->tflags &= ~ACTIVE_T;
+base/binsim.c:	t->scache.t = NULL;
+base/binsim.c:	if( t->flags & GATELIST )
+base/binsim.c:	    for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+base/binsim.c:    for( t = tcap->dcache.t; t != tcap; t = t->dcache.t )
+base/binsim.c:	t->gate = Index2node( ndindx );
+base/binsim.c:	t->source = Index2node( ndindx );
+base/binsim.c:	t->drain = Index2node( ndindx );
+base/binsim.c:	t->ttype = trans.ttype[0];
+base/binsim.c:	if( t->flags & GATELIST )
+base/binsim.c:	    t->flags &= ~GATELIST;
+base/binsim.c:	    UnpackBytes( trans.x, t->x.pos, NB_COORD );
+base/binsim.c:	    UnpackBytes( trans.y, t->y.pos, NB_COORD );
+base/binsim.c:	t->r = requiv( (int) t->ttype, width, length );
+base/binsim.c:	ntrans[  t->ttype ] += 1;
+base/binsim.c:	last = &(t->scache.t);
+base/binsim.c:	for( t = tlist; t != NULL; t = t->scache.t )
+base/binsim.c:	    t->r->length *= adj_size;    t->r->width *= adj_size;
+base/binsim.c:	for( t = tlist; t != NULL; t = t->scache.t )
+base/binsim.c:	    t->gate->ncap += adj_g * t->r->length * t->r->width;
+base/binsim.c:	for( t = tlist; t != NULL; t = t->scache.t )
+base/binsim.c:	    t->source->ncap += adj_w * t->r->width + adj_e;
+base/binsim.c:	    t->drain->ncap += adj_w * t->r->width + adj_e;
+base/binsim.c:	tnext = t->scache.t;
+base/binsim.c:	int type = device_names[t->ttype]->devtype;
+base/binsim.c:	t->state = ( type == DEP || type == RESIST ) ? WEAK : UNKNOWN;
+base/binsim.c:	t->tflags = 0;
+base/binsim.c:	if( t->flags & TCAP )
+base/binsim.c:	    int type = device_names[t->ttype]->devtype;
+base/binsim.c:		CONNECT( t->gate->ngate, t );
+base/binsim.c:	    if( not (t->source->nflags & POWER_RAIL) )
+base/binsim.c:		CONNECT( t->source->nterm, t );
+base/binsim.c:		LINK_TO_LIST( t->source, nd_list, VISITED );
+base/binsim.c:	    if( not (t->drain->nflags & POWER_RAIL) )
+base/binsim.c:		CONNECT( t->drain->nterm, t );
+base/binsim.c:		LINK_TO_LIST( t->drain, nd_list, VISITED );
+base/eval.c:	    oldstate = t->state;
+base/eval.c:	    t->state = compute_trans_state( t );
+base/eval.c:	    if( (t->drain->npot == X) or (t->source->npot == X) or
+base/eval.c:	      ((t->drain->npot != t->source->npot) and
+base/eval.c:	      (t->state == ON)) or
+base/eval.c:	      ((t->drain->npot == t->source->npot) and
+base/eval.c:	      (t->state == OFF)) or
+base/eval.c:	      ((t->state == UNKNOWN) and
+base/eval.c:	      (t->drain->npot == t->source->npot))) or
+base/eval.c:	      (t->drain->events != NULL) or
+base/eval.c:	      (t->source->events != NULL) )
+base/eval.c:		if( not (t->source->nflags & INPUT) )
+base/eval.c:		    t->source->nflags |= VISITED;
+base/eval.c:		if( not (t->drain->nflags & INPUT) )
+base/eval.c:		    t->drain->nflags |= VISITED;
+base/eval.c:	    if ( t->ttype != SUBCKT ) {
+base/eval.c:	    	t->state = compute_trans_state( t );
+base/eval.c:	    	if( not (t->source->nflags & INPUT) )
+base/eval.c:			t->source->nflags |= VISITED;
+base/eval.c:	    	if( not (t->drain->nflags & INPUT) )
+base/eval.c:			t->drain->nflags |= VISITED;
+base/eval.c:	    else t->drain->nflags |= VISITED;
+base/eval.c:	    t->state = compute_trans_state( t );
+base/eval.c:	    if( not (t->source->nflags & INPUT) )
+base/eval.c:		t->source->nflags |= VISITED;
+base/eval.c:	    if( not (t->drain->nflags & INPUT) )
+base/eval.c:		t->drain->nflags |= VISITED;
+base/eval.c:		    if (t->ttype != SUBCKT) {
+base/eval.c:		       if( t->state != OFF )
+base/eval.c:			    t->drain->nflags |= VISITED;
+base/eval.c:		if ( t->ttype == SUBCKT ) {
+base/eval.c:		    if (t->drain->nflags & VISITED)
+base/eval.c:	    	    if( t->source->nflags & VISITED )
+base/eval.c:		    	(*model)( t->source );
+base/eval.c:	    	    if( t->drain->nflags & VISITED )
+base/eval.c:		    	(*model)( t->drain );
+base/eval.c:    ttype = device_names[t->ttype]->devtype;
+base/eval.c:	    for( l = (tptr) t->gate; l != NULL; l = l->scache.t )
+base/eval.c:	    for( l = (tptr) t->gate; l != NULL; l = l->scache.t )
+base/conn_list.c:	    if( t->state == OFF )
+base/conn_list.c:	    if( t->tflags & CROSSED )	/* Each transistor is crossed twice */
+base/conn_list.c:		t->tflags &= ~CROSSED;
+base/conn_list.c:	    t->scache.r = t->dcache.r = NULL;
+base/conn_list.c:	    t->tflags |= CROSSED;		/* Crossing trans 1st time */
+base/conn_list.c:		    t->dcache.t = par_list( tran );
+base/conn_list.c:			t->tflags |= PBROKEN;		/* simply ignore it */
+base/conn_list.c:		t->tflags |= PBROKEN;
+base/conn_list.c:		t->tflags |= BROKEN;
+base/sstep.c:	if( t->state == OFF )
+base/sstep.c:	if( n == t->source )
+base/sstep.c:	    if( not (t->drain->nflags & VISITED) )
+base/sstep.c:		if( t->dcache.i == EMPTY )
+base/sstep.c:		    t->dcache.i = transmit[sc_thev( t->drain, level ? level + 1 : 0 )][t->state];
+base/sstep.c:		result = smerge[result][t->dcache.i];
+base/sstep.c:	    if( not (t->source->nflags & VISITED) )
+base/sstep.c:		if( t->scache.i == EMPTY )
+base/sstep.c:		    t->scache.i = transmit[sc_thev( t->source, level ? level + 1 : 0 )][t->state];
+base/sstep.c:		result = smerge[result][t->scache.i];
+base/tpos.c:    for( t = tpostbl[n]; t != NULL; t = t->tlink )
+base/tpos.c:	if( t->x.pos == x and t->y.pos == y )
+base/tpos.c:	case 'g': return( t->gate );
+base/tpos.c:	case 'd': return( t->drain );
+base/tpos.c:	case 's': return( t->source );
+base/tpos.c:	for( t = tpostbl[ index ]; t != NULL; t = t->tlink )
+base/tpos.c:	for( t = other_t->x.ptr; t != other_t; t = t->x.ptr )
+base/netupdate.c:	ch_tran->scache.t->dcache.t = (T);	\
+base/netupdate.c:	    if( t->source == nd2 ) t->source = nd1;
+base/netupdate.c:	    if( t->drain == nd2 ) t->drain = nd1;
+base/netupdate.c:	for( t = tcap->scache.t; t != tcap; t = t->scache.t )
+base/netupdate.c:	    if( t->gate == nd2 )	t->gate = nd1;
+base/netupdate.c:	    if( t->source == nd2 )	t->source = nd1;
+base/netupdate.c:	    if( t->drain == nd2 )	t->drain = nd1;
+base/netupdate.c:    t->r = requiv( (int) tran.ttype, width, length );
+base/netupdate.c:    t->tlink = t;
+base/netupdate.c:    CAP_CHANGE( t->gate, ch_nlist, cap );
+base/netupdate.c:	CAP_CHANGE( t->source, ch_nlist, cap );
+base/netupdate.c:	CAP_CHANGE( t->drain, ch_nlist, cap );
+base/netupdate.c:    if( t->source != t->drain )
+base/netupdate.c:	NODE_CHANGE( t->source, ch_nlist );
+base/netupdate.c:	NODE_CHANGE( t->drain, ch_nlist );
+base/netupdate.c:    type = device_names[t->ttype]->devtype;
+base/netupdate.c:    gcap = -(t->r->width * t->r->length * CTGA);
+base/netupdate.c:    cap = (config_flags & TDIFFCAP) ? -(CTDW * t->r->width + CTDE) : 0.0;
+base/netupdate.c:    if( t->flags & TCAP )
+base/netupdate.c:	    CAP_CHANGE( t->source, ch_nlist, cap );
+base/netupdate.c:	    CAP_CHANGE( t->drain, ch_nlist, cap );
+base/netupdate.c:	if( t->flags & STACKED ) DestroyStack( t->dcache.t );
+base/netupdate.c:	if( t->flags & ORLIST ) UnParallelTrans( t );
+base/netupdate.c:	    DISCONNECT( t->gate->ngate, t );
+base/netupdate.c:	DISCONNECT( t->source->nterm, t );
+base/netupdate.c:	DISCONNECT( t->drain->nterm, t );
+base/netupdate.c:	NODE_CHANGE( t->source, ch_nlist );
+base/netupdate.c:	NODE_CHANGE( t->drain, ch_nlist );
+base/netupdate.c:	    t->source->ncap += cap;
+base/netupdate.c:	    t->drain->ncap += cap;
+base/netupdate.c:	if( t->tflags != 0 )	/* it is in changed list -> remove it */
+base/netupdate.c:	    t->dcache.t->scache.t = t->scache.t;
+base/netupdate.c:	    t->scache.t->dcache.t = t->dcache.t;
+base/netupdate.c:    CAP_CHANGE( t->gate, ch_nlist, gcap );
+base/netupdate.c:    ntrans[ t->ttype ] -= 1;
+base/netupdate.c:    SWAP_NODES( t->source, t->drain );
+base/netupdate.c:    cap = (width * length - t->r->length * t->r->width) * CTGA;
+base/netupdate.c:    CAP_CHANGE( t->gate, ch_nlist, cap );
+base/netupdate.c:	cap = CTDW * (width - t->r->width) + CTDE;
+base/netupdate.c:	CAP_CHANGE( t->source, ch_nlist, cap );
+base/netupdate.c:	CAP_CHANGE( t->drain, ch_nlist, cap );
+base/netupdate.c:    old_r = t->r;
+base/netupdate.c:    t->r = requiv( (int) t->ttype, width, length );
+base/netupdate.c:    if( old_r->dynlow != t->r->dynlow or old_r->dynhigh != t->r->dynhigh )
+base/netupdate.c:	NODE_CHANGE( t->source, ch_nlist );
+base/netupdate.c:	NODE_CHANGE( t->drain, ch_nlist );
+base/netupdate.c:    t->x.pos = atoi( av[1] );
+base/netupdate.c:    t->y.pos = atoi( av[2] );
+base/netupdate.c:    if( IsDot( av[3] ) )    gate = t->gate;	else FindNode( gate, av[3] );
+base/netupdate.c:    if( IsDot( av[4] ) )    src = t->source;	else FindNode( src, av[4] );
+base/netupdate.c:    if( IsDot( av[5] ) )    drn = t->drain;	else FindNode( drn, av[5] );
+base/netupdate.c:    if( gate == t->gate and src == t->source and drn == t->drain )
+base/netupdate.c:    if( t->flags & STACKED )	DestroyStack( t->dcache.t );
+base/netupdate.c:    if( t->flags & ORLIST )	UnParallelTrans( t );
+base/netupdate.c:    if( t->flags & TCAP )
+base/netupdate.c:    if( gate != t->gate )
+base/netupdate.c:	cap = (t->r->width * t->r->length) * CTGA;
+base/netupdate.c:	CAP_CHANGE( t->gate, ch_nlist, -cap );
+base/netupdate.c:	int type = device_names[t->ttype]->devtype;
+base/netupdate.c:	    DISCONNECT( t->gate->ngate, t );
+base/netupdate.c:	t->gate = gate;
+base/netupdate.c:    cap = (config_flags & TDIFFCAP) ? t->r->width * CTDW + CTDE : 0.0;
+base/netupdate.c:    if( t->source != src )
+base/netupdate.c:	    CAP_CHANGE( t->source, ch_nlist, -cap );
+base/netupdate.c:	    DISCONNECT( t->source->nterm, t );
+base/netupdate.c:	    NODE_CHANGE( t->source, ch_nlist );
+base/netupdate.c:	    t->source->ncap -= cap;
+base/netupdate.c:	t->source = src;
+base/netupdate.c:    if( t->drain != drn )
+base/netupdate.c:	    CAP_CHANGE( t->drain, ch_nlist, -cap );
+base/netupdate.c:	    DISCONNECT( t->drain->nterm, t );
+base/netupdate.c:	    NODE_CHANGE( t->drain, ch_nlist );
+base/netupdate.c:	    t->drain->ncap -= cap;
+base/netupdate.c:	t->drain = drn;
+base/netupdate.c:    for( t = ch_tran->scache.t; t != ch_tran; t = t->scache.t )
+base/netupdate.c:	if( t->tflags & T_CH_POS )
+base/netupdate.c:	    t->tflags &= ~T_CH_POS;
+base/netupdate.c:    type = device_names[t->ttype]->devtype;
+base/netupdate.c:    gate = t->gate;
+base/netupdate.c:    src = t->source;
+base/netupdate.c:    drn = t->drain;
+base/netupdate.c:    if( gate == t->gate and src == t->source and drn == t->drain )
+base/netupdate.c:    if( t->flags & STACKED )	DestroyStack( t->dcache.t );
+base/netupdate.c:    if( t->flags & ORLIST )	UnParallelTrans( t );
+base/netupdate.c:    if( t->flags & TCAP )
+base/netupdate.c:    if( gate != t->gate )
+base/netupdate.c:	    DISCONNECT( t->gate->ngate, t );
+base/netupdate.c:	t->gate = gate;
+base/netupdate.c:	cap = (t->r->width * t->r->length) * CTGA;
+base/netupdate.c:    cap = (config_flags & TDIFFCAP) ? t->r->width * CTDW + CTDE : 0.0;
+base/netupdate.c:    if( t->source != src )
+base/netupdate.c:	    DISCONNECT( t->source->nterm, t );
+base/netupdate.c:	t->source = src;
+base/netupdate.c:    if( t->drain != drn )
+base/netupdate.c:	    DISCONNECT( t->drain->nterm, t );
+base/netupdate.c:	t->drain = drn;
+base/netupdate.c:	tnext = t->scache.t;
+base/netupdate.c:	if( t->tflags & T_CH_POS )
+base/netupdate.c:	type = device_names[t->ttype]->devtype;
+base/netupdate.c:	if( t->tflags & (T_MOV_GATE | T_MOV_SRC | T_MOV_DRN) )
+base/netupdate.c:	    nptr  src = t->source, drn = t->drain;
+base/netupdate.c:		if( not (t->tflags & T_MOV_SRC) )
+base/netupdate.c:		if( not (t->tflags & T_MOV_DRN) )
+base/netupdate.c:		else if( t->tflags & T_MOV_GATE )
+base/netupdate.c:		    DISCONNECT( t->gate->ngate, t );
+base/netupdate.c:		t->flags |= TCAP;
+base/netupdate.c:		if( t->tflags & T_MOV_GATE )
+base/netupdate.c:			CONNECT( t->gate->ngate, t );
+base/netupdate.c:		if( (t->tflags & T_MOV_SRC) and not (src->nflags & POWER_RAIL) )
+base/netupdate.c:		if( (t->tflags & T_MOV_DRN) and not (drn->nflags & POWER_RAIL) )
+base/netupdate.c:	else if( t->tflags & T_CHK_TERM )
+base/netupdate.c:	    nptr  src = t->source, drn = t->drain;
+base/netupdate.c:		    DISCONNECT( t->gate->ngate, t );
+base/netupdate.c:		t->flags |= TCAP;
+base/netupdate.c:	t->tflags = 0;
+base/netupdate.c:    if( t->gate->nflags & N_CAP_SET )
+base/netupdate.c:	t->gate->ncap += t->r->width * t->r->length * CTGA;
+base/netupdate.c:	if( t->source->nflags & N_CAP_SET )
+base/netupdate.c:	    t->source->ncap += t->r->width * CTDW + CTDE;
+base/netupdate.c:	if( t->drain->nflags & N_CAP_SET )
+base/netupdate.c:	    t->drain->ncap += t->r->width * CTDW + CTDE;
+base/sim.c~:	tnext = t->scache.t;
+base/sim.c~:	for( gate = t->gate; gate->nflags & ALIAS; gate = gate->nlink);
+base/sim.c~:	for( src = t->source; src->nflags & ALIAS; src = src->nlink );
+base/sim.c~:	for( drn = t->drain; drn->nflags & ALIAS; drn = drn->nlink );
+base/sim.c~:	t->gate = gate;
+base/sim.c~:	t->source = src;
+base/sim.c~:	t->drain = drn;
+base/sim.c~:	    type = t->ttype;
+base/sim.c~:	    type = device_names[t->ttype]->devtype;
+base/sim.c~:	t->state = ( (type == DEP) || (type == RESIST) ) ? WEAK : UNKNOWN;
+base/sim.c~:	t->tflags = 0;
+base/sim.c~:	ntrans[ t->ttype ]++;
+base/sim.c~:	    t->flags |= TCAP;		/* transistor is just a capacitor */
+base/sim.c~:		CONNECT( t->gate->ngate, t );
+base/sim.c~:	    else if( t->ttype == RESIST )
+base/sim.c~:		CONNECT( t->gate->ngate, t );
+base/sim.c~:	    else if( t->ttype == RESIST )
+base/sim.c~:		CONNECT( t->gate->ngate, t );
+base/sim.c~:    t->ttype = implant;
+base/sim.c~:    t->gate = gate;
+base/sim.c~:    t->source = src;
+base/sim.c~:    t->drain = drn;
+base/sim.c~:	t->x.pos = x;
+base/sim.c~:	t->y.pos = y;
+base/sim.c~:    t->scache.t = rd_tlist;		/* link it to the list */
+base/sim.c~:    t->r = requiv( implant, width, length );
+base/parallel.c:		    for( t = t2->tlink; t->scache.t != NULL; t = t->scache.t )
+base/parallel.c:			t->dcache.t = t1;
+base/parallel.c:		    t->scache.t = t1->tlink;
+base/parallel.c:    if( not (t->flags & ORLIST) )
+base/parallel.c:    tor = t->dcache.t;
+base/parallel.c:	tor->tlink = t->scache.t;
+base/parallel.c:		tp->scache.t = t->scache.t;
+base/parallel.c:	register Resists  *ror = tor->r, *r = t->r;
+base/parallel.c:	type = device_names[t->ttype]->devtype;
+base/parallel.c:	    CONNECT( t->gate->ngate, t );
+base/parallel.c:	if( not (t->source->nflags & POWER_RAIL) )
+base/parallel.c:	    CONNECT( t->source->nterm, t );
+base/parallel.c:	if( not (t->drain->nflags & POWER_RAIL) )
+base/parallel.c:	    CONNECT( t->drain->nterm, t );
+base/parallel.c:    t->flags &= ~ORLIST;
+base/parallel.c:    nored[ t->ttype ] -= 1;
+base/newrstep.c:	    if( t->state != OFF )
+base/newrstep.c:		t->tflags |= CROSSED;
+base/newrstep.c:	    if( t->state == OFF )
+base/newrstep.c:	    if( t->tflags & CROSSED )
+base/newrstep.c:	    if( not( t->tflags & (PBROKEN | BROKEN) ) )
+base/newrstep.c:		if( (r = t->scache.r) != NULL )
+base/newrstep.c:		if( (r = t->dcache.r) != NULL )
+base/newrstep.c:	    t->scache.r = t->dcache.r = NULL;
+base/newrstep.c:	    t->tflags &= ~(CROSSED | BROKEN | PBROKEN | PARALLEL);
+base/newrstep.c:	if( t == tran or t->state == OFF or (t->tflags & (BROKEN | PBROKEN)) )
+base/newrstep.c:	if( n == t->source )
+base/newrstep.c:	    other = t->drain;	pcache = &(t->dcache.r);
+base/newrstep.c:	    other = t->source;	pcache = &(t->scache.r);
+base/newrstep.c:    register Resists  *rp = t->r;
+base/newrstep.c:    gmax = (t->state == UNKNOWN ) ? 0.0 : gmin;
+base/newrstep.c:    for( t = par_list( t ); t != NULL; t = t->dcache.t )
+base/newrstep.c:	rp = t->r;
+base/newrstep.c:	if( t->state != UNKNOWN )
+base/newrstep.c:    register Resists  *rp = t->r;
+base/newrstep.c:    gmax = (t->state == UNKNOWN ) ? 0.0 : gmin;
+base/newrstep.c:    for( t = par_list( t ); t != NULL; t = t->dcache.t )
+base/newrstep.c:	rp = t->r;
+base/newrstep.c:	if( t->state != UNKNOWN )
+base/newrstep.c:    if( t->state != ON )
+base/newrstep.c:    if( (t->flags & GATELIST) == 0 )
+base/newrstep.c:	h = t->gate->curr;
+base/newrstep.c:	    *ptin = h->t.r.rtime * t->r->rstatic;
+base/newrstep.c:	for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+base/newrstep.c:	    h = t->gate->curr;
+base/newrstep.c:		tmp += h->t.r.rtime * t->r->rstatic;
+base/newrstep.c:    for( t = par_list( t ); t != NULL; t = t->dcache.t )
+base/newrstep.c:	if( t->state == OFF or t == tran or (t->tflags & (BROKEN | PBROKEN)) )
+base/newrstep.c:	if( n == t->source )
+base/newrstep.c:	    other = t->drain;	cache = t->dcache.r;
+base/newrstep.c:	    other = t->source;	cache = t->scache.r;
+base/newrstep.c:	if( t->state == OFF or t == tran or (t->tflags & (BROKEN | PBROKEN)) )
+base/newrstep.c:	if( t->source == n )
+base/newrstep.c:	    other = t->drain,	r = t->dcache.r;
+base/newrstep.c:	    other = t->source,	r = t->scache.r;
+base/newrstep.c:	if( t->state == OFF or (t->tflags & BROKEN) )
+base/newrstep.c:	if( device_names[t->ttype]->devtype == PCHAN )
+base/newrstep.c:	    pmos += 1.0 / t->r->dynres[ rtype ];
+base/newrstep.c:	    nmos += 1.0 / t->r->dynres[ rtype ];
+base/newrstep.c:    t->link.n		= NULL;
+base/newrstep.c:    t->flags		= T_DEFINITE | T_DRIVEN;
+base/newrstep.c:    t->Clow.min		= 0.0;
+base/newrstep.c:    t->Clow.max		= 0.0;
+base/newrstep.c:    t->Chigh.min	= 0.0;
+base/newrstep.c:    t->Chigh.max	= 0.0;
+base/newrstep.c:    t->Rup.min		= LARGE;
+base/newrstep.c:    t->Rup.max		= LARGE;
+base/newrstep.c:    t->Rdown.min	= SMALL;
+base/newrstep.c:    t->Rdown.max	= SMALL;
+base/newrstep.c:    t->Req.min		= LARGE;
+base/newrstep.c:    t->Req.max		= LARGE;
+base/newrstep.c:    t->V.min		= 0.0;
+base/newrstep.c:    t->V.max		= 0.0;
+base/newrstep.c:    t->Rmin		= SMALL;
+base/newrstep.c:    t->Rdom		= LARGE;
+base/newrstep.c:    t->Rmax		= LARGE;
+base/newrstep.c:    t->Ca		= 0.0;
+base/newrstep.c:    t->Cd		= 0.0;
+base/newrstep.c:    t->tauD		= 0.0;
+base/newrstep.c:    t->tauA		= 0.0;
+base/newrstep.c:    t->tauP		= 0.0;
+base/newrstep.c:    t->Tin		= SMALL;
+base/newrstep.c:    t->tplh		= 0;
+base/newrstep.c:    t->tphl		= 0;
+base/newrstep.c:    t->final		= LOW;
+base/newrstep.c:    t->tau_done		= N_POTS;
+base/newrstep.c:    t->taup_done	= N_POTS;
+base/newrstep.c:    t->link.n		= NULL;
+base/newrstep.c:    t->flags		= T_DEFINITE | T_DRIVEN;
+base/newrstep.c:    t->Clow.min		= 0.0;
+base/newrstep.c:    t->Clow.max		= 0.0;
+base/newrstep.c:    t->Chigh.min	= 0.0;
+base/newrstep.c:    t->Chigh.max	= 0.0;
+base/newrstep.c:    t->Rup.min		= SMALL;
+base/newrstep.c:    t->Rup.max		= SMALL;
+base/newrstep.c:    t->Rdown.min	= LARGE;
+base/newrstep.c:    t->Rdown.max	= LARGE;
+base/newrstep.c:    t->Req.min		= LARGE;
+base/newrstep.c:    t->Req.max		= LARGE;
+base/newrstep.c:    t->V.min		= 1.0;
+base/newrstep.c:    t->V.max		= 1.0;
+base/newrstep.c:    t->Rmin		= SMALL;
+base/newrstep.c:    t->Rdom		= LARGE;
+base/newrstep.c:    t->Rmax		= LARGE;
+base/newrstep.c:    t->Ca		= 0.0;
+base/newrstep.c:    t->Cd		= 0.0;
+base/newrstep.c:    t->tauD		= 0.0;
+base/newrstep.c:    t->tauA		= 0.0;
+base/newrstep.c:    t->tauP		= 0.0;
+base/newrstep.c:    t->Tin		= SMALL;
+base/newrstep.c:    t->tplh		= 0;
+base/newrstep.c:    t->tphl		= 0;
+base/newrstep.c:    t->final		= HIGH;
+base/newrstep.c:    t->tau_done		= N_POTS;
+base/newrstep.c:    t->taup_done	= N_POTS;
+base/newrstep.c:    t->link.n		= NULL;
+base/newrstep.c:    t->flags		= T_DEFINITE | T_DRIVEN;
+base/newrstep.c:    t->Clow.min		= 0.0;
+base/newrstep.c:    t->Clow.max		= 0.0;
+base/newrstep.c:    t->Chigh.min	= 0.0;
+base/newrstep.c:    t->Chigh.max	= 0.0;
+base/newrstep.c:    t->Rup.min		= SMALL;
+base/newrstep.c:    t->Rup.max		= LARGE;
+base/newrstep.c:    t->Rdown.min	= SMALL;
+base/newrstep.c:    t->Rdown.max	= LARGE;
+base/newrstep.c:    t->Req.min		= LARGE;
+base/newrstep.c:    t->Req.max		= LARGE;
+base/newrstep.c:    t->V.min		= 1.0;
+base/newrstep.c:    t->V.max		= 0.0;
+base/newrstep.c:    t->Rmin		= SMALL;
+base/newrstep.c:    t->Rdom		= LARGE;
+base/newrstep.c:    t->Rmax		= LARGE;
+base/newrstep.c:    t->Ca		= 0.0;
+base/newrstep.c:    t->Cd		= 0.0;
+base/newrstep.c:    t->tauD		= 0.0;
+base/newrstep.c:    t->tauA		= 0.0;
+base/newrstep.c:    t->tauP		= 0.0;
+base/newrstep.c:    t->Tin		= SMALL;
+base/newrstep.c:    t->tplh		= 0;
+base/newrstep.c:    t->tphl		= 0;
+base/newrstep.c:    t->final		= X;
+base/newrstep.c:    t->tau_done		= N_POTS;
+base/newrstep.c:    t->taup_done	= N_POTS;
+base/net_macros.h:    tcap->scache.t->dcache.t = (T);	\
+base/net_macros.h:    (T)->dcache.t->scache.t = (T)->scache.t;	\
+base/net_macros.h:    (T)->scache.t->dcache.t = (T)->dcache.t;	\
+base/stack.c:    n = (t->source->nflags & MERGED) ? t->drain : t->source;
+base/stack.c:    t = (tptr) t->gate;
+base/stack.c:	t = t->scache.t;
+base/stack.c:    while( t->scache.t != NULL );
+base/stack.c:	REPLACE( t->gate->ngate, stack, t );
+base/stack.c:	t->flags &= ~STACKED;
+base/stack.c:	if( t->scache.t == NULL )
+base/stack.c:	t = t->scache.t;
+base/sim.c:	tnext = t->scache.t;
+base/sim.c:	for( gate = t->gate; gate->nflags & ALIAS; gate = gate->nlink);
+base/sim.c:	for( src = t->source; src->nflags & ALIAS; src = src->nlink );
+base/sim.c:	for( drn = t->drain; drn->nflags & ALIAS; drn = drn->nlink );
+base/sim.c:	t->gate = gate;
+base/sim.c:	t->source = src;
+base/sim.c:	t->drain = drn;
+base/sim.c:	    type = t->ttype;
+base/sim.c:	    type = device_names[t->ttype]->devtype;
+base/sim.c:	t->state = ( (type == DEP) || (type == RESIST) ) ? WEAK : UNKNOWN;
+base/sim.c:	t->tflags = 0;
+base/sim.c:	ntrans[ t->ttype ]++;
+base/sim.c:	    t->flags |= TCAP;		/* transistor is just a capacitor */
+base/sim.c:		CONNECT( t->gate->ngate, t );
+base/sim.c:	    else if( t->ttype == RESIST )
+base/sim.c:		CONNECT( t->gate->ngate, t );
+base/sim.c:	    else if( t->ttype == RESIST )
+base/sim.c:		CONNECT( t->gate->ngate, t );
+base/sim.c:    t->ttype = implant;
+base/sim.c:    t->gate = gate;
+base/sim.c:    t->source = src;
+base/sim.c:    t->drain = drn;
+base/sim.c:	t->x.pos = x;
+base/sim.c:	t->y.pos = y;
+base/sim.c:    t->scache.t = rd_tlist;		/* link it to the list */
+base/sim.c:    t->r = requiv( implant, width, length );
+base/rsim.c:	if ( t->source == n )
+base/rsim.c:	    walk_path( t->drain, vsupply );
+base/rsim.c:        else if ( t->drain == n )
+base/rsim.c:	    walk_path( t->source, vsupply );
+base/rsim.c:    for( u = NULL, t = *list; t != NULL; u = t, t = t->next )
+base/rsim.c:	if( t->ptr.n == p )
+base/rsim.c:	    *list = t->next;
+base/rsim.c:	    u->next = t->next;
+base/rsim.c:	for( i = 0, t = *list; t != NULL; t = t->next )
+base/rsim.c:	    if( t->nvalues > i ) i = t->nvalues;
+base/rsim.c:    for( t = tcap->scache.t; t != tcap; t = t->scache.t )
+base/rsim.c:	  device_names[t->ttype]->devname, 
+base/rsim.c:	  pnode( t->gate ), pnode( t->source ), pnode( t->drain ),
+base/rsim.c:	  t->r->length / (double) LAMBDACM, t->r->width / (double) LAMBDACM );
+base/hist.c:	    t->state = compute_trans_state( t );
+base/network.c:	lprintf( stdout, "[%s] ", states[t->state] );
+base/network.c:    if( t->flags & GATELIST )
+base/network.c:	for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+base/network.c:	    n = t->gate;
+base/network.c:	n = t->gate;
+base/network.c:    lprintf( stdout, "%s ", device_names[t->ttype]->devname );
+base/network.c:    if( device_names[t->ttype]->devtype != RESIST )
+base/network.c:    pvalue( pnode( t->source ), t->source );
+base/network.c:    pvalue( pnode( t->drain ), t->drain );
+base/network.c:    pr_t_res( stdout, t->r );
+base/network.c:    if( t->tlink != t and (treport & REPORT_TCOORD) )
+base/network.c:	lprintf( stdout, " <%d,%d>\n", t->x.pos, t->y.pos );
+base/network.c:	    t->state = compute_trans_state( t );
+base/network.c:		rail = (t->drain->nflags & POWER_RAIL) ? t->drain : t->source;
+base/network.c:		if( device_names[t->ttype]->devtype == NCHAN and rail == GND_node )
+base/network.c:		        if( device_names[t->ttype]->devtype == PCHAN and rail == *(VDD_node+i) )
+base/network.c:			else if( device_names[t->ttype]->devtype == DEP and rail == *(VDD_node+i) and
+base/network.c:		 	  other_node( t, rail ) == t->gate )
+base/network.c:		    pr_t_res( stdout, t->r );
+base/network.c:		    if( t->tlink != t and (treport & REPORT_TCOORD) )
+base/network.c:			lprintf( stdout, " <%d,%d>\n", t->x.pos, t->y.pos );
+make.log:  204 |         t->ttype = NCHAN;       t->gate = VDD_node;     t->source = GND_node;
+make.log:  208 |         t->ttype = PCHAN;       t->gate = GND_node;     t->source = VDD_node;
+make.log:  466 |         t->source = VDD_node;
+make.log:  504 |         t->drain    = VDD_node;
+make.log:  204 |         t->ttype = NCHAN;       t->gate = VDD_node;     t->source = GND_node;
+make.log:  208 |         t->ttype = PCHAN;       t->gate = GND_node;     t->source = VDD_node;
+analyzer/namelen.c:    for( t = traces.first; t != NULL; t = t->next )
+analyzer/namelen.c:	if( t->vector )
+analyzer/namelen.c:	    t->name = SetName( t->n.vec->name );
+analyzer/namelen.c:	    t->name = SetName( t->n.nd->nname );
+analyzer/namelen.c:	t->len = strlen( t->name );
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next)
+analyzer/tkana.c:       if (!strcmp(t->name, tracename))
+analyzer/tkana.c:    return (t != NULL) ? t->top : -1;
+analyzer/tkana.c:    return (t != NULL) ? t->bot : -1;
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next) {
+analyzer/tkana.c:       if (!strcmp(t->name, tracename))
+analyzer/tkana.c:    else if (!t->vector) return -2;
+analyzer/tkana.c:    else return t->bdigit;
+analyzer/tkana.c:    else if (t->vector) return "vector";
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next) {
+analyzer/tkana.c:       if (t && (t->bot >= y) && (t->top <= y))
+analyzer/tkana.c:	  return t->name;
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next) {
+analyzer/tkana.c:       Tcl_ListObjAppendElement(interp, tlist, Tcl_NewStringObj(t->name, t->len));
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next) {
+analyzer/tkana.c:       if (t->vector)
+analyzer/tkana.c:	  Tcl_ListObjAppendElement(interp, tlist, Tcl_NewStringObj(t->name, t->len));
+analyzer/tkana.c:    for (t = traces.first; t != NULL; t = t->next) {
+analyzer/tkana.c:       if (!(t->vector))
+analyzer/tkana.c:	  Tcl_ListObjAppendElement(interp, tlist, Tcl_NewStringObj(t->name, t->len));
+analyzer/deltaT.c:	for( i = t->n.vec->nbits - 1; i >= 0; i-- )
+analyzer/deltaT.c:	    h = t->cache[i].wind;
+analyzer/deltaT.c:	h = t->cache[0].wind;
+analyzer/deltaT.c:	for( i = t->n.vec->nbits - 1; i >= 0; i-- )
+analyzer/deltaT.c:	    p = h = t->cache[i].wind;
+analyzer/deltaT.c:	p = h = t->cache[0].wind;
+analyzer/window.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/window.c:	if( rb.top <= t->bot )
+analyzer/window.c:    while( i != 0 and rb.bot >= t->top )
+analyzer/window.c:	y = (t->bot + t->top + CHARHEIGHT) / 2;
+analyzer/window.c:	StrRight( window, t->name, t->len, x, y, gcs.black );
+analyzer/window.c:	t = t->next;
+analyzer/window.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/window.c:	if( box->top <= t->bot )
+analyzer/window.c:    while( i != 0 and box->bot >= t->top )
+analyzer/window.c:	t = t->next;
+analyzer/window.c:    for( t = traces.first, n = 0; n < traces.disp; n++, t = t->next )
+analyzer/window.c:	if( t->vector )
+analyzer/window.c:	    for( i = t->n.vec->nbits - 1; i >= 0; i-- )
+analyzer/window.c:		p = t->cache[i].wind;
+analyzer/window.c:		h = t->cache[i].cursor;
+analyzer/window.c:			t->cache[i].cursor = p;
+analyzer/window.c:			t->cache[i].cursor = (hptr)&(t->n.vec->nodes[i]->head);
+analyzer/window.c:		    p = (hptr) &(t->n.vec->nodes[i]->head);
+analyzer/window.c:		t->cache[i].wind = p;
+analyzer/window.c:		p = t->cache[i].cursor;
+analyzer/window.c:		t->cache[i].cursor = p;
+analyzer/window.c:	    p = t->cache[0].wind;
+analyzer/window.c:	    h = t->cache[0].cursor;
+analyzer/window.c:		    t->cache[0].cursor = p;
+analyzer/window.c:		    t->cache[0].cursor = (hptr) &(t->n.nd->head);
+analyzer/window.c:		p = (hptr) &(t->n.nd->head);
+analyzer/window.c:	    t->cache[0].wind = p;
+analyzer/window.c:	    p = t->cache[0].cursor;
+analyzer/window.c:	    t->cache[0].cursor = p;
+analyzer/window.c:	for( t = traces.first, n = traces.disp; n != 0; n--, t = t->next )
+analyzer/window.c:	    if( t->vector )
+analyzer/window.c:		for( i = t->n.vec->nbits - 1; i >= 0; i-- )
+analyzer/window.c:		    p = begin ? (hptr) &(t->n.vec->nodes[i]->head) : t->cache[i].wind;
+analyzer/window.c:		    t->cache[i].wind = p;
+analyzer/window.c:		p = begin ? (hptr) &(t->n.nd->head) : t->cache[0].wind;
+analyzer/window.c:		t->cache[0].wind = p;
+analyzer/window.c:    for( t = traces.first, nt = traces.disp; nt != 0; nt--, t = t->next )
+analyzer/window.c:    h = t->cache[0].wind;
+analyzer/window.c:		HLine( window, x1, x2, t->bot, gcs.traceFg );
+analyzer/window.c:		HLine( window, x1, x2, t->top, gcs.traceFg );
+analyzer/window.c:		FillAREA( window, x1, t->top, x2 - x1 + 1, t->bot - t->top + 1,
+analyzer/window.c:	    VLine( window, x2, t->bot, t->top, gcs.traceFg );
+analyzer/window.c:    nbits = t->n.vec->nbits;
+analyzer/window.c:    if (t->bdigit == 5)
+analyzer/window.c:    else if (t->bdigit == 6)
+analyzer/window.c:       slen = (nbits + t->bdigit - 1) / t->bdigit;
+analyzer/window.c:		p = t->cache[n].wind;
+analyzer/window.c:		s[n] = t->cache[n].wind;
+analyzer/window.c:    mid = (t->top + t->bot + CHARHEIGHT) / 2;
+analyzer/window.c:    HLine( window, xx, x2, t->top, gcs.traceFg );
+analyzer/window.c:    HLine( window, xx, x2, t->bot, gcs.traceFg );
+analyzer/window.c:	    VLine( window, x2, t->bot, t->top, gcs.traceFg );
+analyzer/window.c:	     x2 - 1, t->top );
+analyzer/window.c:	     x2 - 1, t->bot - 1 );
+analyzer/window.c:	    str = HistToStr( start, nbits, t->bdigit, 1 );
+analyzer/window.c:	    if (t->bdigit == 5 || t->bdigit == 6) slen = strlen(str);
+analyzer/window.c:    PRINTF( "\n%s @ %s: value=", t->name, tbuff );
+analyzer/window.c:	nbits = t->n.vec->nbits;
+analyzer/window.c:	p = t->cache[n].wind;
+analyzer/window.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/window.c:	    for( n = t->n.vec->nbits - 1; n >= 0; n-- )
+analyzer/window.c:		p = t->cache[n].wind;
+analyzer/window.c:		t->cache[n].cursor = p;
+analyzer/window.c:	    p = t->cache[0].wind;
+analyzer/window.c:	    t->cache[0].cursor = p;
+analyzer/window.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/window.c:	if( rb.top <= t->bot )
+analyzer/window.c:    while( i != 0 and rb.bot >= t->top )
+analyzer/window.c:	y = ( t->bot + t->top + CHARHEIGHT ) / 2;
+analyzer/window.c:	    HistToStr( &(t->cache[0].cursor), t->n.vec->nbits, t->bdigit, 2 ) :
+analyzer/window.c:	    StrMap[ t->cache[0].cursor->val ];
+analyzer/window.c:	t = t->next;
+analyzer/window.c:    nbits = IsVector( t ) ? t->n.vec->nbits : 1;
+analyzer/window.c:    val = HistToStr( &(t->cache[0].cursor), nbits, 1, 2 );
+analyzer/window.c:    PRINTF( "\n %s : value=%s", t->name, val );
+analyzer/window.c:	for( n = 0, s = val, c = t->cache; n < nbits; n++ )
+analyzer/window.c:    n = (isBinary == 1) ? 1 : t->bdigit;
+analyzer/window.c:    nbits = IsVector(t) ? t->n.vec->nbits : 1;
+analyzer/window.c:    val = HistToStr(&(t->cache[0].cursor), nbits, n, 2);
+analyzer/window.c:    nbits = IsVector(t) ? t->n.vec->nbits : 1;
+analyzer/window.c:    val = HistToStr(&(t->cache[0].cursor), nbits, 1, 2);
+analyzer/window.c:    for (n = 0, s = val, c = t->cache; n < nbits; n++)
+analyzer/window.c:    nbits = IsVector(t) ? t->n.vec->nbits : 1;
+analyzer/postscript.c:    for( t = traces.first, i = traces.disp; i != 0; i--, t = t->next )
+analyzer/postscript.c:	y = (t->bot + t->top) / 2;
+analyzer/postscript.c:	StrRight( t->name, t->len, x, y, BLACK, WHITE );
+analyzer/postscript.c:    for( t = traces.first, nt = traces.disp; nt != 0; nt--, t = t->next )
+analyzer/postscript.c:    h = t->cache[0].wind;
+analyzer/postscript.c:		HLine( x1, x2, t->bot, WHITE );
+analyzer/postscript.c:		HLine( x1, x2, t->top, WHITE );
+analyzer/postscript.c:		FillAREA( x1, t->top, x2 - x1 + 1, t->bot - t->top + 1, xpat );
+analyzer/postscript.c:		    VLine( x1, t->bot, t->top, WHITE );
+analyzer/postscript.c:	    VLine( x2, t->bot, t->top, WHITE );
+analyzer/postscript.c:    nbits = t->n.vec->nbits;
+analyzer/postscript.c:    if (t->bdigit == 5)
+analyzer/postscript.c:    else if (t->bdigit == 6)
+analyzer/postscript.c:       strlen = (nbits + t->bdigit - 1) / t->bdigit;
+analyzer/postscript.c:	    h = s[n] = t->cache[n].wind;
+analyzer/postscript.c:    mid = (t->top + t->bot) / 2;
+analyzer/postscript.c:		HLine( x1 + 2, x2 - 2, t->top, WHITE );
+analyzer/postscript.c:		HLine( x1 + 2, x2 - 2, t->bot, WHITE );
+analyzer/postscript.c:	    VLine( x2, t->bot - 2, t->top + 2, WHITE );
+analyzer/postscript.c:		Line( x2 - xx, t->top, x2, t->top + 2 );
+analyzer/postscript.c:		Line( x2 - xx, t->bot, x2, t->bot - 2 );
+analyzer/postscript.c:		Line( x2, t->top + 2, x2 + 2, t->top );
+analyzer/postscript.c:		Line( x2, t->bot - 2, x2 + 2, t->bot );
+analyzer/postscript.c:	    HLine( x1 + 2, x2, t->top, WHITE );
+analyzer/postscript.c:	    HLine( x1 + 2, x2, t->bot, WHITE );
+analyzer/postscript.c:	    str = HistToStr( start, nbits, t->bdigit, 1 );
+analyzer/postscript.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/postscript.c:	if( t->vector )
+analyzer/postscript.c:	    for( nbits = t->n.vec->nbits - 1; nbits >= 0; nbits-- )
+analyzer/postscript.c:		psString( t->n.vec->nodes[nbits]->nname, 1000 );
+analyzer/postscript.c:	    nbits = t->n.vec->nbits;
+analyzer/postscript.c:	    psString( t->n.nd->nname, 1000 );
+analyzer/postscript.c:	psString( t->name, 1000 );
+analyzer/movetrace.c:    for( i = traces.disp, t = traces.first; i != 0; i--, t = t->next )
+analyzer/movetrace.c:	if( y <= t->bot )
+analyzer/movetrace.c:    HLine( window, namesBox.right - 1 - t->len * CHARWIDTH, namesBox.right - 2,
+analyzer/movetrace.c:      (t->top + t->bot + CHARHEIGHT)/2 + 1, color );
+analyzer/movetrace.c:	traces.first = t->next;
+analyzer/movetrace.c:	if( t->next )
+analyzer/movetrace.c:	    t->next->prev = NULL;
+analyzer/movetrace.c:	t->prev->next = t->next;
+analyzer/movetrace.c:	if( t->next )
+analyzer/movetrace.c:	    t->next->prev = t->prev;
+analyzer/movetrace.c:	    traces.last = t->prev;
+analyzer/movetrace.c:    if( t->vector )
+analyzer/movetrace.c:	if( t->n.vec->nbits > 1 )
+analyzer/movetrace.c:	    PRINT( t->n.vec->name );
+analyzer/movetrace.c:	    PRINTF( " bits=%d  base=%d", t->n.vec->nbits, (1 << t->bdigit) );
+analyzer/movetrace.c:	    PRINT( t->n.vec->nodes[0]->nname );
+analyzer/movetrace.c:	PRINT( t->n.nd->nname );
+analyzer/analyzer.c:	t->next = t->prev = NULL;
+analyzer/analyzer.c:	t->next = NULL;
+analyzer/analyzer.c:	t->prev = traces.last;
+analyzer/analyzer.c:    t->name = SetName( nd->nname );
+analyzer/analyzer.c:    t->len = strlen( t->name );
+analyzer/analyzer.c:    t->bdigit = 1;
+analyzer/analyzer.c:    t->vector = FALSE;
+analyzer/analyzer.c:    t->n.nd = nd;
+analyzer/analyzer.c:    t->cache[0].wind = t->cache[0].cursor = &(nd->head);
+analyzer/analyzer.c:    t->name = SetName( vec->name );
+analyzer/analyzer.c:    t->len = strlen( t->name );
+analyzer/analyzer.c:	t->bdigit = *flag;
+analyzer/analyzer.c:	t->bdigit = ( n > 5 ) ? 5 : 1;	/* > 5 bits defaults to decimal fmt */
+analyzer/analyzer.c:    t->vector = TRUE;
+analyzer/analyzer.c:    t->n.vec = vec;
+analyzer/analyzer.c:	t->cache[n].wind = t->cache[n].cursor = &(vec->nodes[n]->head);
+analyzer/analyzer.c:    for( t = traces.first, i = traces.total; i != 0; i--, t = t->next )
+analyzer/analyzer.c:	if( t->vector )
+analyzer/analyzer.c:	    for( n = t->n.vec->nbits - 1; n >= 0; n-- )
+analyzer/analyzer.c:		t->cache[n].wind = t->cache[n].cursor = 
+analyzer/analyzer.c:		  &(t->n.vec->nodes[n]->head);
+analyzer/analyzer.c:	    t->cache[0].wind = t->cache[0].cursor = &(t->n.nd->head);
+analyzer/analyzer.c:	traces.first = t->next;
+analyzer/analyzer.c:	if( t->next )
+analyzer/analyzer.c:            t->next->prev = NULL;
+analyzer/analyzer.c:        t->prev->next = t->next;
+analyzer/analyzer.c:        if( t->next )
+analyzer/analyzer.c:            t->next->prev = t->prev;
+analyzer/analyzer.c:            traces.last = t->prev;
+analyzer/analyzer.c:	if( t->vector and (t->n.vec == b) )
+analyzer/analyzer.c:	    tmp = t->next;
+analyzer/analyzer.c:	    t = t->next;
+analyzer/analyzer.c:	if( not t->vector and (t->n.nd == n) )
+analyzer/analyzer.c:	    tmp = t->next;
+analyzer/analyzer.c:	    t = t->next;
+analyzer/analyzer.c:	if( (t->vector and (t->n.vec->traced & DELETED)) or
+analyzer/analyzer.c:	  (not t->vector and (t->n.nd->nflags & DELETED)) )
+analyzer/analyzer.c:	    tmp = t->next;
+analyzer/analyzer.c:	    t = t->next;
+analyzer/coords.c:    for( i = 0, n = traces.total, t = traces.first; i < n; i++, t = t->next )
+analyzer/coords.c:    for( i = traces.disp, t = traces.first; i != 0 ; i--, t = t->next )
+analyzer/coords.c:    for( t = traces.first, i = traces.disp; i != 0; i--, t = t->next )
+analyzer/coords.c:        t->top = pos;
+analyzer/coords.c:        t->bot = pos;
+analyzer/coords.c:    for( t = traces.first; n != 0; n--, t = t->next )
+analyzer/coords.c:	    if (t->bdigit == 5)
+analyzer/coords.c:	       ndigits = (t->n.vec->nbits + 2) / 3;
+analyzer/coords.c:	    else if (t->bdigit == 6)
+analyzer/coords.c:	       ndigits = 1 + ((t->n.vec->nbits + 2) / 3);
+analyzer/coords.c:	       ndigits = (t->n.vec->nbits + t->bdigit - 1) / t->bdigit;
+analyzer/coords.c:    for( t = traces.first; n != 0; n--, t = t->next )
+analyzer/coords.c:	len = strlen( t->name );
+faultsim/faultsim.c:    t->samples = fake_nd.head.next;
+faultsim/faultsim.c:    t->period = t->offset = 0;
+faultsim/faultsim.c:    t->outp = NULL;
+faultsim/faultsim.c:    t->next = triggers;
+faultsim/faultsim.c:    t->samples = NULL;
+faultsim/faultsim.c:    t->period = period;
+faultsim/faultsim.c:    t->offset = offset;
+faultsim/faultsim.c:    t->outp = NULL;
+faultsim/faultsim.c:    t->next = triggers;
+faultsim/faultsim.c:	t->ttype = NCHAN;	t->gate = VDD_node;	t->source = GND_node;
+faultsim/faultsim.c:	t->ttype = PCHAN;	t->gate = GND_node;	t->source = VDD_node;
+faultsim/faultsim.c:    t->drain = nd;
+faultsim/faultsim.c:    CONNECT( t->gate->ngate, t );
+faultsim/faultsim.c:    DISCONNECT( t->gate->ngate, t );
+faultsim/faultsim.c:    for( t = triggers; t != NULL; t = t->next )
+faultsim/faultsim.c:	if( t->samples != NULL )
+faultsim/faultsim.c:	    ev = EnqueueOther( TRIGGER_EV, (long) t->samples->time );
+faultsim/faultsim.c:	    ev->p.hist = t->samples;
+faultsim/faultsim.c:	    Ulong  tm = t->offset ? t->offset : t->offset + t->period;
+faultsim/faultsim.c:    for( i = t->outp; i != NULL; i = i->next )
+faultsim/faultsim.c:    if( t->samples != NULL )
+faultsim/faultsim.c:	if( ev->ntime + t->period <= maxSampleTime )
+faultsim/faultsim.c:	    ev = EnqueueOther( TRIGGER_EV, ev->ntime + t->period );
+faultsim/incsim.c:	    	if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		    t->state = compute_trans_state( t );
+faultsim/incsim.c:		t->source->nflags |= VISITED;	/* always mark src/drn */
+faultsim/incsim.c:		t->drain->nflags |= VISITED;
+faultsim/incsim.c:		if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		    t->state = compute_trans_state( t );
+faultsim/incsim.c:		    t->source->nflags |= VISITED;
+faultsim/incsim.c:		    t->drain->nflags |= VISITED;
+faultsim/incsim.c:	    if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		t->state = compute_trans_state( t );
+faultsim/incsim.c:		t->source->nflags |= VISITED;
+faultsim/incsim.c:		t->drain->nflags |= VISITED;
+faultsim/incsim.c:	    	if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		    t->state = compute_trans_state( t );
+faultsim/incsim.c:		t->source->nflags |= VISITED;	/* always mark src/drn */
+faultsim/incsim.c:		t->drain->nflags |= VISITED;
+faultsim/incsim.c:	    if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		t->state = compute_trans_state( t );
+faultsim/incsim.c:		t->source->nflags |= VISITED;
+faultsim/incsim.c:		t->drain->nflags |= VISITED;
+faultsim/incsim.c:	    if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:		t->state = compute_trans_state( t );
+faultsim/incsim.c:		t->source->nflags |= VISITED;
+faultsim/incsim.c:		t->drain->nflags |= VISITED;
+faultsim/incsim.c:	    if( not (t->tflags & ACTIVE_T) )
+faultsim/incsim.c:		if( t->ttype & GATELIST )
+faultsim/incsim.c:		    for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+faultsim/incsim.c:			if( NeedUpdate( t->gate ) )
+faultsim/incsim.c:			    (void) UpdateNode( t->gate );
+faultsim/incsim.c:		else if( NeedUpdate( t->gate ) )
+faultsim/incsim.c:		    (void) UpdateNode( t->gate );
+faultsim/incsim.c:		t->state = compute_trans_state( t );
+faultsim/incsim.c:		if( t->ttype & GATELIST )
+faultsim/incsim.c:		    for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+faultsim/incsim.c:			if( t->gate->nflags & DEVIATED )
+faultsim/incsim.c:		else if( t->gate->nflags & DEVIATED )
+faultsim/incsim.c:	    if( t->state == OFF )
+faultsim/incsim.c:	    if( t->tflags & CROSSED )
+faultsim/incsim.c:		t->tflags &= ~CROSSED;
+faultsim/incsim.c:	    t->scache.r = t->dcache.r = NULL;
+faultsim/incsim.c:		t->tflags |= CROSSED;
+faultsim/incsim.c:			t->dcache.t = par_list( tran );
+faultsim/incsim.c:			    t->tflags |= PBROKEN;
+faultsim/incsim.c:		    t->tflags |= PBROKEN;
+faultsim/incsim.c:		    t->tflags |= BROKEN;
+faultsim/incsim.c:	    if( t->ttype & GATELIST )
+faultsim/incsim.c:		for( t = (tptr) t->gate; t; t = t->scache.t )
+faultsim/incsim.c:		    h = t->gate->curr;
+faultsim/incsim.c:		h = t->gate->curr;
+faultsim/incsim.c:	    if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:	    t->tflags |= ACTIVE_T;
+faultsim/incsim.c:	    if( t->ttype & GATELIST )
+faultsim/incsim.c:		for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+faultsim/incsim.c:		    StimulateGate( t->gate );
+faultsim/incsim.c:		StimulateGate( t->gate );
+faultsim/incsim.c:	    t->dcache.r = NULL;		/* may be set for parallel xtors */
+faultsim/incsim.c:	    if( (t->tflags & ACTIVE_T) and (t->state != OFF or
+faultsim/incsim.c:		t->tflags = 0;
+faultsim/incsim.c:		t->tflags &= ~(BROKEN | PBROKEN | PARALLEL);
+faultsim/incsim.c:	    t->dcache.r = NULL;
+faultsim/incsim.c:	    t->tflags &= ~(BROKEN | PBROKEN | PARALLEL);
+faultsim/incsim.c:	if( not( t->tflags & ACTIVE_T ) )
+faultsim/incsim.c:	nterm = t->source;
+faultsim/incsim.c:	nterm = t->drain;
+faultsim/incsim.c:	nterm = t->source;
+faultsim/incsim.c:	nterm = t->drain;
+faultsim/incsim.c:	if( not (t->tflags & ACTIVE_T) )
+faultsim/incsim.c:	    t->tflags |= ACTIVE_T;
+faultsim/incsim.c:	    if( t->ttype & GATELIST )
+faultsim/incsim.c:		for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
+faultsim/incsim.c:		    StimulateGate( t->gate );
+faultsim/incsim.c:	    t->state = compute_trans_state( t );
+faultsim/incsim.c:		else if( t->tflags & ACTIVE_T )
+faultsim/incsim.c:	t->state = compute_trans_state( t );
+faultsim/incsim.c:	t->tflags &= ~ACTIVE_T;
+faultsim/incsim.c:	    t->state = compute_trans_state( t );
+faultsim/incsim.c:	    t->tflags &= ~ACTIVE_T;
+usersubckt/dll.c:    t->chpmpV = 0.0;
+usersubckt/dll.c:    t->prvClk = LOW;
+usersubckt/subckt.c:    SubcktT *subptr = (SubcktT *)(t->subptr);
+usersubckt/subckt.c:	t->subptr = (char *)subptr;
+usersubckt/subckt.c:	t->ttype = SUBCKT; 
+usersubckt/subckt.c:	t->gate = RsimGetNode(targv[i]);
+usersubckt/subckt.c:	t->source = *(VDD_node + VDD_node_size - 1);
+usersubckt/subckt.c:	t->drain = t->gate;
+usersubckt/subckt.c:	t->scache.t = rd_tlist; rd_tlist = t; 
+usersubckt/subckt.c:	t->r = requiv(RESIST, (int)2, (int)(1000000 * LAMBDACM));
+usersubckt/subckt.c:	nodes[i] = t->gate;
+usersubckt/subckt.c:	t->ttype    = PCHAN;
+usersubckt/subckt.c:	t->gate     = RsimGetNode(out_name_Ub);
+usersubckt/subckt.c:	nodes[i]    = t->gate;
+usersubckt/subckt.c:	t->drain    = *(VDD_node + VDD_node_size - 1);
+usersubckt/subckt.c:	t->source   = RsimGetNode(targv[i]);
+usersubckt/subckt.c:	t->scache.t = rd_tlist; /* link it to the list */
+usersubckt/subckt.c:	t->r        = requiv(RESIST, (int)2, (int)(rtf * LAMBDACM));
+usersubckt/subckt.c:	t->ttype    = NCHAN;
+usersubckt/subckt.c:	t->gate     = RsimGetNode(out_name_D);
+usersubckt/subckt.c:	t->drain    = RsimGetNode(targv[i]);
+usersubckt/subckt.c:	nodes[i + noutputs]    = t->gate;
+usersubckt/subckt.c:	t->source   = GND_node;
+usersubckt/subckt.c:	t->scache.t = rd_tlist; /* link it to the list */
+usersubckt/subckt.c:	t->r        = requiv(RESIST, (int)2, (int)(rtf * LAMBDACM));

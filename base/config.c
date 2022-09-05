@@ -152,6 +152,60 @@ private int ParseLine( line, args )
     return( ac );
   }
 
+/*
+ * info on resistance vs. width and length are stored first sorted by
+ * width, then by length.
+ */
+struct length
+  {
+    struct length    *next;	/* next element with same width */
+    long             l;		/* length of this channel in centimicrons */
+    double           r;		/* equivalent resistance/square */
+  };
+
+struct width
+  {
+    struct width     *next;	/* next width */
+    long             w;		/* width of this channel in centimicrons */
+    struct length    *list;	/* list of length structures */
+  } *resistances[ R_TYPES ][ NTTYPES ];
+
+/*
+ * copy the linked list in 'from' to 'to'
+ */
+private void resist_copy( from, to )
+  register struct width  **from;
+  register struct width  **to;
+  {
+    register struct width   *p, *q, *wnew;
+    register struct length  *l, *m, *lnew;
+
+    for( p = *from, q = NULL; p != NULL; q = wnew, p = p->next )
+      {
+	/* Allocate new width record */
+	wnew = (struct width *) Valloc( sizeof( struct width ), 1 );
+	wnew->next = NULL;
+	wnew->w = p->w;
+	if( q == NULL )
+	    *to = wnew;
+        else
+	    q->next = wnew;
+
+	/* Copy length records */
+	for( l = p->list, m = NULL; l != NULL; m = lnew, l = l->next)
+	  {
+	    lnew = (struct length *) Valloc( sizeof( struct length ), 1 );
+  	    lnew->next = NULL;
+	    lnew->r = l->r;
+	    lnew->l = l->l;
+  	    if( m == NULL )
+		wnew->list = lnew;
+	    else
+		m->next = lnew;
+	  }	    
+      }
+  }
+
 /* Read in the parameters (.prm) file.  Return 0 on success, -1 on failure */
 
 public int config( cname )
@@ -164,6 +218,7 @@ public int config( cname )
     char             *targv[MAXARGS];
     char             tmpbuff[NTTYPES * 22];
     int              targc;
+    int		     i;
 
     nerrs = 0;
 
@@ -230,6 +285,10 @@ again:
     /* Initialize table of devices */
     device_names = (DevRec **)malloc(sizeof(DevRec *));
     device_names[0] = (DevRec *)NULL;
+
+    /* Insert default devices */
+    makedevice("nfet", "n-channel", (float)0.0);
+    makedevice("pfet", "p-channel", (float)0.0);
 
     while( fgetline( line, LSIZE, cfile ) != NULL )
       {
@@ -323,31 +382,46 @@ again:
 
     if( config_flags & CNTPULLUP )
 	lprintf( stderr, "warning: cntpullup is not supported\n" );
-
+   
+    /* Check if devices have been given resistance values */
+    for( i = 0; i < nttypes; i++ )
+      {
+        if( i < 2 )
+	  { 
+	    if( device_names[i]->devinit != R_SET )
+	      {
+ 	        lprintf( stderr, "Warning: missing required resistance for device %s\n", 
+		  device_names[i]->devname );
+	      }
+	  }
+	else 
+	  {
+	    if( device_names[i]->devinit != R_SET )
+	      {
+ 	        lprintf( stderr, "Warning: missing required resistance for device %s\n", 
+		   device_names[i]->devname );
+		lprintf( stdout, "Setting default resistance value\n");
+	        if( device_names[i]->devtype == NFET )
+		  {
+		    resist_copy(resistances[STATIC][0], resistances[STATIC][i]);
+		    resist_copy(resistances[DYNHIGH][0], resistances[DYNHIGH][i]);
+		    resist_copy(resistances[DYNLOW][0], resistances[DYNLOW][i]);
+		  }	  
+		else if( device_names[i]->devtype == PFET )
+		  { 
+		    resist_copy(resistances[STATIC][1], resistances[STATIC][i]);
+		    resist_copy(resistances[DYNHIGH][1], resistances[DYNHIGH][i]);
+		    resist_copy(resistances[DYNLOW][1], resistances[DYNLOW][i]);
+	 	  }
+		device_names[i]->devinit |= R_SET;
+	      }
+	  }
+      }
+          
     (void) fclose( cfile );
     config_flags |= CONFIG_LOADED;
     return 0;
   }
-
-
-/*
- * info on resistance vs. width and length are stored first sorted by
- * width, then by length.
- */
-struct length
-  {
-    struct length    *next;	/* next element with same width */
-    long             l;		/* length of this channel in centimicrons */
-    double           r;		/* equivalent resistance/square */
-  };
-
-struct width
-  {
-    struct width     *next;	/* next width */
-    long             w;		/* width of this channel in centimicrons */
-    struct length    *list;	/* list of length structures */
-  } *resistances[ R_TYPES ][ NTTYPES ];
-
 
 /* linear interpolation, assume that x1 < x <= x2 */
 #define	interp( x, x1, y1, x2, y2 )  \
@@ -536,6 +610,7 @@ private void insert( type, context, w, l, r )
     register int  c, t;
     long          width, length;
     double        resist;
+    int 	  init_mask = 0;
 
     width = atof( w ) * CM_M;
     length = atof( l ) * CM_M;
@@ -548,11 +623,20 @@ private void insert( type, context, w, l, r )
       }
 
     if( str_eql( context, "static" ) == 0 )
+      {
 	c = STATIC;
+	init_mask = STATIC_MASK;
+      }
     else if( str_eql( context, "dynamic-high" ) == 0 )
+      {
 	c = DYNHIGH;
+	init_mask = DYNHIGH_MASK;
+      }
     else if( str_eql( context, "dynamic-low" ) == 0 )
+      {
 	c = DYNLOW;
+	init_mask = DYNLOW_MASK;
+      }
     else if( str_eql( context, "power" ) == 0 )
 	c = POWER;
     else
@@ -569,12 +653,13 @@ private void insert( type, context, w, l, r )
 	    if( c == POWER )
 		return;
 	    winsert( &resistances[c][t], width, length, resist*width/length );
+	    device_names[t]->devinit |= init_mask;
 	    return;
 	  }
 	else if( str_eql( ttype_drop[t], type ) == 0 )
 	    return;
       }
-
+    
     rsimerror( currfile, lineno, "bad resistance transistor type\n" );
     nerrs++;
   }
@@ -610,14 +695,11 @@ private void makedevice( type, name, value )
     newdev->devtype = typeidx;
     newdev->devvalue = value;
     newdev->fettype = ++nttypes;
+    newdev->devinit = 0;
 
     /* This is inefficient but there will only be a small number of devices
      * so it doesn't really matter how efficient it is.
      */
-    /*if( devlist == NULL )
-        devlist = (DevRec **)malloc(sizeof(DevRec *));
-    else*/
-        device_names = (DevRec **)realloc(device_names, nttypes * sizeof(DevRec *));
+    device_names = (DevRec **)realloc(device_names, nttypes * sizeof(DevRec *));
     device_names[nttypes - 1] = newdev;
-    //device_names = devlist;
   }
