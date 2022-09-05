@@ -943,7 +943,7 @@ private int GetTin( t, ptin )
     if( t->state != ON )
 	return( FALSE );
 
-    if( (t->ttype & GATELIST) == 0 )
+    if( (t->flags & GATELIST) == 0 )
       {
 	h = t->gate->curr;
 	if( IsCurrTransition( h ) )
@@ -1249,7 +1249,7 @@ private pspk ComputeSpike( nd, r, dom )
 	t = l->xtor;
 	if( t->state == OFF or (t->tflags & BROKEN) )
 	    continue;
-	if( BASETYPE( t->ttype ) == PCHAN )
+	if( device_names[t->ttype]->devtype == PCHAN )
 	    pmos += 1.0 / t->r->dynres[ rtype ];
 	else
 	    nmos += 1.0 / t->r->dynres[ rtype ];

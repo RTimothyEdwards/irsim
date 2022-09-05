@@ -551,7 +551,10 @@ static int _irsim_start(ClientData clientData,
 			return TCL_ERROR;
 		    }
 		    arg1++;
-		    power_net_name = strdup(argv[arg1]);
+		    if( power_net_name == NULL )
+			power_net_name = (char **)malloc(sizeof(char *));
+		    power_net_name_size++;
+		    *(power_net_name + power_net_name_size - 1) = strdup(argv[arg1]);
 		    break;
 		case 'g' :			/* declare ground net name */
 		    if (arg1 == argc - 1) {

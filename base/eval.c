@@ -48,6 +48,7 @@ public	int	model_num = LIN_MODEL;		/* index of model in table */
 public	void	(*model)() = linear_model;	/* evaluation model */
 public	int	sm_stat = NORM_SIM;		/* simulation status */
 public	int	treport = 0;			/* report format */
+public  int     VDD_node_size = 0;		/* number of nodes connected to a power supply */
 
 private	int	firstcall = 1;	    /* reset when calling init_vdd_gnd */
 
@@ -61,7 +62,8 @@ extern Tcl_Interp *irsiminterp;
  */
 private void init_vdd_gnd()
   {
-    enqueue_input( VDD_node, HIGH );
+    for (int i = 0; i < VDD_node_size; i++) 
+    	enqueue_input( *(VDD_node+i), HIGH );
     enqueue_input( GND_node, LOW );
 
     firstcall = 0;		/* initialization now taken care of */
@@ -167,8 +169,11 @@ private void pr_capwatched( e, n )
 private void acc_step_power( n )
   nptr   n;
   {
-     if ( not (n->nflags & INPUT) )
-	 step_cap_x_trans += n->ncap;
+     if ( not (n->nflags & INPUT) ) 
+       {
+	  step_cap_x_trans += n->ncap;
+	  step_pow_x_trans += n->vsupply2 * n->ncap;
+       }
   }
 #endif /* POWER_EST */
 
@@ -589,9 +594,9 @@ public	char  switch_state[NTTYPES][4] =
  */
 public
 #define	 compute_trans_state( TRANS )					\
-    ( ((TRANS)->ttype & GATELIST) ?					\
+    ( ((TRANS)->flags & GATELIST) ?					\
 	ComputeTransState( TRANS ):					\
-	switch_state[ BASETYPE( (TRANS)->ttype ) ][ (TRANS)->gate->npot ] )
+	switch_state[ (TRANS)->ttype ][ (TRANS)->gate->npot ] )
 
 
 public int ComputeTransState( t )
@@ -600,8 +605,10 @@ public int ComputeTransState( t )
     register nptr  n;
     register tptr  l;
     register int   result;
+    int ttype;
+    ttype = device_names[t->ttype]->devtype;
 
-    switch( BASETYPE( t->ttype ) )
+    switch( ttype )
       {
 	case NCHAN :
 	    result = ON;
@@ -634,7 +641,7 @@ public int ComputeTransState( t )
 	default :
 	    lprintf( stderr,
 	      "**** internal error: unrecongized transistor type (0x%x)\n",
-	      BASETYPE( t->ttype ) );
+	      ttype );
 	    return( UNKNOWN );
       }
   }

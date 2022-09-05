@@ -55,11 +55,11 @@ public void make_parallel( nlist )
 	for( l1 = nlist->nterm; l1 != NULL; l1 = l1->next )
 	  {
 	    t1 = l1->xtor;
-	    type = t1->ttype;
+	    type = t1->flags;
 	    if( type & (GATELIST | ORED) )
 		continue;	/* ORED implies processed, so skip as well */
 #ifdef	USER_SUBCKT 
-	    if ( type == SUBCKT ) /* dont merge subckts */
+	    if ( device_names[t1->ttype]->devtype == SUBCKT ) /* dont merge subckts */
 		continue;         /* we will loose the events if we 
 				  merge them */
 #endif
@@ -70,10 +70,10 @@ public void make_parallel( nlist )
 	      {
 		t2 = l2->xtor;
 		if( t1->gate != t2->gate or hash_terms( t2 ) != hval or 
-		  type != (t2->ttype & ~ORED) )
+		  type != (t2->flags & ~ORED) )
 		    continue;
 
-		if( not (t1->ttype & ORED) )
+		if( not (t1->flags & ORED) )
 		  {
 		    NEW_TRANS( t2 );
 		    t2->r = (Resists *) Falloc( sizeof( TranResist ), 1 );
@@ -83,7 +83,8 @@ public void make_parallel( nlist )
 		    t2->gate = t1->gate;
 		    t2->source = t1->source;
 		    t2->drain = t1->drain;
-		    t2->ttype = (t1->ttype & ~ORLIST) | ORED;
+		    t2->flags = (t1->flags & ~ORLIST) | ORED;
+		    t2->ttype = t1->ttype;
 		    t2->state = t1->state;
 		    t2->tflags = t1->tflags;
 		    t2->tlink = t1;
@@ -92,10 +93,10 @@ public void make_parallel( nlist )
 		    REPLACE( t1->gate->ngate, t1, t2 );
 		    REPLACE( t1->source->nterm, t1, t2 );
 		    REPLACE( t1->drain->nterm, t1, t2 );
-		    t1->ttype |= ORLIST;
+		    t1->flags |= ORLIST;
 		    t1 = t2;
 		    t2 = l2->xtor;
-		    nored[ BASETYPE( t1->ttype ) ]++;
+		    nored[ t1->ttype ]++;
 		  }
 
 		  {
@@ -116,7 +117,7 @@ public void make_parallel( nlist )
 		FREE_LINK( l2 );
 		l2 = prev;
 
-		if( t2->ttype & ORED )
+		if( t2->flags & ORED )
 		  {
 		    register tptr  t;
 
@@ -130,11 +131,11 @@ public void make_parallel( nlist )
 		  }
 		else
 		  {
-		    t2->ttype |= ORLIST;	/* mark as part of or */
+		    t2->flags |= ORLIST;	/* mark as part of or */
 		    t2->dcache.t = t1;		/* this is the real txtor */
 		    t2->scache.t = t1->tlink;	/* link unto t1 list */
 		    t1->tlink = t2;
-		    nored[ BASETYPE( t1->ttype ) ]++;
+		    nored[ t1->ttype ]++;
 		  }
 	      }
 	  }
@@ -147,8 +148,9 @@ public void UnParallelTrans( t )
   {
     tptr    tor;
     double  dr;
+    int     type;
 
-    if( not (t->ttype & ORLIST) )
+    if( not (t->flags & ORLIST) )
 	return;				/* should never be */
 
     tor = t->dcache.t;
@@ -186,8 +188,8 @@ public void UnParallelTrans( t )
 	ror->dynlow = (ror->dynlow * r->dynlow) / dr;
 	dr = r->dynhigh - ror->dynhigh;
 	ror->dynhigh = (ror->dynhigh * r->dynhigh) / dr;
-
-	if( t->ttype & ALWAYSON )
+	type = device_names[t->ttype]->devtype;
+	if( (type == DEP) || (type == RESIST) )
 	  {
 	    CONNECT( on_trans, t );
 	  }
@@ -204,8 +206,8 @@ public void UnParallelTrans( t )
 	    CONNECT( t->drain->nterm, t );
 	  }
       }
-    t->ttype &= ~ORLIST;
-    nored[ BASETYPE( t->ttype ) ] -= 1;
+    t->flags &= ~ORLIST;
+    nored[ t->ttype ] -= 1;
   }
 
 
