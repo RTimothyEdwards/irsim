@@ -89,6 +89,7 @@ extern  float   capstarttime;
 extern  float   capstoptime;
 extern  float	captime;
 extern  float	powermult;		/* to do power estimate in milliWatts */
+extern  float   power;			/* power estimate logged after powquery */
 extern  int	pstep;			/* Bool - end of step power display */
 extern  float   step_cap_x_trans;	/* Stepwise C*trans count */
 #endif /* POWER_EST */

@@ -463,7 +463,8 @@ public int newsubckt(targc, targv)
 	t->ttype = SUBCKT; 
 	t->gate = RsimGetNode(targv[i]);
 	subptr->nodes = nodes; 
-	t->source = VDD_node; 
+	t->source = *(VDD_node + VDD_node_size - 1);
+	VDD_node++;
 	t->drain = t->gate;
 
 	/* link it to the list */
@@ -501,7 +502,8 @@ public int newsubckt(targc, targv)
 	t->ttype    = PCHAN;
 	t->gate     = RsimGetNode(out_name_Ub);
 	nodes[i]    = t->gate;
-	t->drain    = VDD_node;
+	t->drain    = *(VDD_node + VDD_node_size - 1);
+	VDD_node++;
 	t->source   = RsimGetNode(targv[i]);
 	t->scache.t = rd_tlist; /* link it to the list */
 	rd_tlist    = t;

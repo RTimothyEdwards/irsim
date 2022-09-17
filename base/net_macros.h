@@ -139,7 +139,7 @@
   {						\
     (T)->dcache.t->scache.t = (T)->scache.t;	\
     (T)->scache.t->dcache.t = (T)->dcache.t;	\
-    (T)->ttype &= ~TCAP;			\
+    (T)->flags &= ~TCAP;			\
     tcap->x.pos --;				\
   }
 

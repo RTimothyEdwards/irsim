@@ -136,7 +136,7 @@ private tptr wr_nodes()
 		txlist = t;
 		t->tflags |= ACTIVE_T;
 	      }
-	    if( t->ttype & GATELIST )
+	    if( t->flags & GATELIST )
 	      cap += (StackCap( t ) / 2.0);
 	  }
 	
@@ -176,7 +176,7 @@ private void wr_trans( t )
     File_Trans  trans;
     pointertype ndindx;
 
-    if( t->ttype & ORED )
+    if( t->flags & ORED )
       {
 	for( t = t->tlink; t != NULL; t = t->scache.t ) wr_trans( t );
 	return;
@@ -194,7 +194,7 @@ private void wr_trans( t )
     PackBytes( trans.length, t->r->length, NB_TSIZE );
     PackBytes( trans.width, t->r->width, NB_TSIZE );
 
-    trans.ttype[0] = t->ttype & ~(ORED | ORLIST | STACKED | GATELIST);
+    trans.ttype[0] = t->flags & ~(ORED | ORLIST | STACKED | GATELIST);
 
     if( t->tlink != t )
       {
@@ -219,7 +219,7 @@ private void wr_txtors( tlist )
 	t->tflags &= ~ACTIVE_T;
 	t->scache.t = NULL;
 
-	if( t->ttype & GATELIST )
+	if( t->flags & GATELIST )
 	  {
 	    for( t = (tptr) t->gate; t != NULL; t = t->scache.t )
 		wr_trans( t );
@@ -319,6 +319,7 @@ private void rd_nodes( nname, n_nodes )
     File_Thresh  thresh;
     pointertype  tmp;
     int          slen;
+    int		 i;
     nptr         n;
     nptr         aliases;
 
@@ -370,7 +371,8 @@ private void rd_nodes( nname, n_nodes )
 	  }
       }
 
-    VDD_node->nflags |= INPUT;		/* these bits get thrashed above */
+    for ( i = 0; i < VDD_node_size; i++) 
+	    (*(VDD_node+i))->nflags |= INPUT;		/* these bits get thrashed above */
     GND_node->nflags |= INPUT;
 
     for( n = aliases; n != NULL; n = n->n.next )
@@ -410,9 +412,9 @@ private void rd_txtors()
 
 	t->ttype = trans.ttype[0];
 
-	if( t->ttype & GATELIST )
+	if( t->flags & GATELIST )
 	  {
-	    t->ttype &= ~GATELIST;
+	    t->flags &= ~GATELIST;
 	    UnpackBytes( trans.x, t->x.pos, NB_COORD );
 	    UnpackBytes( trans.y, t->y.pos, NB_COORD );
 	    EnterPos( t, TRUE );
@@ -422,7 +424,7 @@ private void rd_txtors()
 
 	t->r = requiv( (int) t->ttype, width, length );
 
-	ntrans[ BASETYPE( t->ttype ) ] += 1;
+	ntrans[  t->ttype ] += 1;
 
 	*last = t;
 	last = &(t->scache.t);
@@ -524,16 +526,18 @@ public nptr bin_connect_txtors()
     for( t = brd_tlist; t != NULL; t = tnext )
       {
 	tnext = t->scache.t;
-	t->state = ( t->ttype & ALWAYSON ) ? WEAK : UNKNOWN;
+	int type = device_names[t->ttype]->devtype;
+	t->state = ( type == DEP || type == RESIST ) ? WEAK : UNKNOWN;
 	t->tflags = 0;
 
-	if( t->ttype & TCAP )
+	if( t->flags & TCAP )
 	  {
 	    LINK_TCAP( t );
 	  }
 	else
 	  {
-	    if( t->ttype & ALWAYSON )
+	    int type = device_names[t->ttype]->devtype;
+	    if( (type == DEP) || (type == RESIST) )
 	      {
 		CONNECT( on_trans, t );
 	      }

@@ -180,7 +180,10 @@ public nptr RsimGetNode( name_in )
     int skip = 0;
     char *name = name_in;
 
-    if (power_net_name && (strcasecmp(name, power_net_name) == 0)) ispwrname = 1;
+    for ( i = 0; i < power_net_name_size; i++ ) {
+	    if (strcasecmp(name, *(power_net_name+i)) == 0) 
+		    ispwrname = 1;
+    }
     if (ground_net_name && (strcasecmp(name, ground_net_name) == 0)) ispwrname = 1;
 
     if ((simprefix != NULL) && (ispwrname == 0)) {
@@ -200,8 +203,9 @@ public nptr RsimGetNode( name_in )
     if( i == 0 )
       {
 	if( strcmp( name, n->nname ) != 0 ) {
-	    if ( strcasecmp( name, power_net_name ) == 0 ) {
-		skip = warnVdd ; warnVdd = TRUE ;
+	    for ( i = 0; i < power_net_name_size; i++) {
+		    if (strcasecmp(name, *(power_net_name+i)) == 0) 
+			skip = warnVdd ; warnVdd = TRUE ;
 	    }
 	    if ( strcasecmp( name, ground_net_name ) == 0 ) {
 		skip = warnGnd ; warnGnd = TRUE ;
@@ -232,6 +236,8 @@ public nptr RsimGetNode( name_in )
     n->ncap = MIN_CAP;
     n->vlow = LOWTHRESH;
     n->vhigh = HIGHTHRESH;
+    n->vsupply = 0;
+    n->vsupply2 = n->vsupply * n->vsupply;
     n->c.time = 0;
     n->tplh = 0;
     n->tphl = 0;
@@ -264,9 +270,11 @@ public nptr GetNewNode( name )
   {
     register nptr  n;
     int            i;
-
-    if( VDD_node != NULL and str_eql( name, pnode( VDD_node ) ) == 0 )
-	return( VDD_node );
+    for( i = 0; i < VDD_node_size; i++ ) 
+      {
+        if( str_eql( name, pnode( *(VDD_node + i) ) ) == 0 )
+	    return( *(VDD_node + i) );
+      }
     if( GND_node != NULL and str_eql( name, pnode( GND_node ) ) == 0 )
 	return( GND_node );
 

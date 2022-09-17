@@ -110,6 +110,8 @@ struct Node
     lptr     nterm;	/* list of xtors w/ src/drn connected to this node */
     nptr     hnext;	/* link in hash bucket */
     float    ncap;	/* capacitance of node in pf */
+    float    vsupply;   /* voltage that node is connected to */
+    float    vsupply2;  /* voltage supply squared */
     float    vlow;	/* low logic threshold for node, normalized units */
     float    vhigh;	/* high logic threshold for node, normalized units */
     short    tplh;	/* low to high transition time in DELTA's */
@@ -181,8 +183,9 @@ struct Trans
     nptr     gate, source, drain;    /* nodes to which trans is connected */
     TCache   scache, dcache;	     /* caches to remember src/drn values */
     Uchar    ttype;		     /* type of transistor */
+    Uchar    flags;		     /* transistor flags */
     Uchar    state;		     /* cache to remember current state */
-    Uchar    tflags; 		     /* transistor flags */
+    Uchar    tflags; 		     /* temporary transistor flags */
     Uchar    n_par;		     /* index into parallel list */
     Resists  *r;		     /* transistor resistances */
     tptr     tlink;		     /* next txtor in position hash table */
@@ -219,8 +222,6 @@ struct Input
 #define	TYPERESERVED	4	/* reserved for future transistor types */
 #define	SUBCKT		5	/* black box user code */
 
-#define	ALWAYSON	0x02	/* transistors not affected by gate logic */
-
 #define	GATELIST	0x08	/* set if gate of xistor is a node list */
 #define	STACKED		0x10	/* transistor was stacked into gate list */
 #define	ORED		0x20	/* result of or'ing parallel transistors */
@@ -228,12 +229,10 @@ struct Input
 #define	TCAP		0x80	/* transistor capacitor (source == drain) */
 
 #ifndef	USER_SUBCKT
-#define	NTTYPES		4	/* number of transistor types defined */
+#define	NTTYPES		256	/* number of transistor types defined */
 #else
-#define	NTTYPES		6	/* number of transistor types defined */
+#define	NTTYPES		256	/* number of transistor types defined */
 #endif
-
-#define	BASETYPE( T )		( (T) & 0x07 )
 
 	/* transistor states (state)*/
 #define	OFF		0	/* non-conducting */
@@ -305,6 +304,12 @@ struct Input
 #define	DYNLOW  	2	/* dynamic-low resistance */
 #define	POWER		3	/* resist. for power calculation (unused) */
 #define	R_TYPES		3	/* number of resistance contexts */
+
+#define STATIC_MASK	1	/* bit field for devinit in DevRec structure */
+#define DYNHIGH_MASK	2	/* bit field for devinit in DevRec structure */
+#define DYNLOW_MASK	4	/* bit field for devinit in DevRec structure */
+
+#define R_SET		0x7     /* set if all resistances are defined for device */
 
 	/* device types when translating from "x" subcircuits */
 #define NFET		0	/* 4-terminal nFET transitor */
