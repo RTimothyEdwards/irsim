@@ -180,6 +180,18 @@ private void resist_copy( from, to )
     register struct width   *p, *q, *wnew;
     register struct length  *l, *m, *lnew;
 
+    if (from == NULL)
+      {
+ 	 lprintf( stderr, "Warning: missing required default device resistance\n");
+         return;
+      }
+
+    if (to == NULL)
+      {
+         lprintf(stderr, "Device has no resistances array!\n");
+         return;
+      }
+
     for( p = *from, q = NULL; p != NULL; q = wnew, p = p->next )
       {
 	/* Allocate new width record */
@@ -289,6 +301,7 @@ again:
     /* Insert default devices */
     makedevice("nfet", "n-channel", (float)0.0);
     makedevice("pfet", "p-channel", (float)0.0);
+    makedevice("resistor", "resistor", (float)0.0);
 
     while( fgetline( line, LSIZE, cfile ) != NULL )
       {
@@ -310,7 +323,7 @@ again:
 	else if( str_eql( "device", targv[0] ) == 0 )
 	  {
 	    if( targc >= 4 )
-		makedevice( targv[1], targv[2], targv[3] );
+		makedevice( targv[1], targv[2], (float)atof(targv[3]) );
 	    else if( targc >= 3 )
 		makedevice( targv[1], targv[2], (float)0.0 );
 	    else
@@ -383,18 +396,10 @@ again:
     if( config_flags & CNTPULLUP )
 	lprintf( stderr, "warning: cntpullup is not supported\n" );
    
-    /* Check if devices have been given resistance values */
+    /* Check if transistor devices have been given resistance values */
     for( i = 0; i < nttypes; i++ )
       {
-        if( i < 2 )
-	  { 
-	    if( device_names[i]->devinit != R_SET )
-	      {
- 	        lprintf( stderr, "Warning: missing required resistance for device %s\n", 
-		  device_names[i]->devname );
-	      }
-	  }
-	else 
+	if(( i > 2 ) && ( device_names[i]->devtype < 2 ))	// only transistors
 	  {
 	    if( device_names[i]->devinit != R_SET )
 	      {
@@ -646,9 +651,9 @@ private void insert( type, context, w, l, r )
 	return;
       }
 
-    for( t = 0; t < NTTYPES; t++ )
+    for( t = 0; t < nttypes; t++ )
       {
-	if( str_eql( ttype[t], type ) == 0 )
+	if( str_eql( device_names[t]->devname, type ) == 0 )
 	  {
 	    if( c == POWER )
 		return;

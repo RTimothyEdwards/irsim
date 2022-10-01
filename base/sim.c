@@ -351,8 +351,9 @@ private float lconvert( lstring )
  * new transistor.  Implant specifies type.
  * AreaPos specifies the argument number that contains the area (if any).
  */
-private void newtrans( implant, targc, targv )
+private void newtrans( implant, devidx, targc, targv )
   int   implant;
+  int	devidx;
   int   targc;
   char  *targv[];
   {
@@ -445,7 +446,7 @@ private void newtrans( implant, targc, targv )
     t->scache.t = rd_tlist;		/* link it to the list */
     rd_tlist = t;
 
-    t->r = requiv( implant, width, length );
+    t->r = requiv( devidx, width, length );
 
 		/* update node capacitances  */
     gate->ncap += cap;
@@ -707,7 +708,7 @@ private void newdevice( targc, targv )
 		nargv[5] = targv[targc - 4] + 2;    /* Width */
 		nargv[6] = targv[targc - 3] + 2;    /* X position */
 		nargv[7] = targv[targc - 2] + 2;    /* Y position */
-		newtrans(NCHAN, nargc, nargv);
+		newtrans(NCHAN, idx, nargc, nargv);
 		free(nargv);
 	    }
 	    else
@@ -729,7 +730,7 @@ private void newdevice( targc, targv )
 		nargv[5] = targv[targc - 4] + 2;    /* Width */
 		nargv[6] = targv[targc - 3] + 2;    /* X position */
 		nargv[7] = targv[targc - 2] + 2;    /* Y position */
-		newtrans(PCHAN, nargc, nargv);
+		newtrans(PCHAN, idx, nargc, nargv);
 		free(nargv);
 	    }
 	    else
@@ -777,7 +778,7 @@ private void newdevice( targc, targv )
 			    * device_names[idx]->devvalue;
 		sprintf(svalue, "%g", value);
 		nargv[3] = svalue;
-		newtrans(RESIST, targc, targv);
+		newtrans(RESIST, idx, targc, targv);
 		free(nargv);
 	    }
 	    else
@@ -982,19 +983,19 @@ private int input_sim (simfile, has_param_file)
 
 	    case 'e':
 	    case 'n':
-		newtrans(NCHAN, targc, targv);
+		newtrans(NCHAN, 0, targc, targv);
 		break;
 
 	    case 'p':
-		newtrans(PCHAN, targc, targv);
+		newtrans(PCHAN, 1, targc, targv);
 		break;
 
 	    case 'd':
-		newtrans(DEP, targc, targv);
+		newtrans(DEP, 0, targc, targv);
 		break;
 
 	    case 'r':
-		newtrans(RESIST, targc, targv);
+		newtrans(RESIST, 2, targc, targv);
 		break;
 
 	    case 'x':
