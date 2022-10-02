@@ -4856,8 +4856,6 @@ public Command  cmds[] =
 #endif
     { "activity",	doactivity,	2,	3,
       "from [to] -> circuit activity in time interval"			},
-    { "powhist",	dopowhist,	2,	5,
-      "[init <min> <max> <buckets>|print|capture|reset] -> power histogram data"},
     { "alias",		doprintAlias,	1,	MAXARGS,
       " ->  print node aliases"						},
     { "ana",		analyzer,	1,	MAXARGS,
@@ -4940,8 +4938,6 @@ public Command  cmds[] =
       "node/vector... -> critical path for last transition of node(s)"	},
     { "power",		dopower,	1,	2,
       "[name] -> add name for power net"				},
-    { "powquery", 	getpow, 	1, 	2,
-      "node/vector -> query node/vector power value"			},
     { "print",		domsg,		1,	MAXARGS,
       "[text...] -> print specified text"				},
     { "printp",		printPending,	1,	2,
@@ -5012,8 +5008,12 @@ public Command  cmds[] =
       "infile [outfile] -> do stuck-at fault simulation"		},
 #endif
 #ifdef POWER_EST
+    { "powhist",	dopowhist,	2,	5,
+      "[init <min> <max> <buckets>|print|capture|reset] -> power histogram data"},
     { "powlogfile",	setcaplog,	1,	2,
       "[[+]file] -> start/stop power logfile (+file appends to file)"	},
+    { "powquery", 	getpow, 	1, 	2,
+      "node/vector -> query node/vector power value"			},
     { "powtrace",	setpowtrace,	2,	MAXARGS,
       "[-]node/vector... -> start/stop power tracing specified node/vector(s)"},
     { "sumcap",		sumcap,		1,	2,
