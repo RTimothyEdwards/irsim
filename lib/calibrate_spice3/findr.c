@@ -421,7 +421,7 @@ PrintR( ttype, w, l, rh, rl, rs )
   char    *ttype;
   double  w, l, rh, rl, rs;
   {
-    static char *fmt = "resistance %s %s\t%.1f\t%.1f\t%d.0\n";
+    static char *fmt = "resistance %s %s\t%.2f\t%.2f\t%d.0\n";
 
     printf( fmt, ttype, "dynamic-high", w, l, round( rh ) );
     printf( fmt, ttype, "dynamic-low\t", w, l, round( rl ) );
