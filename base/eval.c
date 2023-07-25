@@ -62,7 +62,8 @@ extern Tcl_Interp *irsiminterp;
  */
 private void init_vdd_gnd()
   {
-    for (int i = 0; i < VDD_node_size; i++) 
+    int i;
+    for (i = 0; i < VDD_node_size; i++) 
     	enqueue_input( *(VDD_node+i), HIGH );
     enqueue_input( GND_node, LOW );
 

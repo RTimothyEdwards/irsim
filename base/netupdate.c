@@ -1062,8 +1062,8 @@ private void input_changes( fin )
   {
     char  line[ LSIZE ];
     char  *targv[ MAXARGS ];
-    int   targc;
-    for (int i = 0; i < VDD_node_size; i++) 
+    int   targc, i;
+    for (i = 0; i < VDD_node_size; i++) 
     	(*(VDD_node+i))->nflags |= VISITED;	/* never add these to 'change' list */
     GND_node->nflags |= VISITED;
     new_GND = new_VDD = NULL;
@@ -1111,7 +1111,7 @@ private void input_changes( fin )
 	(void) fclose( nu_logf );
 
     FreeAliasTbl();
-    for (int i = 0; i < VDD_node_size; i++) 
+    for (i = 0; i < VDD_node_size; i++) 
     	(*(VDD_node+i))->nflags &= ~(VISITED | CHANGED);	/* restore flag */
     GND_node->nflags &= ~(VISITED | CHANGED);
   }
