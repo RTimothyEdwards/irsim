@@ -518,7 +518,8 @@ public int info( n, which )
 		    drive = "pulled down by ";
 		else 
 		  {
-		    for (int i = 0; i < VDD_node_size; i++ ) 
+		    int i;
+		    for (i = 0; i < VDD_node_size; i++ ) 
 		      {
 		        if( device_names[t->ttype]->devtype == PCHAN and rail == *(VDD_node+i) )
 		    	    drive = "pulled up by ";		

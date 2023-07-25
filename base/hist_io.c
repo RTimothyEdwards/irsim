@@ -424,6 +424,7 @@ private void fix_transistors( nd )
   register nptr  nd;
   {
     register lptr  l;
+    int i;
 
     while( nd != NULL )
       {
@@ -431,7 +432,7 @@ private void fix_transistors( nd )
 	    l->xtor->state = compute_trans_state( l->xtor );
 	nd = nd->n.next;
       }
-    for (int i = 0; i < VDD_node_size; i++) {
+    for (i = 0; i < VDD_node_size; i++) {
 	for( l = (*(VDD_node+i))->ngate; l != NULL; l = l->next )
 		l->xtor->state = compute_trans_state( l->xtor );
     }

@@ -812,6 +812,7 @@ private void UpdateTransistors()
     register evptr  e;
     register lptr   l;
     register tptr   t;
+    int i;
 
     for( e = dev_evs; e != NULL; e = e->nlink )
       {
@@ -900,7 +901,7 @@ private void UpdateTransistors()
 	      }
 	  }
       }
-    for (int i = 0; i< VDD_node_size; i++) 
+    for (i = 0; i< VDD_node_size; i++) 
 	    (*(VDD_node+i))->nflags &= ~VISITED;
     GND_node->nflags &= ~VISITED;
   }
