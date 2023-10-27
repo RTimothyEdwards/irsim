@@ -923,7 +923,7 @@ private int input_sim (simfile, has_param_file)
 	    case '|':
 		if (lineno > 1) break;
 		if (targc > 2) {
-		    double lmbd = atof(targv[2]) / 100.0;
+		    double lmbd = 100.0 / atof(targv[2]);
 
 		    if ((targc > 4) && (has_param_file < 0))
 		    {
