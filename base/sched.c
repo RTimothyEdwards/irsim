@@ -49,9 +49,7 @@ private	evhdr  ev_array[TSIZE];	    /* used as head of doubly-linked lists */
  * events are found;
  */
 
-public Ulong pending_events( delta, list, end_of_list )
-  Ulong   delta;
-  evptr  *list, *end_of_list;
+public Ulong pending_events( Ulong delta, evptr *list, evptr *end_of_list )
   {
     evhdr           *hdr;
     register evptr  ev;
@@ -112,8 +110,7 @@ public Ulong pending_events( delta, list, end_of_list )
  * the list of events to be processed at this time, removing it first
  * from the time wheel.
  */
-public evptr get_next_event( stop_time )
-  Ulong  stop_time;
+public evptr get_next_event( Ulong stop_time )
   {
     register evptr  event;
     Ulong i, time, limit;
@@ -206,8 +203,7 @@ public
 /*
  * remove event from all structures it belongs to and return it to free pool
  */
-public void free_event( event )
-  register evptr  event;
+public void free_event( register evptr event )
   {
 	/* unhook from doubly-linked event list */
     event->blink->flink = event->flink;
@@ -236,9 +232,7 @@ public void free_event( event )
  * Add an event to event list, specifying transition delay and new value.
  * 0 delay transitions are converted into unit delay transitions (0.01 ns).
  */
-public void enqueue_event( n, newvalue, delta, rtime )
-  register nptr  n;
-  long           delta, rtime;
+public void enqueue_event( register nptr n, int newvalue, long delta, long rtime )
   {
     register evptr  marker, new;
     Ulong   etime;
@@ -309,8 +303,7 @@ public void enqueue_event( n, newvalue, delta, rtime )
 
 
 /* same as enqueue_event, but assumes 0 delay and rise/fall time */
-public void enqueue_input( n, newvalue )
-  register nptr  n;
+public void enqueue_input( register nptr n, int newvalue )
   {
     register evptr  marker, new;
     register Ulong  etime;
@@ -361,9 +354,7 @@ public void init_event()
   }
 
 
-public void PuntEvent( node, ev )
-  nptr   node;
-  evptr  ev;
+public void PuntEvent( nptr node, evptr ev )
   {
     if( node->nflags & WATCHED )
 	lprintf( stdout,
@@ -383,9 +374,7 @@ public void PuntEvent( node, ev )
   }
 
 
-public void requeue_events( evlist, thread )
-  evptr  evlist;
-  int    thread;
+public void requeue_events( evptr evlist, int thread )
   {
     register Ulong   etime;
     register evptr  ev, next, target;
@@ -441,9 +430,7 @@ public void requeue_events( evlist, thread )
  * and re-enqueue them according to their creation-time (ntime - delay).
  */
 
-public evptr back_sim_time( btime, is_inc )
-  Ulong  btime;
-  int   is_inc;
+public evptr back_sim_time( Ulong btime, int is_inc )
   {
     evptr           tmplist;
     register int    nevents;
@@ -530,10 +517,7 @@ public evptr back_sim_time( btime, is_inc )
  * of every node.  Return FALSE if this history entry is the sentinel
  * (last_hist), otherwise return TRUE.
  */
-public int EnqueueHist( nd, hist, type )
-  nptr  nd;
-  hptr  hist;
-  int   type;
+public int EnqueueHist( nptr nd, hptr hist, int type )
   {
     register evptr  marker, new;
     register Ulong   etime;
@@ -608,8 +592,7 @@ public int EnqueueHist( nd, hist, type )
  * Find a scheduled event in the event queue and return a pointer to it.
  */
 
-public evptr FindScheduled(idx)
-   short idx;
+public evptr FindScheduled(short idx)
 {
     register evptr  ev, next;
     register evhdr  *hdr, *endhdr;
@@ -632,8 +615,7 @@ public evptr FindScheduled(idx)
  * Remove a scheduled event from the event queue
  */
 
-public void DequeueScheduled(idx)
-   short idx;
+public void DequeueScheduled(short idx)
 {
     register evptr  ev;
 
@@ -646,8 +628,7 @@ public void DequeueScheduled(idx)
  * that generated it.
  */
 
-public void DequeueEvent( nd )
-  register nptr nd;
+public void DequeueEvent( register nptr nd )
   {
     register evptr  ev;
 
@@ -662,9 +643,7 @@ public void DequeueEvent( nd )
   }
 
 
-public void DelayEvent( ev, delay )
-  evptr  ev;
-  long   delay;
+public void DelayEvent( evptr ev, long delay )
   {
     register evptr  marker, new;
     register nptr   nd;
@@ -716,9 +695,7 @@ public void DelayEvent( ev, delay )
   }
 
 
-public evptr EnqueueOther( type, time )
-  int   type;
-  Ulong  time;
+public evptr EnqueueOther( int type, Ulong time )
   {
     register evptr  marker, new;
     Ulong   etime;
@@ -751,8 +728,7 @@ public evptr EnqueueOther( type, time )
 /*
  * Remove any events that may be left from the incremental simulation.
  */
-public void rm_inc_events( all )
-  int  all;
+public void rm_inc_events( int all )
   {
     register int    nevents;
     register evptr  ev, next;

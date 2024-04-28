@@ -12,6 +12,7 @@
  *     ********************************************************************* 
  */
 
+#include <stdlib.h>
 #include <stdio.h>
 
 #ifdef TCL_IRSIM
@@ -90,8 +91,7 @@ public void ReInit()
 /*
  * Print decay event.
  */
-private void pr_decay( e )
-  evptr  e;
+private void pr_decay( evptr e )
   {
     nptr  n = e->enode;
 
@@ -103,9 +103,7 @@ private void pr_decay( e )
 /*
  * Print watched node event.
  */
-private void pr_watched( e, n )
-  evptr  e;
-  nptr   n;
+private void pr_watched( evptr e, nptr n )
   {
     int   tmp;
 
@@ -139,9 +137,7 @@ private void pr_watched( e, n )
 /*
  * Print capwatched node event.
  */
-private void pr_capwatched( e, n )
-  evptr  e;
-  nptr   n;
+private void pr_capwatched( evptr e, nptr n )
   {
     if ( caplogfile == NULL ) 
 	return;
@@ -167,8 +163,7 @@ private void pr_capwatched( e, n )
 /*
  * Tally cap * trans for giving stepwise power display
  */
-private void acc_step_power( n )
-  nptr   n;
+private void acc_step_power( nptr n )
   {
      if ( not (n->nflags & INPUT) ) 
        {
@@ -368,8 +363,7 @@ private void MarkNodes( evlist )
   }
 
 
-private long EvalNodes( evlist )
-  evptr  evlist;
+private long EvalNodes( evptr evlist )
   {
     register tptr   t;
     register lptr   l;
@@ -445,9 +439,7 @@ private long EvalNodes( evlist )
  * Change the state of the nodes in the given input list to their new value,
  * setting their INPUT flag and enqueueing the event.
  */
-private void SetInputs( listp, val )
-  register iptr  *listp;
-  register int   val;
+private void SetInputs( iptr *listp, int val )
   {
     register nptr  n;
     iptr           ip, last;
@@ -513,8 +505,7 @@ private void EvalNOinputs()
   }
 
 
-public int step( stop_time )
-  Ulong  stop_time;
+public int step( Ulong stop_time )
   {
     evptr  evlist;
     long   brk_flag;
@@ -600,8 +591,7 @@ public
 	switch_state[ (TRANS)->ttype ][ (TRANS)->gate->npot ] )
 
 
-public int ComputeTransState( t )
-  register tptr  t;
+public int ComputeTransState( tptr t )
   {
     register nptr  n;
     register tptr  l;

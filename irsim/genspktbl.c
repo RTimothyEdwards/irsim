@@ -49,9 +49,7 @@ double	delaytab[ SPIKETBLSIZE + 1 ][ SPIKETBLSIZE + 1 ];
 FILE	*F;
 
 
-main( argc, argv )
-  int   argc;
-  char  *argv[];
+int main( int argc, char *argv[] )
   {
     char  *fname;
     char  *size = "SPIKETBLSIZE";
@@ -95,9 +93,7 @@ main( argc, argv )
   }
 
 
-void PrintTable( tab, fmt )
-  double  tab[ SPIKETBLSIZE+1 ][ SPIKETBLSIZE+1 ];
-  char    *fmt;
+void PrintTable( double tab[ SPIKETBLSIZE+1 ][ SPIKETBLSIZE+1 ], char *fmt )
   {
     register  int  alpha, beta;
 
@@ -204,8 +200,7 @@ void rk4_error( which, alpha, beta, h )
  *         i) h == .001; .04 < alpha < .96; .04 < beta < .96
  * 	  ii) h == .01;  .1  < alpha < .9;  .1  < beta < .9
  */
-double nldl_rk4( alpha, beta, h )
-  double alpha, beta, h;
+double nldl_rk4( double alpha, double beta, double h )
   {   
     double        k11, k12, k21, k22, k31, k32, k41, k42;
     double        v1old, v1new, v2old, v2new;
@@ -247,8 +242,7 @@ double nldl_rk4( alpha, beta, h )
  * This routine computes the parameter vector for Runge-Kutta method.
  * Customized for 2-transistors-2-capacitors network driven by Gnd.
  */
-void nldl_vector( alpha, beta, h, v1, v2, k1, k2 )
-  double alpha, beta, h, v1, v2, *k1, *k2;
+void nldl_vector( double alpha, double beta, double h, double v1, double v2, double *k1, double *k2 )
   {   
     double  u1, u2;
     
@@ -276,8 +270,7 @@ void nldl_vector( alpha, beta, h, v1, v2, k1, k2 )
  *         i) h == .001; .04 < alpha < .96; .04 < beta < .96
  * 	  ii) h == .01;  .1  < alpha < .9;  .1  < beta < .9
  */
-double nldh_rk4( alpha, beta, h )
-  double alpha, beta, h;
+double nldh_rk4( double alpha, double beta, double h )
   {   
     double        k11, k12, k21, k22, k31, k32, k41, k42;
     double        v1old, v1new, v2old, v2new;
@@ -319,8 +312,7 @@ double nldh_rk4( alpha, beta, h )
  * This routine computes the parameter vector for Runge-Kutta method.
  * Customized for 2-transistors-2-capacitors network driven by Vdd.
  */
-void nldh_vector( alpha, beta, h, v1, v2, k1, k2 )
-  double alpha, beta, h, v1, v2, *k1, *k2;
+void nldh_vector( double alpha, double beta, double h, double v1, double v2, double *k1, double *k2 )
   {   
     double  u1, u2;
     
@@ -336,8 +328,7 @@ void nldh_vector( alpha, beta, h, v1, v2, k1, k2 )
  * Compute spike fluctuation and delay using an rc linear model.
  * Use equations for driven by Gnd case
  */
-void linear_spike( alpha, beta, delay, peak )
-  double  alpha, beta, *delay, *peak;
+void linear_spike( double alpha, double beta, double *delay, double *peak )
   {
     double  N, b, a, x, tmp;
 

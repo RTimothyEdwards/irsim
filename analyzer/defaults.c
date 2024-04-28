@@ -68,8 +68,7 @@ private	Assoc assoc[] =
 
 private	char  *irsim = "irsim";
 
-public char *GetXDefault( key )
-  int  key;
+public char *GetXDefault( int key )
   {
     char         *val;
 
@@ -78,9 +77,7 @@ public char *GetXDefault( key )
   }
 
 
-public int IsDefault( key, val )
-  int   key;
-  char  *val;
+public int IsDefault( int key, char *val )
   {
     if( assoc[ key ].defl == val )
 	return( TRUE );
@@ -88,7 +85,7 @@ public int IsDefault( key, val )
   }
 
 
-public char *ProgDefault( key )
+public char *ProgDefault( int key )
   {
     return( assoc[ key ].defl );
   }

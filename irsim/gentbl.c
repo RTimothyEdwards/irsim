@@ -35,7 +35,7 @@ FILE  *out;
 
 
 /* name of interval */
-char *pinterval( high, low )
+char *pinterval( int high, int low )
   {
     static char  temp[100];
 
@@ -48,8 +48,7 @@ char *pinterval( high, low )
 
 
 /* return strength of value */
-int strength( i )
-  register int  i;
+int strength( register int i )
   {
     if( (i -= NVALUES) < 0 )
 	i = -i;
@@ -60,14 +59,14 @@ int strength( i )
 #define max( A, B )			( ((A) > (B)) ? (A) : (B) )
 
 /* find the enclosing interval */
-char *span( ihigh, ilow, jhigh, jlow )
+char *span( int ihigh,int ilow,int jhigh, int jlow )
   {
     return( pinterval( min( ihigh, jhigh ), max( ilow, jlow ) ) );
   }
 
 
 /* merge two intervals using least-upper bound operation */
-char *merge( ihigh, ilow, jhigh, jlow )
+char *merge( int ihigh, int ilow, int jhigh, int jlow )
   {
     register int  ahigh, alow;
 
@@ -94,7 +93,7 @@ char *merge( ihigh, ilow, jhigh, jlow )
 
 
 /* convert interval to use weak values */
-char *weak( i, j )
+char *weak( int i, int j )
   {
     if( i == 0 )
 	i = 1;
@@ -108,7 +107,7 @@ char *weak( i, j )
   }
 
 
-main()
+int main(void)
   {
     register int  i, j, k, ii, jj, interval2;
 

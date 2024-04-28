@@ -18,6 +18,7 @@
  */
 #include <stdio.h>
 #include <string.h>   /* for strlen() */
+#include <stdlib.h>
 #include "ana.h"
 #include <X11/Xutil.h>
 #include "graphics.h"
@@ -45,12 +46,13 @@ public	int         bannerLen;
 private	void    DrawSignal(), DrawVector(), DrawCursor();
 private	void    MoveCursorToPos(), EraseCursor();
 
+extern int xloop_create();
+
 /*
  * Convert a time to its corresponding x position.
  */
 
-public Coord TimeToX(t)
-    TimeType t;
+public Coord TimeToX(TimeType t)
 {
     Coord xval;
 
@@ -68,8 +70,7 @@ public Coord TimeToX(t)
  * Return (MAX_TIME) if the point lies outside the traces window.
  */
 
-public TimeType XToTime(x)
-    Coord  x;
+public TimeType XToTime(Coord x)
 {
     float  tmp;
     int denom;
@@ -140,9 +141,7 @@ public int SetFont()
  * Initialize the windows and various other metrics.
  */
 
-public int InitDisplay( fname, display_unit )
-  char  *fname;
-  char  *display_unit;
+public int InitDisplay( char *fname, char *display_unit )
   {
 #ifdef HAVE_PTHREADS
     XInitThreads();
@@ -180,11 +179,7 @@ public int InitDisplay( fname, display_unit )
   }
 
 
-public int InitWindow( firstTime, state, x, y, w, h, ix, iy )
-  int    firstTime;
-  int    state;
-  Coord  x, y, w, h;
-  Coord  ix, iy;
+public int InitWindow( int firstTime, int state, Coord x, Coord y, Coord w, Coord h, Coord ix, Coord iy )
   {
     int                   spec, u_spec;
     static int            b;
@@ -283,9 +278,7 @@ public
  * shown on the screen.  Default width is DEF_STEPS (simulation) steps.
  */
 
-public void InitTimes(firstT, stepsize, lastT, reInit)
-  TimeType  firstT, stepsize, lastT;
-  int reInit;
+public void InitTimes(TimeType firstT, TimeType stepsize, TimeType lastT, int reInit)
 {
     tims.first = firstT;
     tims.last = lastT;
@@ -324,8 +317,7 @@ public void InitTimes(firstT, stepsize, lastT, reInit)
 /*
  * Redraw any region that overlaps the redraw-box.
  */
-public void RedrawWindow( box )
-  BBox  box;
+public void RedrawWindow( BBox box )
   {
 
 #ifndef TCL_IRSIM
@@ -392,8 +384,7 @@ public void RedrawBanner()
   }
 
 
-public void WindowCrossed( selected )
-  int  selected;
+public void WindowCrossed( int selected )
   {
     GC  color;
 
@@ -463,8 +454,7 @@ public void RedrawTimes()
   }
 
 
-public void UpdateTimes( start, end )
-  TimeType  start, end;
+public void UpdateTimes( TimeType start, TimeType end )
   {
     static TimeType  ostart, oend;
     static int       slen, elen;
@@ -503,8 +493,7 @@ public void UpdateTimes( start, end )
 /*
  * Redraw signal names.
  */
-public void RedrawNames( rb )
-  BBox  rb;
+public void RedrawNames( BBox rb )
   {
     Coord  x, y;
     Trptr  t;
@@ -540,8 +529,7 @@ public void RedrawNames( rb )
  * This will redraw the missing parts of the traces.  Used to selectivelly
  * repaint traces or during Exposure events.
  */
-public void RedrawTraces( box )
-  BBox  *box;
+public void RedrawTraces( BBox *box )
   {
     TimeType        t1, t2, tc;
     BBox            bg;
@@ -603,8 +591,7 @@ public void RedrawTraces( box )
  * Update the cache (begining of window and cursor) for traces that just
  * became visible ( or were just added ).
  */
-public void UpdateTraceCache( first_trace )
-  int  first_trace;
+public void UpdateTraceCache( int first_trace )
   {
     register Trptr     t;
     register hptr      h,p;
@@ -710,8 +697,7 @@ public void FlushTraceCache()
 /*
  * Draw the traces horizontally from time1 to time2.
  */
-public void DrawTraces( t1, t2 )
-  TimeType  t1, t2;
+public void DrawTraces( TimeType t1, TimeType t2 )
   {
     TimeType         endT;
     register Trptr   t;
@@ -779,9 +765,7 @@ public void DrawTraces( t1, t2 )
 /*
  * Draw a 1 bit trace.
  */
-private void DrawSignal( t, t1, t2 )
-  Trptr              t;
-  register TimeType  t1, t2;
+private void DrawSignal( Trptr t, register TimeType t1, register TimeType t2 )
   {
     register hptr  h;
     register int   val, change;
@@ -847,10 +831,7 @@ public	hptr    tmpHBuff[ 400 ];
 /*
  * Draw bus trace.
  */
-private void DrawVector( t, t1, t2, clr_bg )
-  register Trptr     t;
-  register TimeType  t1, t2;
-  int                clr_bg;
+private void DrawVector( register Trptr t, register TimeType t1, register TimeType t2, int clr_bg )
   {
     hptr      *start, *changes;
     TimeType  firstChange;
@@ -997,8 +978,7 @@ private void DrawVector( t, t1, t2, clr_bg )
 
 
 
-private void UpdateTraces( start, end )
-  TimeType  start, end;
+private void UpdateTraces( TimeType start, TimeType end )
   {
     if( not (windowState.iconified or windowState.tooSmall) )
       {
@@ -1009,8 +989,7 @@ private void UpdateTraces( start, end )
   }
 
 
-private void ScrollTraces( endT )
-  TimeType  endT;
+private void ScrollTraces( TimeType endT )
   {
     tims.start = endT - tims.steps / 2;
     tims.end = tims.start + tims.steps;
@@ -1023,8 +1002,7 @@ private void ScrollTraces( endT )
  * window, simply draw the missing parts.  Otherwise scroll the traces,
  * centered around endT.
  */
-public void UpdateWindow( endT )
-  TimeType  endT;
+public void UpdateWindow( TimeType endT )
   {
     TimeType  lastT;
 
@@ -1108,9 +1086,7 @@ private void  DrawCursor()
   }
 
 
-public void SetCursor( t, time )
-  Trptr t;
-  TimeType time;
+public void SetCursor( Trptr t, TimeType time )
 {
     register hptr  h, p;
     register int   n;
@@ -1150,8 +1126,7 @@ public void SetCursor( t, time )
     PRINTF( "%s, input=%s", val, inp );
 }
 
-void DoCursor( ev )
-  XButtonEvent  *ev;
+void DoCursor( XButtonEvent *ev )
   {
     Trptr     t;
     TimeType  time;
@@ -1249,8 +1224,7 @@ public void MoveCursorToTime(TimeType time)
     DrawCursVal( cursorBox );
   }
 
-private void MoveCursorToPos( x )
-  Coord  x;
+private void MoveCursorToPos( Coord x )
 {
     register TimeType  time;
 
@@ -1264,8 +1238,7 @@ private	char  *StrMap[] = { "0", "X", "", "1" };
 /*
  * Display signal values under cursor.
  */
-public void DrawCursVal( rb )
-  BBox  rb;
+public void DrawCursVal( BBox rb )
   {
     Coord        y;
     Trptr        t;
@@ -1301,8 +1274,7 @@ public void DrawCursVal( rb )
   }
 
 
-public void ExpandCursVal( t )
-  Trptr  t;
+public void ExpandCursVal( Trptr t )
   {
     char          *val;
     int           nbits;

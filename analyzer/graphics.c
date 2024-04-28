@@ -51,10 +51,7 @@ private	char   bots_bits[3][2] = { 0x7, 0x5, 0x3, 0x1, 0x6, 0x4 };
 #define	SAME_COLOR( A, B )	\
     ( (A).red == (B).red and (A).green == (B).green and (A).blue == (B).blue )
 
-private int GetColor( key, colors, ndefined )
-  int     key;
-  XColor  colors[];
-  int     ndefined;
+private int GetColor( int key, XColor colors[], int ndefined )
   {
     char      *s;
     XColor    *color;
@@ -222,10 +219,7 @@ private void InitBitmaps()
   }
 
 
-private Cursor MakeCursor( fg, bg, curs, mask, w, h, x, y )
-  XColor  *fg, *bg;
-  char    *curs, *mask;
-  int     w, h;
+private Cursor MakeCursor( XColor *fg, XColor *bg, char *curs, char *mask, int w, int h, int x, int y )
   {
     Pixmap  pcurs, pmask;
     Cursor  cu;
@@ -269,8 +263,7 @@ private void InitCursors()
   }
 
 
-public void InitGraphics(font)
-  Font  font;
+public void InitGraphics(Font font)
   {
     XGCValues      gcv;
     unsigned long  mask;

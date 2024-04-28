@@ -21,6 +21,11 @@ extern Display *display;
 extern Window  window;
 extern Func FGetEvent;
 
+extern void HandleButton( XButtonEvent *ev );
+extern void HandleKey( XKeyEvent *ev );
+extern void WindowExposed( XExposeEvent *event );
+extern void WindowResize( XConfigureEvent *ev );
+
 pthread_t xloop_thread = 0;
 Func EventHandlerPtr = NULL;
 

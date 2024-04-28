@@ -24,9 +24,12 @@
 #include "../usersubckt/subckt.h"
 #endif
 
+extern void InitCmdPath();
+extern public void init_commands();
+extern int finput( char *name);
+
 /* VARARGS1 */
-public void Usage( msg, s1 )
-  char  *msg, *s1;
+public void Usage( char *msg, char *s1 )
   {
     (void) fprintf( stderr, msg, s1 );
     (void) fprintf( stderr, "usage:\n irsim " );
@@ -40,8 +43,7 @@ public void Usage( msg, s1 )
 
 /* Main routine for irsim */
 
-public main( argc, argv )
-   char *argv[];
+public int main( int argc, char *argv[] )
   {
     int  i, arg1, has_param_file;
 
