@@ -325,8 +325,8 @@ extern evptr back_sim_time( /*  btime, is_inc */ );
 extern int EnqueueHist( /*  nd, hist, type */ );
 extern void DequeueEvent( /*  nd */ );
 extern void DelayEvent( /*  ev, delay */ );
-extern evptr FindScheduled( /* idx */ );
-extern void DequeueScheduled( /* idx */ );
+extern evptr FindScheduled( short /* idx */ );
+extern void DequeueScheduled( short /* idx */ );
 extern evptr EnqueueOther( /*  type, time */ );
 extern void rm_inc_events( /*  all */ );
 

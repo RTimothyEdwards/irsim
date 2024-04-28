@@ -22,7 +22,7 @@
  *  2. static power calculations not performed (only useful for nmos anyhow).
  */
 
-
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -89,9 +89,7 @@ private	char    bad_argc_msg[] = "Wrong number of args for '%c' (%d)\n";
   }							\
 
 
-private void PrArgs( argc, argv )
-  int   argc;
-  char  *argv[];
+private void PrArgs( int argc, char *argv[] )
   {
     while( argc-- != 0 )
       (void) fprintf( stderr, "%s ", *argv++ );
@@ -99,7 +97,7 @@ private void PrArgs( argc, argv )
   }
 
 
-private void CheckErrs( n )
+private void CheckErrs( int n )
   {
     nerrs += n;
     if( nerrs > MAX_ERRS )
@@ -201,9 +199,7 @@ private nptr connect_txtors()
 /*
  * node area and perimeter info (N sim command).
  */
-private void node_info( targc, targv )
-  int   targc;
-  char  *targv[];
+private void node_info( int targc, char *targv[] )
   {
     register nptr  n;
 
@@ -222,9 +218,7 @@ private void node_info( targc, targv )
 /*
  * new format node area and perimeter info (M sim command).
  */
-private void nnode_info( targc, targv )
-  int   targc;
-  char  *targv[];
+private void nnode_info( int targc, char *targv[] )
   {
     register nptr  n;
 
@@ -253,9 +247,7 @@ private	int    AP_error = FALSE;
 /* lambda^2 and lambda, respectively.			*/
 /*------------------------------------------------------*/
 
-private int parseAttr(str, a, p)
-char *str;
-int *a, *p;
+private int parseAttr(char *str, int *a, int *p)
 {
    int l;
    char *s;
@@ -280,8 +272,7 @@ int *a, *p;
 /* Default (unspecified) values are treated as ohms.		*/
 /*--------------------------------------------------------------*/
 
-private float rconvert( resstring )
-  char *resstring;
+private float rconvert( char *resstring )
 {
    /* Convert string to floating-point, and stop at the	*/
    /* first non-numeric character.			*/
@@ -318,8 +309,7 @@ private float rconvert( resstring )
 /* converted to centimicrons using the LAMBDACM factor.		*/
 /*--------------------------------------------------------------*/
 
-private float lconvert( lstring )
-  char *lstring;
+private float lconvert( char *lstring )
 {
    /* Convert string to floating-point, and stop at the	*/
    /* first non-numeric character.			*/
@@ -351,11 +341,7 @@ private float lconvert( lstring )
  * new transistor.  Implant specifies type.
  * AreaPos specifies the argument number that contains the area (if any).
  */
-private void newtrans( implant, devidx, targc, targv )
-  int   implant;
-  int	devidx;
-  int   targc;
-  char  *targv[];
+private void newtrans( int implant, int devidx, int targc, char *targv[] )
   {
     nptr           gate, src, drn;
     long           x, y;
@@ -490,9 +476,7 @@ printf("LAMBDA=%f CDA=%f CDP=%f asrc=%d psrc=%d adrn=%d pdrn=%d capsrc=%lf capdr
 /*
  * accept a bunch of aliases for a node (= sim command).
  */
-public void alias( targc, targv )
-  int   targc;
-  char  *targv[];
+public void alias( int targc, char *targv[] )
   {
     register nptr  n, m;
     register int   i;
@@ -531,9 +515,7 @@ public void alias( targc, targv )
 /*
  * node threshold voltages (t sim command).
  */
-private void nthresh( targc, targv )
-  int   targc;
-  char  *targv[];
+private void nthresh( int targc, char *targv[] )
   {
     register nptr  n;
 
@@ -549,9 +531,7 @@ private void nthresh( targc, targv )
 /*
  * User delay for a node (D sim command).
  */
-private void ndelay( targc, targv )
-  int   targc;
-  char  *targv[];
+private void ndelay( int targc, char *targv[] )
   {
     register nptr  n;
 
@@ -564,8 +544,7 @@ private void ndelay( targc, targv )
     n->tphl = ns2d( atof( targv[3] ) );
   }
 
-private float cconvert( capstring )
-  char *capstring;
+private float cconvert( char *capstring )
 {
    /* Convert string to floating-point, and stop at the	*/
    /* first non-numeric character.			*/
@@ -598,9 +577,7 @@ private float cconvert( capstring )
 /*
  * add capacitance to a node (c sim command).
  */
-private void ncap( targc, targv )
-  int   targc;
-  char  *targv[];
+private void ncap( int targc, char *targv[] )
   {
     register nptr n, m;
     float         cap;
@@ -818,9 +795,7 @@ private void newdevice( targc, targv )
 /*
  * parse input line into tokens, filling up carg and setting targc
  */
-private int parse_line( line, carg )
-  register char  *line;
-  register char  **carg;
+private int parse_line( register char *line, register char **carg )
   {
     register char  ch;
     register int   targc;
@@ -845,9 +820,7 @@ private int parse_line( line, carg )
 private	int    R_error = FALSE;
 private	int    A_error = FALSE;
 
-private int input_sim (simfile, has_param_file)
-  char  *simfile;
-  int   has_param_file;
+private int input_sim (char *simfile, int has_param_file)
 {
     FILE  *fin;
     char  line[LSIZE];
@@ -907,7 +880,7 @@ private int input_sim (simfile, has_param_file)
 		offset = ftell(fin);
 		olineno = lineno;
 		(void) fclose(fin);
-		(void) input_sim(targv[1]);
+		(void) input_sim(targv[1], 0);
 		if ((fin = fopen(simfile, "r")) == NULL)
 		{
 		    rsimerror(simfname, lineno, "can't re-open sim file '%s'\n",
@@ -1078,10 +1051,7 @@ private void init_counts()
 }
 
 
-public int rd_network( simfile, prefix, has_param_file )
-  char  *simfile;
-  char  *prefix;
-  int   has_param_file;
+public int rd_network( char *simfile, char *prefix, int has_param_file )
   {
     static int      firstcall = 1;
 

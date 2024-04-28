@@ -105,6 +105,10 @@ public  float   step_pow_x_trans = 0;	/* Stepwise total power */
 private int undefseq( /* p, list, lmax */ );
 private int clockit( /* n */ );
 
+extern void EnableInput( /* */ );
+extern void DisableInput( /* */ );
+extern void alias( int targc, char *targv[] );
+
 #ifdef TCL_IRSIM
 extern Tcl_Interp *irsiminterp;
 extern int check_interrupt();

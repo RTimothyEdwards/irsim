@@ -61,8 +61,7 @@ private	int     x_server = 0;
 private	int     x_helper = 0;		/* process id of helper process */
 public	Func    FGetEvent = NULL;	/* used also in thread.c */
 
-public void WindowResize( ev )
-  XConfigureEvent  *ev;
+public void WindowResize( XConfigureEvent *ev )
   {
     int  ret;
 
@@ -75,8 +74,7 @@ public void WindowResize( ev )
   }
 
 
-public void WindowExposed( event )
-  XExposeEvent  *event;
+public void WindowExposed( XExposeEvent *event )
   {
     BBox  box;
 
@@ -88,8 +86,7 @@ public void WindowExposed( event )
   }
 
 
-public void HandleButton( ev )
-  XButtonEvent  *ev;
+public void HandleButton( XButtonEvent *ev )
   {
     if( WITHINY( ev->y, scrollBox ) )
 	DoScrollBar( ev );
@@ -123,8 +120,7 @@ public void HandleButton( ev )
   }
 
 
-public void HandleKey( ev )
-  XKeyEvent  *ev;
+public void HandleKey( XKeyEvent *ev )
   {
     char  buff[ 40 ];
     int   nChars, i;
@@ -312,8 +308,7 @@ private void DisabledEventHandler()
 
 #ifdef NEED_HELPER
 
-private int StartHelper( fd )
-  int  fd;
+private int StartHelper( int fd )
   {
     extern char  *cad_bin, *getenv();
     static char  helper_name[] = "anXhelper";
@@ -355,8 +350,7 @@ private int StartHelper( fd )
 
 #endif /* NEED_HELPER */
 
-public int InitHandler( fd )
-  int fd;
+public int InitHandler( int fd )
   {
     int   flags;
     char  *senv;
