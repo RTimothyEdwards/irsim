@@ -3641,6 +3641,8 @@ private int doprintAlias()
 {
     char *aliasroot = NULL;
 
+    void alias();	/* Forward declaration */
+
     if (targc >= 3) {
        alias(targc, targv);
     }
