@@ -100,6 +100,7 @@ private void PrArgs( argc, argv )
 
 
 private void CheckErrs( n )
+  int n;
   {
     nerrs += n;
     if( nerrs > MAX_ERRS )

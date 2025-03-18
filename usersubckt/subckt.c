@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
+#include <ctype.h>
 
 #ifdef TCL_IRSIM
 #include <tk.h>
@@ -41,7 +43,7 @@ extern Tcl_Interp *irsiminterp;
 /* Tcl procedure characters representing states	*/
 /*----------------------------------------------*/
 
-static pot2ch[] = {'0', 'x', 'z', '1'};
+static char pot2ch[] = {'0', 'x', 'z', '1'};
 
 /*------------------------------*/
 /* Method 1:			*/

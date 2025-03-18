@@ -207,6 +207,8 @@ void vlprintf(FILE *f, const char *fmt, va_list args_in)
     int i, nchars, result, escapes = 0;
     Tcl_Interp *printinterp = (UseTkConsole) ? consoleinterp : irsiminterp;
 
+    void logprint();	/* Forward declaration */
+
     strcpy (outstr + 19, (f == stderr) ? "err \"" : "out \"");
     outptr = outstr;
 

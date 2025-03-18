@@ -225,7 +225,7 @@ private void InitBitmaps()
 private Cursor MakeCursor( fg, bg, curs, mask, w, h, x, y )
   XColor  *fg, *bg;
   char    *curs, *mask;
-  int     w, h;
+  int     w, h, x, y;
   {
     Pixmap  pcurs, pmask;
     Cursor  cu;

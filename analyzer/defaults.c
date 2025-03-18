@@ -89,6 +89,7 @@ public int IsDefault( key, val )
 
 
 public char *ProgDefault( key )
+  int	key;
   {
     return( assoc[ key ].defl );
   }

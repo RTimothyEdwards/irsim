@@ -12,6 +12,8 @@
  *     *********************************************************************
  */
 
+#include <ctype.h>
+
 #include "ana.h"
 #include "ana_glob.h"
 #include "graphics.h"

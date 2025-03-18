@@ -13,6 +13,7 @@
  */
 
 #include <stdio.h>
+#include <stdlib.h>
 
 #ifdef TCL_IRSIM
 #include <tk.h>

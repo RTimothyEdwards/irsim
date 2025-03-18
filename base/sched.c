@@ -238,6 +238,7 @@ public void free_event( event )
  */
 public void enqueue_event( n, newvalue, delta, rtime )
   register nptr  n;
+  int		newvalue;
   long           delta, rtime;
   {
     register evptr  marker, new;
@@ -311,6 +312,7 @@ public void enqueue_event( n, newvalue, delta, rtime )
 /* same as enqueue_event, but assumes 0 delay and rise/fall time */
 public void enqueue_input( n, newvalue )
   register nptr  n;
+  int		newvalue;
   {
     register evptr  marker, new;
     register Ulong  etime;
