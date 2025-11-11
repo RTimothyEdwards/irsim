@@ -199,7 +199,7 @@ int IrsimTagCallback(Tcl_Interp *interp, int argc, char *argv[])
 /*--------------------------------------------------------------*/
 
 int _irsim_tag(ClientData clientData,
-        Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+        Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {
     Tcl_HashEntry *entry;
     char *hstring;

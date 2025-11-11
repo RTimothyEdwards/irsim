@@ -297,7 +297,7 @@ int do_random(ClientData cl, Tcl_Interp *interp, int argc, char *argv[])
 	    char **list;
 
 	    if (Tcl_SplitList(interp, argv[3], &list_count,
-			(CONST char ***)&list) != TCL_OK) {
+			(const char ***)&list) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	    for (i=0;i<n;i++) {
@@ -318,7 +318,7 @@ int do_random(ClientData cl, Tcl_Interp *interp, int argc, char *argv[])
 	}
 
 	if (Tcl_SplitList(interp, argv[2], &list_count,
-			(CONST char ***)&list) != TCL_OK) {
+			(const char ***)&list) != TCL_OK) {
 	    return TCL_ERROR;
 	}
 	for (i=1;i<list_count;i++) {
@@ -383,7 +383,7 @@ int do_random(ClientData cl, Tcl_Interp *interp, int argc, char *argv[])
 	    char **list;
 
 	    if (Tcl_SplitList(interp, argv[3], &list_count,
-			(CONST char ***)&list) != TCL_OK) {
+			(const char ***)&list) != TCL_OK) {
 		return TCL_ERROR;
 	    }
 	    for (i=0;i<n;i++) {

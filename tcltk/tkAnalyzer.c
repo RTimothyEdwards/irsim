@@ -29,10 +29,6 @@
   #endif
 #endif
 
-#ifndef CONST84
-#define CONST84
-#endif
-
 /* Internal routine used---need to find an alternative! */
 extern int TkpUseWindow();
 
@@ -101,7 +97,7 @@ static Tk_ConfigSpec configSpecs[] = {
  */
 
 static int		ConfigureTkAnalyzer _ANSI_ARGS_((Tcl_Interp *interp,
-			    TkAnalyzer *analyzerPtr, int objc, Tcl_Obj *CONST objv[],
+			    TkAnalyzer *analyzerPtr, int objc, Tcl_Obj *const objv[],
 			    int flags));
 static void		DestroyTkAnalyzer _ANSI_ARGS_((char *memPtr));
 static void		TkAnalyzerCmdDeletedProc _ANSI_ARGS_((
@@ -109,7 +105,7 @@ static void		TkAnalyzerCmdDeletedProc _ANSI_ARGS_((
 static void		TkAnalyzerEventProc _ANSI_ARGS_((ClientData clientData,
 			    XEvent *eventPtr));
 static int		AnalyzerWidgetObjCmd _ANSI_ARGS_((ClientData clientData,
-			    Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[]));
+			    Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]));
 
 
 /*
@@ -136,7 +132,7 @@ TkAnalyzerObjCmd(clientData, interp, objc, objv)
 				 * interpreter. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    Tcl_Obj *const objv[];	/* Argument objects. */
 {
     Tk_Window tkwin = (Tk_Window) clientData;
     TkAnalyzer *analyzerPtr;
@@ -258,7 +254,7 @@ AnalyzerWidgetObjCmd(clientData, interp, objc, objv)
     ClientData clientData;	/* Information about analyzer widget. */
     Tcl_Interp *interp;		/* Current interpreter. */
     int objc;			/* Number of arguments. */
-    Tcl_Obj *CONST objv[];	/* Argument objects. */
+    Tcl_Obj *const objv[];	/* Argument objects. */
 {
     static char *tkanalyzerOptions[] = {
 	"cget", "configure", "height", "width", "init", "help", (char *) NULL
@@ -278,7 +274,7 @@ AnalyzerWidgetObjCmd(clientData, interp, objc, objv)
 	return TCL_ERROR;
     }
     if (Tcl_GetIndexFromObj(interp, objv[1],
-		(CONST84 char **)tkanalyzerOptions, "option", 0,
+		(const char **)tkanalyzerOptions, "option", 0,
 		&idx) != TCL_OK) {
 	return TCL_ERROR;
     }
@@ -412,11 +408,11 @@ ConfigureTkAnalyzer(interp, analyzerPtr, objc, objv, flags)
     register TkAnalyzer *analyzerPtr;	/* Information about widget;  may or may
 				 * not already have values for some fields. */
     int objc;			/* Number of valid entries in objv. */
-    Tcl_Obj *CONST objv[];	/* Arguments. */
+    Tcl_Obj *const objv[];	/* Arguments. */
     int flags;			/* Flags to pass to Tk_ConfigureWidget. */
 {
     if (Tk_ConfigureWidget(interp, analyzerPtr->tkwin, configSpecs,
-	    objc, (CONST84 char **) objv, (char *) analyzerPtr,
+	    objc, (const char **) objv, (char *) analyzerPtr,
 	    flags | TK_CONFIG_OBJS) != TCL_OK) {
 	return TCL_ERROR;
     }

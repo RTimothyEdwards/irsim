@@ -143,7 +143,7 @@ static int _irsim_dispatch(Command *command,
     argv0 = argv[0];
     if (!strncmp(argv0, "::", 2)) argv0 += 2;
     objv0 = Tcl_NewStringObj(argv0, strlen(argv0));
-    if (Tcl_GetIndexFromObj(interp, objv0, (CONST char **)conflicts,
+    if (Tcl_GetIndexFromObj(interp, objv0, (const char **)conflicts,
 		"overloaded command", 0, &idx) == TCL_OK)
     {
 	Tcl_Obj **objv = (Tcl_Obj **)Tcl_Alloc(argc * sizeof(Tcl_Obj *));
@@ -337,7 +337,7 @@ void disable_interrupt()
 /*------------------------------------------------------*/
 
 int _tkcon_interrupt(ClientData clientData,
-    Tcl_Interp *interp, int objc, Tcl_Obj *CONST objv[])
+    Tcl_Interp *interp, int objc, Tcl_Obj *const objv[])
 {  
    InterruptPending = 1;
    return TCL_OK;

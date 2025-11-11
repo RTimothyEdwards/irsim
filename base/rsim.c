@@ -321,7 +321,7 @@ private void apply (fun, vfunc, arg)
 
     if (targc == applyStart + 1)
     {
-	Tcl_SplitList(irsiminterp, targv[applyStart], &argc, (CONST char ***)&argv);
+	Tcl_SplitList(irsiminterp, targv[applyStart], &argc, (const char ***)&argv);
 	if (argc > 1)
 	    start = 0;
 	else
