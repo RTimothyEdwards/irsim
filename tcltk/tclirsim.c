@@ -669,7 +669,7 @@ int Tclirsim_Init(interp)
     /* Remember the interpreter */
     irsiminterp = interp;
 
-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL) return TCL_ERROR;
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) return TCL_ERROR;
 
     /* Use namespace to avoid conflicts with existing commands */
     for (n = 0; cmds[n].name != NULL; n++)
