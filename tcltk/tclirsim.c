@@ -287,14 +287,14 @@ void lprintf(FILE *f, const char *fmt, ...)
 void Tcl_stdflush(f)
     FILE *f;
 {
-    Tcl_SavedResult state;
+    Tcl_InterpState state;
     static char stdstr[] = "::tcl_flush stdxxx";
     char *stdptr = stdstr + 15;
     
-    Tcl_SaveResult(irsiminterp, &state);
+    state = Tcl_SaveInterpState(irsiminterp, TCL_OK);
     strcpy(stdptr, (f == stderr) ? "err" : "out");
     Tcl_EvalEx(irsiminterp, stdstr, -1, 0);
-    Tcl_RestoreResult(irsiminterp, &state);
+    Tcl_RestoreInterpState(irsiminterp, state);
 }   
 
 /*------------------------------------------------------*/

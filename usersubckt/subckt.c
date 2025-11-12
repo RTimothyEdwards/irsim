@@ -37,6 +37,12 @@ extern tptr rd_tlist;
 
 #ifdef TCL_IRSIM
 
+/* Tcl version 9 compatibility */
+
+#if TCL_MAJOR_VERSION < 9
+typedef int Tcl_Size;
+#endif
+
 extern Tcl_Interp *irsiminterp;
 
 /*----------------------------------------------*/
@@ -109,7 +115,8 @@ public userSubCircuit *subckt_instantiate(char *sname, int *inst, uptr *udatap)
     Tcl_DecrRefCount(objv[0]);
     if (result == TCL_OK)
     {
-	int i, listlen, noutputs, ninputs;
+	int i, noutputs, ninputs;
+	Tcl_Size listlen;
 	double dval;
 	Tcl_Obj *elem, *rlist, *olist, *uobj;
 	userSubCircuit *s;
@@ -290,7 +297,7 @@ public void subckt_model_C(tptr t)
 
 	if (result == TCL_OK)
 	{
-	    int listlen;
+	    Tcl_Size listlen;
 	    double dval;
 	    char *newoutvals;
 	    Tcl_Obj *elem, *rlist;
