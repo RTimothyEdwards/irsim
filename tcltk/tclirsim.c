@@ -287,14 +287,14 @@ void lprintf(FILE *f, const char *fmt, ...)
 void Tcl_stdflush(f)
     FILE *f;
 {
-    Tcl_SavedResult state;
+    Tcl_InterpState state;
     static char stdstr[] = "::tcl_flush stdxxx";
     char *stdptr = stdstr + 15;
     
-    Tcl_SaveResult(irsiminterp, &state);
+    state = Tcl_SaveInterpState(irsiminterp, TCL_OK);
     strcpy(stdptr, (f == stderr) ? "err" : "out");
     Tcl_EvalEx(irsiminterp, stdstr, -1, 0);
-    Tcl_RestoreResult(irsiminterp, &state);
+    Tcl_RestoreInterpState(irsiminterp, state);
 }   
 
 /*------------------------------------------------------*/
@@ -669,7 +669,7 @@ int Tclirsim_Init(interp)
     /* Remember the interpreter */
     irsiminterp = interp;
 
-    if (Tcl_InitStubs(interp, "8.1", 0) == NULL) return TCL_ERROR;
+    if (Tcl_InitStubs(interp, TCL_VERSION, 0) == NULL) return TCL_ERROR;
 
     /* Use namespace to avoid conflicts with existing commands */
     for (n = 0; cmds[n].name != NULL; n++)
